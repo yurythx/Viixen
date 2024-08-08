@@ -6,7 +6,7 @@ from apps.blog import views
 urlpatterns = [
 
     # The home page
-    path('', views.index_blog, name='index_blog'),
+    path('', views.blog_index, name='blog_index'),
 
    
 ]

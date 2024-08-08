@@ -1,0 +1,56 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+
+	<title>Error404</title>
+
+	<!-- Google font -->
+	<link href="https://fonts.googleapis.com/css?family=Muli:400" rel="stylesheet">
+	<link href="https://fonts.googleapis.com/css?family=Passion+One" rel="stylesheet">
+
+	<!-- Font Awesome Icon -->
+	<link rel="stylesheet" href="{% static 'varios/css/font-awesome.min.css' %}">
+
+	 <!-- Main CSS File -->
+	 <link rel="stylesheet" href="{% static 'varios/css/style_error404.css' %}">
+	
+
+</head>
+
+<body>
+
+	<div id="notfound">
+		<div class="notfound-bg"></div>
+		<div class="notfound">
+			<div class="notfound-404">
+				<h1>404</h1>
+			</div>
+			<h2>Oops! Página não encontrada</h2>
+			<form class="notfound-search">
+				<input type="text" placeholder="Buscar no Blog...">
+				<button type="button">Pesquisar</button>
+			</form>
+			<div class="notfound-social">
+				<a href="https://www.youtube.com/"><i class="fa fa-youtube-play"></i></a>
+				<a href="https://www.google.com.br/"><i class="fa fa-google"></i></a>
+				<a href="https://www.amazon.com.br/"><i class="fa fa-amazon"></i></a>
+				<a href="https://github.com/"><i class="fa fa-github-alt"></i></a>
+				
+				<!--<a href="#"><i class="fa fa-refresh"></i></a> -->
+				<!--<a href="#"><i class="fa fa-cog"></i></a>  -->
+				
+			</div>
+			<div class="notfound-social">
+				<a href="{% url 'index' %}"><i class="fa fa-home"></i></a>
+			</div>
+			
+		</div>
+	</div>
+
+</body>
+</html>

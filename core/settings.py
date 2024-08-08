@@ -1,21 +1,23 @@
 
 
-import os, environ
+import os #, environ
 
-env = environ.Env(
-    # set casting, default value
-    #DEBUG=(bool, True)
-)
+#env = environ.Env(
+#    # set casting, default value
+#    #DEBUG=(bool, True)
+#)
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 CORE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # Take environment variables from .env file
-environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
+#environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = env('SECRET_KEY', default='S#perS3crEt_007')
+#SECRET_KEY = env('SECRET_KEY', default='S#perS3crEt_007')
+
+SECRET_KEY = 'django-insecure-5iy^d-bu8b2yaat7j))09j8@6=8=ay%qwul^yn3qnvm2jqpkpi'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True  #env('DEBUG')
@@ -24,8 +26,10 @@ DEBUG = True  #env('DEBUG')
 ASSETS_ROOT = os.getenv('ASSETS_ROOT', '/static/assets') 
 
 # load production server from .env
-ALLOWED_HOSTS        = ['localhost', 'localhost:85', '127.0.0.1',               env('SERVER', default='127.0.0.1') ]
-CSRF_TRUSTED_ORIGINS = ['http://localhost:85', 'http://127.0.0.1', 'https://' + env('SERVER', default='127.0.0.1') ]
+#ALLOWED_HOSTS        = ['localhost', 'localhost:85', '127.0.0.1',               env('SERVER', default='127.0.0.1') ]
+#CSRF_TRUSTED_ORIGINS = ['http://localhost:85', 'http://127.0.0.1', 'https://' + env('SERVER', default='127.0.0.1') ]
+
+ALLOWED_HOSTS = []
 
 # Application definition
 

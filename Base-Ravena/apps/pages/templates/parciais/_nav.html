@@ -1,0 +1,52 @@
+{% load static %}
+
+<header id="header" class="header d-flex align-items-center fixed-top">
+    <div class="container-fluid container-xl position-relative d-flex align-items-center justify-content-between">
+
+      <a href="{% url 'blog_index' %}" class="logo d-flex align-items-center">
+        <!-- colocar a imagem a logo -->
+        <img src="{% static 'pages/images/logo/logo.png' %}" alt=""> 
+        <h1 class="sitename">PROJECT RAVENNA</h1>
+      </a>
+
+      <nav id="navmenu" class="navmenu">
+        <ul>
+          <li><a href="{% url 'index' %}" class="active">Home</a></li>
+          <li><a href="#about">Sobre nós</a></li>
+          <li><a href="#services">Serviços</a></li>
+          <li><a href="{% url 'blog_index' %}">Blog</a></li>
+          <li class="dropdown"><a href="#"><span>Dropdown</span> <i class="bi bi-chevron-down toggle-dropdown"></i></a>
+            <ul>
+              <li><a href="#">Dropdown 1</a></li>
+              <li class="dropdown"><a href="#"><span>Deep Dropdown</span> <i class="bi bi-chevron-down toggle-dropdown"></i></a>
+                <ul>
+                  <li><a href="#">Deep Dropdown 1</a></li>
+                  <li><a href="#">Deep Dropdown 2</a></li>
+                  <li><a href="#">Deep Dropdown 3</a></li>
+                  <li><a href="#">Deep Dropdown 4</a></li>
+                  <li><a href="{% url 'blog_details' %}">Blog detalhes</a></li>
+                </ul>
+              </li>
+              <li><a href="{% url 'error500' %}">error500</a></li>
+              <li><a href="#">Dropdown 3</a></li>
+              <li><a href="{% url 'error404' %}">error404</a></li>
+            </ul>
+          </li>
+          <li><a href="#contact">contacto</i></a></li>
+          
+        </ul>
+
+        <button type="button" class="btn-roxo"><i class="fa fa-plus" aria-hidden="true" name="Adicionar Usuário"></i></button>
+
+        <button type="button" class="btn btn-success"><i class="fa fa-user" aria-hidden="true" name="Usuário">  Yuri M Menezes</i></button>
+        <button type="button" class="btn btn-primary"><i class="fa fa-plus" aria-hidden="true" name="Adicionar Usuário"></i></button>
+        <button type="button" class="btn btn-warning"><i class="fa fa-cog" aria-hidden="true"  name="Configuração"></i></button>
+        <button type="button" class="btn btn-success"><i class="fa fa-sign-in" aria-hidden="true"  name="Entrar"></i></button>
+        <button type="button" class="btn btn-danger"><i class="fa fa-sign-out" aria-hidden="true"  name="Sair"></i></button>
+
+        <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
+   
+      </nav>
+
+    </div>
+  </header>
