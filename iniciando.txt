@@ -38,6 +38,8 @@ Instalar os seguintes pacotes Iniciais.
         pip install crispy-bootstrap5
         pip install django_summernote
         pip install django-allauth
+
+         pip install bleach==6.0.0
         
 
         
