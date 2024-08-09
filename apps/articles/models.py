@@ -1,7 +1,7 @@
 from django.db import models
 from apps.utils.rands import slugify_new
 from django.contrib.auth.models import User
-from apps.utils.images import resize_image
+#from apps.utils.images import resize_image
 from django_summernote.models import AbstractAttachment
 from django.urls import reverse
 
@@ -23,8 +23,8 @@ class ArticleAttachment(AbstractAttachment):
         if self.file:
             file_changed = current_file_name != self.file.name
 
-        if file_changed:
-            resize_image(self.file, 900, optimize=True, quality=70)
+        #if file_changed:
+        #    resize_image(self.file, 900, optimize=True, quality=70)
 
         return super_save
 
@@ -153,8 +153,8 @@ class Article(models.Model):
         if self.cover:
             cover_changed = current_cover_name != self.cover.name
 
-        if cover_changed:
-            resize_image(self.cover, 900, optimize=True, quality=70)
+        #if cover_changed:
+        #    resize_image(self.cover, 900, optimize=True, quality=70)
 
         def __str__(self):
             return self.title 

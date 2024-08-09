@@ -1,0 +1,139 @@
+{% extends 'base/base.html' %} 
+
+{% block title %} {{article.title}} {% endblock %}
+
+
+{% block content %}
+
+<div class="p-5 mb-4 bg-light">
+    <h1>Quick Links</h1>
+    <nav class="nav mt-3">
+        <a class="nav-link active bg-success text-light me-2" aria-current="page" href="#article" >Article <i class="fas fa-arrow-down"></i> </a>
+        <a class="nav-link active bg-success text-light me-2" aria-current="page" href="#reviews">Reviews <i class="fas fa-arrow-down"></i> </a>
+    </nav>
+</div>
+
+<div id="article" class="article">
+    <img class="img-fluid rounded-3" src="{{article.cover_image.url}}" alt="{{article.title}">
+    
+
+    <h1 class="pt-5 text-center">{{article.title}}</h1>
+
+    <div class="my-5 d-flex align-items-center">
+        <strong class="text-uppercase"> Created by: <a href="{% url 'user.user_profile' article.user.username %}">{{article.user.username}}</a></strong>
+         <form action="{% url 'article.bookmark' article.id %}" method="POST">
+            {% csrf_token %}
+
+            {% if bookmarked %}
+                <button type="submit" class='btn'>
+                    <i class="fas fa-heart fa-3x text-danger"></i>
+                </button>
+            {% else %}
+                <button type="submit" class='btn'>
+                    <i class="fas fa-heart fa-3x text-dark"></i>
+                </button>
+            {% endif %}
+
+        </form>
+    </div>
+    
+    {% comment %} <p>{{article.body|linebreaks}}</p> {% endcomment %}
+
+    {{article.body|safe}}
+
+     <div class='mt-5'>
+        {% if user.id == article.user.id %}
+            <a
+              href="{% url 'article.article_update' article.id  %}"
+              class="btn btn-warning rounded-pill">
+              Edit Article
+            </a>
+          {% endif %}
+
+          {% if user.id == article.user.id %}
+            <a
+              href="{% url 'article.article_delete' article.id  %}"
+              class="btn btn-danger rounded-pill">
+              Delete Article
+            </a>
+          {% endif %}
+
+    </div>
+      
+</div>
+
+
+
+<div class="my-5 py-5"></div>
+
+{% comment %} Start of reviews {% endcomment %}
+
+
+<div id="reviews" class="bg-success p-5 rounded-3 text-light">
+
+    <h1 class="text-light">Discuss</h1>
+
+    {% if user.is_authenticated %}    
+        <form action="{% url 'article.submit_review' %}" method="post" class="mt-2 mb-5">
+            
+            {% csrf_token %}
+
+            {% if request.session.error %}
+                <div class="alert alert-dismissible alert-danger mt-5">
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    <strong>{{request.session.error}}</strong>
+                </div>
+            {% endif %}
+
+            <h2 class="mt-5 mb-3 text-light">What do you think of the article?</h2>
+
+            <div class="form-group mb-2">
+                <input name="reviewTitle" type="text" class="form-control" id="reviewTitle" placeholder="Title">
+            </div>
+
+            <div class="form-group">
+                <textarea name="reviewBody" class="form-control rounded-3" id="reviewBody" rows="5" spellcheck="false" data-ms-editor="true" placeholder="Share in detail." ></textarea>
+            </div>
+
+            <input type="hidden" name="articleID" value="{{article.id}}">
+
+            <button type="submit" class="btn btn-light rounded-pill mt-2 fw-bolder">Submit</button>
+        </form>
+
+    {% else %}
+        <div class="review bg-info card text-light rounded-20 p-3 mt-4 text-center">
+            <p class="lead fw-bolder">
+                You need to login to join the discussion.
+            </p>
+            <div>
+                <a class='btn btn-light text-dark rounded-pill' href="{% url 'user.log-in' %}">Login Here</a>
+            </div>
+        </div>
+    {% endif %}
+
+    {% for review in reviews %}
+        {% comment %} <h2>{{review.title}} -- {{review.user.username}}</h2> {% endcomment %}
+        
+        <div class="review card text-dark rounded-20 p-3 mt-4">
+            <div>
+                {% load static %}
+                <img src="{% static 'base/person.svg' %}" class="person d-inline-block me-2" /> 
+                <a href="/user/{{review.user.username}}">
+                    <strong class="text-capitalize">{{review.user.username}}</strong>
+                </a>
+                &nbsp ----- &nbsp
+                <small>{{review.createdAt}} (UTC)</small>
+            </div>
+            <br>
+            <h4><strong>{{review.title}}</strong></h4>
+        
+            <p>{{review.body}}</p>
+
+        </div>
+    
+    {% endfor %}
+
+ </div>
+
+
+{% endblock %}
