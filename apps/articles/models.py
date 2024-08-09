@@ -2,6 +2,7 @@ from django.db import models
 from apps.utils.rands import slugify_new
 from django.contrib.auth.models import User
 #from apps.utils.images import resize_image
+from tinymce import HTMLField
 from django_summernote.models import AbstractAttachment
 from django.urls import reverse
 
@@ -109,6 +110,7 @@ class Article(models.Model):
         default=False,
         help_text='Marque essa opção para exibir a página.'
     )
+    #content = HTMLField()
     content = models.TextField()
     cover = models.ImageField(
         upload_to='articles/%Y/%m', blank=True, default=''

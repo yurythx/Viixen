@@ -38,7 +38,8 @@ Instalar os seguintes pacotes Iniciais.
         pip install crispy-bootstrap5
         pip install django_summernote
         pip install django-allauth
-
+        pip install django-widget-tweaks
+        pip install django-tinymce
          pip install bleach==6.0.0
         
 
@@ -71,3 +72,122 @@ CRISPY_TEMPLATE_PACK = 'bootstrap5'
   {% csrf_token %}
   {{ form|crispy }}
 </form>
+
+
+
+
+
+
+
+
+
+#####=========================================================================================================
+
+from django.http.response import Http404
+from django.shortcuts import render, get_object_or_404, redirect
+from django.core.paginator import Paginator
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.contrib.auth.models import User
+
+from article.models import Article, Review, Bookmark 
+
+# EDITING AND DELETING ARTICLE IMPORT - CLASS BASED VIEWS
+from django.views.generic.edit import CreateView, UpdateView, DeleteView
+from django.urls import reverse
+from django.http import HttpResponseRedirect
+
+class ArticleCreateView(LoginRequiredMixin, CreateView):
+    model = Article
+    fields = ['title', 'cover_image', 'body']
+    template_name = 'article/create-article.html'
+    
+    # To pass in fields that are not set like user
+    def form_valid(self, form):
+        form.instance.user = self.request.user
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        return reverse("article.articles") 
+
+# EDITING AND DELETING ARTICLE
+class ArticleUpdateView(LoginRequiredMixin, UpdateView):
+
+    model = Article
+    fields = ['title', 'cover_image', 'body']
+    template_name = 'article/update-article.html'
+
+    def get_queryset(self):
+        queryset = super(ArticleUpdateView, self).get_queryset()
+        queryset = queryset.filter(user=self.request.user)
+        return queryset
+
+    def form_valid(self, form):
+        return super().form_valid(form)
+
+    # Where to go after the Article is created
+    def get_success_url(self):
+        return reverse("user.user_profile", kwargs={'username': self.request.user.username}) 
+
+
+class ArticleDeleteView(LoginRequiredMixin, DeleteView):
+    model = Article
+    template_name = 'article/delete-article.html'
+
+    def get_queryset(self):
+        queryset = super(ArticleDeleteView, self).get_queryset()
+        queryset = queryset.filter(user=self.request.user)
+        return queryset
+
+    def get_success_url(self):
+        return reverse("user.user_profile", kwargs={'username': self.request.user.username}) 
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+    def articleSearch(request):
+    searchText = request.GET['searchText']
+    
+    articles = Article.objects.filter(title__contains=searchText)
+
+    users = User.objects.filter(username__contains=searchText)
+
+    bookmarked = []
+
+    for user in users:
+        userArticles = Article.objects.filter(user=user)
+        articles = articles.union(userArticles)
+
+     # Pagination
+    paginator = Paginator(articles, 3)
+
+    page_number = request.GET.get("page")
+
+    articles = paginator.get_page(page_number)
+
+    totalNum = articles.paginator.num_pages
+
+    if request.user.is_authenticated:
+        for article in articles:
+            bookmarkObject = Bookmark.objects.filter(article=article, user = request.user)
+            if bookmarkObject:
+                bookmarked.append(article.id)
+
+    context = {
+        "articles": articles,
+        "range": range(1, totalNum+1),
+        'bookmarked': bookmarked
+    }
+
+    return render(request, "article/articles.html", context)
+
