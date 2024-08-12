@@ -10,8 +10,14 @@ from django.urls import reverse
 
 def index_config(request):
     context = {'segment': 'index_config'}
-
+    
     html_template = loader.get_template('config/index_config.html')
+    return HttpResponse(html_template.render(context, request))
+    
+def lista_usuarios(request):
+    context = {'segment': 'lista-usuarios'}    
+
+    html_template = loader.get_template('config/lista-usuarios.html')
     return HttpResponse(html_template.render(context, request))
 
 

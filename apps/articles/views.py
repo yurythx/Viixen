@@ -10,7 +10,7 @@ PER_PAGE = 6
 
 
 class ArticleListView(ListView):
-    template_name = 'articles/pages/index_articles.html'
+    template_name = 'articles/index_articles.html'
     queryset = Article.objects.get_published()
     paginate_by = PER_PAGE
     context_object_name = 'articles'

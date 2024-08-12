@@ -17,7 +17,7 @@
                 </li>
                 <li data-username="home" 
                     class="nav-item {% if 'index' in segment %} active {% endif %}">
-                    <a href="/" class="nav-link "><span class="pcoded-micon"><i class="feather icon-home"></i></span><span
+                    <a href="{% url 'home' %}" class="nav-link "><span class="pcoded-micon"><i class="feather icon-home"></i></span><span
                             class="pcoded-mtext">Home</span></a>
                 </li>
                 <li data-username="Profile Page" 
@@ -34,7 +34,7 @@
                     <a href="javascript:" class="nav-link "><span class="pcoded-micon"><i class="feather icon-box"></i></span><span
                             class="pcoded-mtext">Components</span></a>
                     <ul class="pcoded-submenu">
-                        <li class=""><a href="#" class="">BLOG</a></li>
+                        <li class=""><a href="#" class="">Artigos</a></li>
                         <li class=""><a href="/bc_badges.html" class="">Badges</a></li>
                         <li class=""><a href="/bc_breadcrumb-pagination.html" class="">Breadcrumb & paggination</a></li>
                         <li class=""><a href="/bc_collapse.html" class="">Collapse</a></li>
@@ -51,9 +51,9 @@
                 </li>
                 <li data-username="form elements advance componant validation masking wizard picker select"
                     class="nav-item {% if 'form_elements' in segment %} active {% endif %}">
-                    <a href="/form_elements.html" class="nav-link "><span class="pcoded-micon"><i
+                    <a href="{% url 'index_config' %}" class="nav-link "><span class="pcoded-micon"><i
                             class="feather icon-file-text"></i></span><span
-                            class="pcoded-mtext">Form elements</span></a>
+                            class="pcoded-mtext">Configuração</span></a>
                 </li>
                 <li data-username="Table bootstrap datatable footable" 
                     class="nav-item {% if 'tbl_bootstrap' in segment %} active {% endif %}">
@@ -83,6 +83,15 @@
                     <ul class="pcoded-submenu">
                         <li class=""><a href="/register.html" class="" target="_blank">Sign UP</a></li>
                         <li class=""><a href="/login.html" class="" target="_blank">Sign IN</a></li>
+                    </ul>
+                </li>
+				
+				 <li class="nav-item pcoded-hasmenu">
+                    <a href="javascript:" class="nav-link "><span class="pcoded-micon"><i class="feather icon-lock"></i></span><span
+                            class="pcoded-mtext">Configuração</span></a>
+                    <ul class="pcoded-submenu">
+                        <li class=""><a href="{% url 'index_config' %}" class="" target="_blank">Todas as configurações</a></li>
+                        <li class=""><a href="{% url 'lista-usuarios' %}" class="" target="_blank">Lista de Usuários</a></li>
                     </ul>
                 </li>
 

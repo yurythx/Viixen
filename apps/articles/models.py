@@ -2,7 +2,7 @@ from django.db import models
 from apps.utils.rands import slugify_new
 from django.contrib.auth.models import User
 #from apps.utils.images import resize_image
-from tinymce import HTMLField
+#from tinymce import HTMLField
 from django_summernote.models import AbstractAttachment
 from django.urls import reverse
 

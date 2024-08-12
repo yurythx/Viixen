@@ -1,0 +1,81 @@
+ {% block title %} Articles {% endblock title %}
+{% block content %}
+
+ <div class="row">
+  
+    <div class="col-12 col-md-4">
+        <div class="card rounded-3 mb-4" id="{{article.id}}">
+            <div class='article-image-container'>
+                <img
+                    src="{{article.cover_image.url}}"
+                    class="card-img-top"
+                    alt="{{article.title}}"
+                />
+                <form action="#" method="POST">
+                   
+
+                    
+                        <button type="submit" class='btn'>
+                            <i class="fas fa-heart fa-3x text-danger"></i>
+                        </button>
+                   
+                        <button type="submit" class='btn'>
+                            <i class="fas fa-heart fa-3x text-light"></i>
+                        </button>
+                    
+
+                </form>
+            </div>
+
+        <div class="card-body">
+            <h4 class="card-title text-center">
+            
+            </h4>
+            <div class="text-center mt-5 mb-3">
+
+                
+                <a
+                href="#"
+                class="btn btn-warning rounded-pill">
+                
+                </a>
+               
+
+                <a
+                    href="#"
+                    class="btn btn-success rounded-pill">
+                  
+                </a>
+
+               
+                    <a
+                    href="#"
+                    class="btn btn-danger rounded-pill">
+                    
+                    </a>
+              
+
+            </div>
+        </div>
+
+        <ul class="list-group list-group-flush">
+            <li class="list-group-item">
+                <small> Created At:  </small>
+            </li>
+            <li class="list-group-item">
+                <small> Last Modified At: </small>
+            </li>
+            <li class="list-group-item">
+                <small> Created by: <a class="text-capitalize fw-bolder" href="#"> </a>
+                </small>
+            </li>
+        </ul>
+        </div>
+    </div>
+
+</div>
+
+
+</div>
+
+{% endblock content %}
