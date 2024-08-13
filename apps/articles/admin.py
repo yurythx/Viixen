@@ -1,6 +1,6 @@
 from django.contrib import admin
-from apps.articles.models import Tags, Category, Page, Article
-from django_summernote.admin import SummernoteModelAdmin
+from apps.articles.models import Tags, Category, Article
+
 from django.utils.safestring import mark_safe
 
 
@@ -42,29 +42,11 @@ class CategoryAdmin(admin.ModelAdmin):
     }
 
 
-@admin.register(Page)
-class PageAdmin(admin.ModelAdmin):
-    list_display = (
-        'id', 'title', 'slug', 'is_published',
-    )
-    list_display_links = (
-        'title',
-    )
-    search_fields = (
-        'id', 'title', 'slug', 'is_published',
-    )
-    list_per_page = 10
-    list_filter = ('is_published',)
-    list_editable = ('is_published',)
-    ordering = ('-id',)
-    prepopulated_fields = {
-        'slug': ('title',),
-    }
 
 
 @admin.register(Article)
-class ArticleAdmin(SummernoteModelAdmin):
-    summernote_fiedls = ('content',)
+class ArticleAdmin(admin.ModelAdmin):
+    TinyMCE_fiedls = ('content',)
     list_display = (
         'id', 'title', 'is_published', 'created_by'
     )

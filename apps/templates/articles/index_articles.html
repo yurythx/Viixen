@@ -1,81 +1,90 @@
- {% block title %} Articles {% endblock title %}
+
+
+{% extends "layouts/base.html" %}
+
+{% block title %} Page Blank {% endblock %} 
+
+<!-- Specific CSS goes HERE -->
+{% block stylesheets %}{% endblock stylesheets %}
+
 {% block content %}
 
- <div class="row">
-  
-    <div class="col-12 col-md-4">
-        <div class="card rounded-3 mb-4" id="{{article.id}}">
-            <div class='article-image-container'>
-                <img
-                    src="{{article.cover_image.url}}"
-                    class="card-img-top"
-                    alt="{{article.title}}"
-                />
-                <form action="#" method="POST">
-                   
-
-                    
-                        <button type="submit" class='btn'>
-                            <i class="fas fa-heart fa-3x text-danger"></i>
-                        </button>
-                   
-                        <button type="submit" class='btn'>
-                            <i class="fas fa-heart fa-3x text-light"></i>
-                        </button>
-                    
-
-                </form>
+    <!-- [ Main Content ] start -->
+    <div class="pcoded-main-container">
+        <div class="pcoded-wrapper">
+            <div class="pcoded-content">
+                <div class="pcoded-inner-content">
+                    <!-- [ breadcrumb ] start -->
+                    <div class="page-header">
+                        <div class="page-block">
+                            <div class="row align-items-center">
+                                <div class="col-md-12">
+                                    <div class="page-header-title">
+                                        <h5 class="m-b-10">Sample Page</h5>
+                                    </div>
+                                    <ul class="breadcrumb">
+                                             
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- [ breadcrumb ] end -->
+                    <div class="main-body">
+                        <div class="page-wrapper">
+                            <!-- [ Main Content ] start -->
+                            <div class="row">
+                                <div class="col-sm-12">
+                                    <div class="card">
+                                        <div class="card-header">
+                                            <h5>Hello card</h5>
+                                        </div>
+                                        <div class="card-block">
+                                                                       
+                                                <!-- FOR LOOP -->
+                                                {% for article in articles %}<!-- a varialvel post faz referencia ao que deve ser usado no html e o pots ta sendo trazido da viewr com a pesquisa--> 
+                                                <!-- Blog Posts Section -->
+                                            
+                                                    <a href="{% url 'articles:article-details' article.slug %}">{{ article.title }}</a>
+                                                        
+                                                                
+    
+                                                    <ul class="list-group list-group-flush">
+                                                        <li class="list-group-item">
+                                                            <small> Created At:  </small>
+                                                        </li>
+                                                        <li class="list-group-item">
+                                                            <small> Last Modified At: </small>
+                                                        </li>
+                                                        <li class="list-group-item">
+                                                            <small> Created by: <a class="text-capitalize fw-bolder" href="#"> </a>
+                                                            </small>
+                                                        </li>
+                                                    </ul>
+    
+                                            
+    
+    
+    
+    
+    
+                                                <!--/FOR LOOP-->
+                                                {% endfor %}
+                                            <!-- Blog Pagination Section -->
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- [ Main Content ] end -->
+                        </div>
+                    </div>
+                </div>
             </div>
-
-        <div class="card-body">
-            <h4 class="card-title text-center">
-            
-            </h4>
-            <div class="text-center mt-5 mb-3">
-
-                
-                <a
-                href="#"
-                class="btn btn-warning rounded-pill">
-                
-                </a>
-               
-
-                <a
-                    href="#"
-                    class="btn btn-success rounded-pill">
-                  
-                </a>
-
-               
-                    <a
-                    href="#"
-                    class="btn btn-danger rounded-pill">
-                    
-                    </a>
-              
-
-            </div>
-        </div>
-
-        <ul class="list-group list-group-flush">
-            <li class="list-group-item">
-                <small> Created At:  </small>
-            </li>
-            <li class="list-group-item">
-                <small> Last Modified At: </small>
-            </li>
-            <li class="list-group-item">
-                <small> Created by: <a class="text-capitalize fw-bolder" href="#"> </a>
-                </small>
-            </li>
-        </ul>
         </div>
     </div>
-
-</div>
-
-
-</div>
+    <!-- [ Main Content ] end -->
 
 {% endblock content %}
+
+<!-- Specific Page JS goes HERE  -->
+{% block javascripts %}{% endblock javascripts %}

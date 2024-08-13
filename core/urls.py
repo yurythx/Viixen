@@ -17,8 +17,9 @@ urlpatterns = [
     path("articles/", include("apps.articles.urls")),
    
 
-    path('summernote/', include('django_summernote.urls')),
-    url(r'^tinymce/', include('tinymce.urls')),
+    
+    path('tinymce/', include('tinymce.urls')),
+    
     
 ]
 

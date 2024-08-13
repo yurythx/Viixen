@@ -1,10 +1,11 @@
 
 from django.shortcuts import redirect
-from apps.articles.models import Article, Page
+from apps.articles.forms import ArticleForm
+from apps.articles.models import Article
 from django.db.models import Q
 from django.contrib.auth.models import User
 from django.http import Http404
-from django.views.generic import ListView, DeleteView
+from django.views.generic import ListView, DeleteView, UpdateView, CreateView, DetailView
 
 PER_PAGE = 6
 
@@ -59,6 +60,36 @@ class CreatedByListView(ArticleListView):
         })
 
         return super().get(request, *args, **kwargs)
+    
+
+
+class ArticleDetails(DetailView):
+    
+    template_name = 'articles/article-details.html'#direcionando para o template
+    model = Article #model usado para preencher 
+
+    context_object_name = 'article'
+
+    
+
+    
+class ArticleCreate(CreateView):
+
+    model = Article
+    form_class = ArticleForm
+    #fields = ['titulo_post', 'excerto_post', 'conteudo_post', 'autor_post', 'categoria_post', 'imagem_post']
+    template_name = 'articles/new-article.html'
+    success_url ="/"
+    
+    
+        
+class ArticleUpdateView(UpdateView):
+    
+    model = Article
+    form_class = ArticleForm
+    #fields = ['titulo_post', 'excerto_post', 'conteudo_post', 'autor_post', 'categoria_post', 'imagem_post']
+    template_name = 'articles/edit-article.html'
+    success_url ="/"    
 
 
 class CategoryListView(ArticleListView):
@@ -119,26 +150,16 @@ class SearchListView(ArticleListView):
         return super().get(request, *args, **kwargs)
 
 
-class PageDetailView(DeleteView):
-    model = Page
-    template_name = 'articles/pages/page.html'
-    slug_field = 'slug'
-    context_object_name = 'page'
 
-    def get_context_data(self, **kwargs):
-        ctx = super().get_context_data(**kwargs)
-        print(ctx)
-        single_page = self.get_object()
-        ctx['page_title'] = f'{single_page.title} - Página -'
-        return ctx
-
-    def get_queryset(self):
-        return super().get_queryset().filter(is_published=True)
+class ArticleDeleteView(DeleteView):  
+    model = Article  
+    template_name = 'articles/delete-article.html'
+    success_url ="/"
 
 
 class ArticleDetailView(DeleteView):
     model = Article
-    template_name = 'articles/pages/article.html'
+    template_name = 'articles/delete-article.html'
     context_object_name = 'article'
 
     def get_context_data(self, **kwargs):

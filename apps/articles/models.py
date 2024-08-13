@@ -2,32 +2,15 @@ from django.db import models
 from apps.utils.rands import slugify_new
 from django.contrib.auth.models import User
 #from apps.utils.images import resize_image
+from tinymce.models import HTMLField
 #from tinymce import HTMLField
-from django_summernote.models import AbstractAttachment
+
 from django.urls import reverse
 
 
 class ArticleManager(models.Manager):
     def get_published(self):
         return self.filter(is_published=True).order_by('-id')
-
-
-class ArticleAttachment(AbstractAttachment):
-    def save(self, *args, **kwargs):
-        if not self.name:
-            self.name == self.file.name
-
-        current_file_name = str(self.file.name)
-        super_save = super().save(*args, **kwargs)
-        file_changed = False
-
-        if self.file:
-            file_changed = current_file_name != self.file.name
-
-        #if file_changed:
-        #    resize_image(self.file, 900, optimize=True, quality=70)
-
-        return super_save
 
 
 class Tags(models.Model):
@@ -68,31 +51,6 @@ class Category(models.Model):
         return self.name
 
 
-class Page(models.Model):
-    title = models.CharField(max_length=100)
-    slug = models.SlugField(
-        unique=True, max_length=200, default=None, null=True, blank=True
-    )
-    is_published = models.BooleanField(
-        default=True,
-        help_text='Marque essa opção para exibir a página.'
-    )
-    content = models.TextField()
-
-    def get_absolute_url(self):
-        if not self.is_published:
-            return reverse('articles:index')
-
-        return reverse('articles:page', args=(self.slug,))
-
-    def save(self, *args, **kwargs):
-        if not self.slug:
-            self.slug = slugify_new(self.title)
-        return super().save(*args, **kwargs)
-
-    def __str__(self) -> str:
-        return self.title
-
 
 class Article(models.Model):
     class Meta:
@@ -110,8 +68,8 @@ class Article(models.Model):
         default=False,
         help_text='Marque essa opção para exibir a página.'
     )
-    #content = HTMLField()
-    content = models.TextField()
+    content = HTMLField()
+    
     cover = models.ImageField(
         upload_to='articles/%Y/%m', blank=True, default=''
     )
@@ -155,8 +113,7 @@ class Article(models.Model):
         if self.cover:
             cover_changed = current_cover_name != self.cover.name
 
-        #if cover_changed:
-        #    resize_image(self.cover, 900, optimize=True, quality=70)
+    
 
         def __str__(self):
             return self.title 
