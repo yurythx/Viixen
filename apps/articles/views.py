@@ -22,55 +22,12 @@ class ArticleListView(ListView):
         return context
 
 
-class CreatedByListView(ArticleListView):
-    def __init__(self, **kwargs) -> None:
-        super().__init__(**kwargs)
-        self._temp_context = {}
-
-    def get_context_data(self, **kwargs):
-        ctx = super().get_context_data(**kwargs)
-        user = self._temp_context['user']
-        user_full_name = user.username
-
-        if user.first_name:
-            user_full_name = f'{user.first_name} {user.last_name}'
-        page_title = 'Artigos de ' + user_full_name + ' - '
-
-        ctx.update({
-            'page_title': page_title,
-        })
-
-        return ctx
-
-    def get_queryset(self):
-        qs = super().get_queryset()
-        qs = qs.filter(created_by__pk=self._temp_context['user'].pk)
-        return qs
-
-    def get(self, request, *args, **kwargs):
-        _id = self.kwargs.get('_id')
-        user = User.objects.filter(pk=_id).first()
-
-        if user is None:
-            raise Http404
-
-        self._temp_context.update({
-            '_id': _id,
-            'user': user,
-        })
-
-        return super().get(request, *args, **kwargs)
-    
-
-
 class ArticleDetails(DetailView):
     
     template_name = 'articles/article-details.html'#direcionando para o template
     model = Article #model usado para preencher 
 
     context_object_name = 'article'
-
-    
 
     
 class ArticleCreate(CreateView):
@@ -81,14 +38,13 @@ class ArticleCreate(CreateView):
     template_name = 'articles/new-article.html'
     success_url ="/"
     
-    
-        
+            
 class ArticleUpdateView(UpdateView):
     
     model = Article
     form_class = ArticleForm
     #fields = ['titulo_post', 'excerto_post', 'conteudo_post', 'autor_post', 'categoria_post', 'imagem_post']
-    template_name = 'articles/edit-article.html'
+    template_name = 'articles/update-article.html'
     success_url ="/"    
 
 
@@ -121,55 +77,34 @@ class TagListView(ArticleListView):
 
 
 class SearchListView(ArticleListView):
-    def __init__(self, *agrs, **kwargs) -> None:
-        super().__init__(*agrs, **kwargs)
-        self._search_value = ''
 
-    def setup(self, request, *args, **kwargs) -> None:
-        self._search_value = request.GET.get('search').strip()
-        return super().setup(request, *args, **kwargs)
+    template_name = 'articles/search-list.html'#direcionando para o template
 
     def get_queryset(self):
-        qs = super().get_queryset().filter(
-            Q(title__icontains=self._search_value) |
-            Q(exerpt__icontains=self._search_value) |
-            Q(content__icontains=self._search_value)
-        )[0:PER_PAGE]
+        qs = super().get_queryset() #começa a fazer a busca
+
+        search = self.request.GET.get('search') # usa o argumento search referenciado no html no label da busca
+
+        if not search: # se a busca retornar vazia
+            return qs # retorna qs vazio
+
+        qs = qs.filter( # fazendo filtro no campo de busca
+
+            # os campos abaixo fazem a busca pelos campo especificados no models
+
+           Q(title__icontains=search) |
+           Q(exerpt__icontains=search) |
+           Q(content__icontains=search) 
+           
+
+        )
+
         return qs
-
-    def get_context_data(self, **kwargs):
-        ctx = super().get_context_data(**kwargs)
-
-        ctx['page_title'] = f'{self._search_value[:20]} - Search -'
-        ctx['search_value'] = self._search_value
-        return ctx
-
-    def get(self, request, *args, **kwargs):
-        if self._search_value == '':
-            return redirect('articles:index_articles')
-        return super().get(request, *args, **kwargs)
-
-
 
 class ArticleDeleteView(DeleteView):  
     model = Article  
     template_name = 'articles/delete-article.html'
     success_url ="/"
-
-
-class ArticleDetailView(DeleteView):
-    model = Article
-    template_name = 'articles/delete-article.html'
-    context_object_name = 'article'
-
-    def get_context_data(self, **kwargs):
-        ctx = super().get_context_data(**kwargs)
-        single_article = self.get_object()
-        ctx['page_title'] = f'{single_article.title} - article -'
-        return ctx
-
-    def get_queryset(self):
-        return super().get_queryset().filter(is_published=True)    
 
 
 

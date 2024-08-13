@@ -4,12 +4,8 @@ from apps.articles import views
 app_name = 'articles'
 
 urlpatterns = [
-    path('', views.ArticleListView.as_view(), name='index_articles'),
-    #path('articles/<slug:slug>/', views.ArticleDetailView.as_view(), name='article'),
-    
+    path('', views.ArticleListView.as_view(), name='index_articles'),  
     path('articles/<slug:slug>/', views.ArticleDetails.as_view(), name='article-details'),
-     
-    path('created_by/<int:_id>/',views.CreatedByListView.as_view(), name='created_by'),
     path('new-article/',views.ArticleCreate.as_view(), name='new-article'),
     path('update-article/<slug:slug>/', views.ArticleUpdateView.as_view(), name='update-article'),
     path('delete-article/<slug:slug>/', views.ArticleDeleteView.as_view(), name='delete-article'),
