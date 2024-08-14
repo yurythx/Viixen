@@ -67,7 +67,7 @@
                                                             <i class="fa fa-book" aria-hidden="true"></i>
                                                         </td>
                                                         <td>
-                                                            <h6 class="mb-1"><a href="{% url 'articles:article-details' article.slug %}">Titulo: {{ article.title }}</a></h6>
+                                                            <a href="{% url 'articles:article-details' article.slug %}">{{ article.title }} </a>
                                                             <p class="m-0">Categoria: {{ article.category }}</p>
                                                         </td>
                                                         <td>

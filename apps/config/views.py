@@ -1,5 +1,7 @@
 
 from django import template
+from django.contrib.auth.models import User
+from django.views.generic import ListView, DeleteView, UpdateView, CreateView, DetailView
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, HttpResponseRedirect
 from django.template import loader
@@ -20,6 +22,17 @@ def lista_usuarios(request):
     html_template = loader.get_template('config/lista-usuarios.html')
     return HttpResponse(html_template.render(context, request))
 
+
+class ProfileListView(ListView):
+    template_name = 'articles/profile.html'
+    queryset = User.objects.get_queryset()
+    #paginate_by = PER_PAGE
+    context_object_name = 'users'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['name'] = 'name -'
+        return context
 
 @login_required(login_url="/login/")
 

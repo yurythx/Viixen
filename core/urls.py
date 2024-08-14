@@ -7,6 +7,7 @@ from django.conf.urls.static import static
 
 urlpatterns = [
     path('admin/', admin.site.urls),          # Django admin route
+    #path('accounts/', include('django.contrib.auth.urls')),
     path("", include("apps.authentication.urls")), # Auth routes - login / register
 
     # ADD nova Routes AQUI

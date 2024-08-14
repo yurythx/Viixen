@@ -3,14 +3,14 @@ from apps.utils.rands import slugify_new
 from django.contrib.auth.models import User
 #from apps.utils.images import resize_image
 from tinymce.models import HTMLField
-#from tinymce import HTMLField
-
+#from django_summernote.models import AbstractAttachment
 from django.urls import reverse
 
 
 class ArticleManager(models.Manager):
     def get_published(self):
         return self.filter(is_published=True).order_by('-id')
+
 
 
 class Tags(models.Model):
@@ -69,7 +69,6 @@ class Article(models.Model):
         help_text='Marque essa opção para exibir a página.'
     )
     content = HTMLField()
-    
     cover = models.ImageField(
         upload_to='articles/%Y/%m', blank=True, default=''
     )
@@ -113,7 +112,8 @@ class Article(models.Model):
         if self.cover:
             cover_changed = current_cover_name != self.cover.name
 
-    
+        #if cover_changed:
+        #    resize_image(self.cover, 900, optimize=True, quality=70)
 
         def __str__(self):
             return self.title 
