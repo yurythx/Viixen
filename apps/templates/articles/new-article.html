@@ -2,6 +2,8 @@
 
 {% extends "layouts/base.html" %}
 
+{% load crispy_forms_tags %}
+
 {% block title %} Page Blank {% endblock %} 
 
 <!-- Specific CSS goes HERE -->
@@ -9,69 +11,71 @@
 
 {% block content %}
 
-    <!-- [ Main Content ] start -->
-    <div class="pcoded-main-container">
-        <div class="pcoded-wrapper">
-            <div class="pcoded-content">
-                <div class="pcoded-inner-content">
-                    <!-- [ breadcrumb ] start -->
-                    <div class="page-header">
-                        <div class="page-block">
-                            <div class="row align-items-center">
-                                <div class="col-md-12">
-                                    <div class="page-header-title">
-                                        <h5 class="m-b-10">Sample Page</h5>
-                                    </div>
-                                    <ul class="breadcrumb">
-                                        <li class="breadcrumb-item"><a href="/"><i class="feather icon-home"></i></a></li>
-                                        <li class="breadcrumb-item"><a href="javascript:">Sample Page</a></li>
-                                    </ul>
+   <!-- [ Main Content ] start -->
+   <div class="pcoded-main-container">
+    <div class="pcoded-wrapper">
+
+        <div class="pcoded-content">
+            <div class="pcoded-inner-content">
+                <!-- [ breadcrumb ] start -->
+                <div class="page-header">
+                    <div class="page-block">
+                        <div class="row align-items-center">
+                            <div class="col-md-12">
+                                <div class="page-header-title">
+                                    <h5 class="m-b-10">Form Elements</h5>
                                 </div>
+                                <ul class="breadcrumb">
+                                    <li class="breadcrumb-item"><a href="/"><i class="feather icon-home"></i></a></li>
+                                    <li class="breadcrumb-item"><a href="javascript:">Form Componants</a></li>
+                                    <li class="breadcrumb-item"><a href="javascript:">Form Elements</a></li>
+                                </ul>
                             </div>
                         </div>
                     </div>
-                    <!-- [ breadcrumb ] end -->
-                    <div class="main-body">
-                        <div class="page-wrapper">
-                            <!-- [ Main Content ] start -->
-                            <div class="row">
-                                <div class="col-sm-12">
-                                    <div class="card">
-                                        <div class="card-header">
-                                            <h5>Hello card</h5>
+                </div>
+                <!-- [ breadcrumb ] end -->
+                <div class="main-body">
+                    <div class="page-wrapper">
+                        <!-- [ Main Content ] start -->
+                        <div class="row">
+                            <div class="col-sm-12">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h5>Basic Componant</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <h5>Form controls</h5>
+                                        <hr>
+                                        <div class="row">
+                                            
+                                            <div class="col-md-12">
+                                                <form method="POST" enctype="multipart/form-data" id="form">
+                                                    {% csrf_token %}
+                                                   
+                                                    {{ form|crispy }}
+                                                    <button type="submit" class="btn btn-success">Salvar</button>                                                    
+                                                </form>
+                                               
+                                            </div>
                                         </div>
-                                        <div class="card-block">
-                                            <form method="POST" enctype="multipart/form-data" id="form">
-
-                                                <div class="form-group">
-                                                        
-                                                       
-                                                    <div class="row">
-                                                       
-                                                                        {% csrf_token %}
-                                                                        
-                                                                        {{ form.as_p }}
-                            
-                                                        
-                                                    </div>
-                            
-                            
-                                                    <button type="submit" class="btn btn-success">Salvar</button>
-                                                
-                                                </div>    
-                                            </form>    
-                                        </div>
+                                        
+                                       
                                     </div>
                                 </div>
+                               
+                                            
                             </div>
-                            <!-- [ Main Content ] end -->
                         </div>
+                        <!-- [ Main Content ] end -->
                     </div>
                 </div>
             </div>
         </div>
+        
     </div>
-    <!-- [ Main Content ] end -->
+</div>
+<!-- [ Main Content ] end -->
 
 {% endblock content %}
 

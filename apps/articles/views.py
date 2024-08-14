@@ -34,7 +34,6 @@ class ArticleCreate(CreateView):
 
     model = Article
     form_class = ArticleForm
-    #fields = ['titulo_post', 'excerto_post', 'conteudo_post', 'autor_post', 'categoria_post', 'imagem_post']
     template_name = 'articles/new-article.html'
     success_url ="/"
     
@@ -43,7 +42,6 @@ class ArticleUpdateView(UpdateView):
     
     model = Article
     form_class = ArticleForm
-    #fields = ['titulo_post', 'excerto_post', 'conteudo_post', 'autor_post', 'categoria_post', 'imagem_post']
     template_name = 'articles/update-article.html'
     success_url ="/"    
 
