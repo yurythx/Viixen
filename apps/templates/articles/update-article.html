@@ -1,5 +1,7 @@
 {% extends "layouts/base.html" %}
 
+{% load crispy_forms_tags %}
+
 {% block title %} Page Blank {% endblock %} 
 
 <!-- Specific CSS goes HERE -->
@@ -46,9 +48,9 @@
                                                         <div class="row">
                                                         {% csrf_token %}
                                                        
-                                                        {{ form.as_p }}   
+                                                        {{ form|crispy }}  
                                                         
-                                                        {{ article.content|safe }}
+                                                       
                                                         
                                                         </div>
                             

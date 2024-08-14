@@ -97,7 +97,7 @@ class Article(models.Model):
 
     def get_absolute_url(self):
         if not self.is_published:
-            return reverse('articles:index')
+            return reverse('articles:index_articles')
 
         return reverse('articles:article', args=(self.slug,))
 

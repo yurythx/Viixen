@@ -45,8 +45,8 @@
                                                 {% for article in articles %}<!-- a varialvel post faz referencia ao que deve ser usado no html e o pots ta sendo trazido da viewr com a pesquisa--> 
                                                 <!-- Blog Posts Section -->
                                             
-                                                    <a href="{{ article.get_absolute_url }}">{{ article.title }} </a>
                                                     
+                                                  
                                                     <a href="{% url 'articles:article-details' article.slug %}">{{ article.title }} </a> 
                                                                 
     

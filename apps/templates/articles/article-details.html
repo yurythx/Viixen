@@ -3,10 +3,13 @@
 
 {% extends "layouts/base.html" %}
 
-{% block title %} Page Blank {% endblock %} 
+{% block title %} Detalhes {% endblock %} 
 
 <!-- Specific CSS goes HERE -->
 {% block stylesheets %}{% endblock stylesheets %}
+
+
+{% block content %}
 
 
 
@@ -22,11 +25,11 @@
                             <div class="row align-items-center">
                                 <div class="col-md-12">
                                     <div class="page-header-title">
-                                        <h5 class="m-b-10">Sample Page</h5>
+                                     
                                     </div>
                                     <ul class="breadcrumb">
                                         <li class="breadcrumb-item"><a href="/"><i class="feather icon-home"></i></a></li>
-                                        <li class="breadcrumb-item"><a href="javascript:">Sample Page</a></li>
+                                        <li class="breadcrumb-item"><a href="javascript:">Detalhes</a></li>
                                     </ul>
                                 </div>
                             </div>
@@ -36,30 +39,34 @@
                     <div class="main-body">
                         <div class="page-wrapper">
                             <!-- [ Main Content ] start -->
-                            <article class="article">
+                            <div class="row">
+                                <div class="col-sm-12">
+                                    <div class="card">
+                                        <div class="card-header">
+                                            <h5>Detalhes do Artigo</h5>
+                                        </div>
+                                        <div class="card-block">
+                                           
+                                                
+                                        <h2 class="title">{{ article.title }}</h2>
+                                        {{ article.content|safe }}
+                                        
+                                        <ul>
+                                            <li class="d-flex align-items-center"><i class="bi bi-person"></i> <a href="#">#</a></li>
+                                            <li class="d-flex align-items-center"><i class="bi bi-clock"></i> <a href="#"><time datetime="2020-01-01">{{ post.data_post }}</time></a></li>
+                                            <li class="d-flex align-items-center"><i class="bi bi-chat-dots"></i> <a href="#">#</a></li>
+                                        </ul>
 
-
-                            {% block content %}
-
-                            <h2 class="title">{{ article.title }}</h2>
-                            {{ article.content|safe }}
-                            
-                            <ul>
-                                <li class="d-flex align-items-center"><i class="bi bi-person"></i> <a href="#">#</a></li>
-                                <li class="d-flex align-items-center"><i class="bi bi-clock"></i> <a href="#"><time datetime="2020-01-01">{{ post.data_post }}</time></a></li>
-                                <li class="d-flex align-items-center"><i class="bi bi-chat-dots"></i> <a href="#">#</a></li>
-                              </ul>
-
-                             
-                            {% endblock %}  
-                            {% if user.is_authenticated %}
-                
-                            <a href="{% url 'new-article' %}" class="btn btn-outline-dark">Novo Post</a>
-                            <a href="{% url 'update-article' article.slug %}" class="btn btn-outline-dark">Editar</a>
-                            <a href="{% url 'delete-article' article.slug %}" class="btn btn-outline-dark">Deletar</a>
-
-                            {% endif %}  
-                        </div>
+                                        <a href="{% url 'articles:new-article' %}" class="btn btn-outline-dark">Novo Post</a>
+                                        <a href="{% url 'articles:update-article' article.slug %}" class="btn btn-outline-dark">Editar</a>
+                                        <a href="{% url 'articles:delete-article' article.slug %}" class="btn btn-outline-dark">Deletar</a>
+                                        
+                                                    
+                                                    
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                             <!-- [ Main Content ] end -->
                         </div>
                     </div>
@@ -69,7 +76,9 @@
     </div>
     <!-- [ Main Content ] end -->
 
+   
 
+    {% endblock %} 
 
 <!-- Specific Page JS goes HERE  -->
 {% block javascripts %}{% endblock javascripts %}

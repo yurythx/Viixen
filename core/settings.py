@@ -48,7 +48,8 @@ INSTALLED_APPS = [
     # TinyMCE
     'tinymce',
 
-
+    'crispy_forms',
+    'crispy_bootstrap5',
     
     
     'apps.home',  # Enable the inner home (home)
@@ -163,6 +164,8 @@ STATICFILES_DIRS = (
 #############################################################
 #############################################################
 
+CRISPY_ALLOWED_TEMPLATE_PACKS = 'bootstrap5'
+CRISPY_TEMPLATE_PACK = 'bootstrap5'
 
 
 
