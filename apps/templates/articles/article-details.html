@@ -53,11 +53,11 @@
                                         
                                         <ul>
                                             <li class="d-flex align-items-center"><i class="bi bi-person"></i> <a href="#">#</a></li>
-                                            <li class="d-flex align-items-center"><i class="bi bi-clock"></i> <a href="#"><time datetime="2020-01-01">{{ post.data_post }}</time></a></li>
+                                            <li class="d-flex align-items-center"><i class="bi bi-clock"></i> <a href="#"><time datetime="2020-01-01">{{ articles.created_at }}</time></a></li>
                                             <li class="d-flex align-items-center"><i class="bi bi-chat-dots"></i> <a href="#">#</a></li>
                                         </ul>
 
-                                        <a href="{% url 'articles:new-article' %}" class="btn btn-outline-dark">Novo Post</a>
+                                        <a href="{% url 'articles:new-article' %}" class="btn btn-outline-dark">Novo Artigo</a>
                                         <a href="{% url 'articles:update-article' article.slug %}" class="btn btn-outline-dark">Editar</a>
                                         <a href="{% url 'articles:delete-article' article.slug %}" class="btn btn-outline-dark">Deletar</a>
                                         

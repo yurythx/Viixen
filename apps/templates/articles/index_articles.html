@@ -9,81 +9,90 @@
 
 {% block content %}
 
-    <!-- [ Main Content ] start -->
-    <div class="pcoded-main-container">
+
+                          
+
+                                        
+    <section class="pcoded-main-container">
         <div class="pcoded-wrapper">
+
             <div class="pcoded-content">
                 <div class="pcoded-inner-content">
-                    <!-- [ breadcrumb ] start -->
-                    <div class="page-header">
-                        <div class="page-block">
-                            <div class="row align-items-center">
-                                <div class="col-md-12">
-                                    <div class="page-header-title">
-                                        <h5 class="m-b-10">Sample Page</h5>
-                                    </div>
-                                    <ul class="breadcrumb">
-                                             
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- [ breadcrumb ] end -->
+                   
                     <div class="main-body">
                         <div class="page-wrapper">
                             <!-- [ Main Content ] start -->
-                            <div class="row">
+                           
                                 <div class="col-sm-12">
                                     <div class="card">
-                                        <div class="card-header ">
-                                            <h5>Hello card</h5>
+                                        <div class="card-header">
+                                            <h5>Lista de Artigos</h5>
                                         </div>
                                         <div class="card-block">
-                                                                       
-                                                <!-- FOR LOOP -->
-                                                {% for article in articles %}<!-- a varialvel post faz referencia ao que deve ser usado no html e o pots ta sendo trazido da viewr com a pesquisa--> 
-                                                <!-- Blog Posts Section -->
-                                            
-                                                    
-                                                  
-                                                    <a href="{% url 'articles:article-details' article.slug %}">{{ article.title }} </a> 
-                                                                
-    
-                                                    <ul class="list-group list-group-flush">
-                                                        <li class="list-group-item">
-                                                            <small> Created At:  </small>
-                                                        </li>
-                                                        <li class="list-group-item">
-                                                            <small> Last Modified At: </small>
-                                                        </li>
-                                                        <li class="list-group-item">
-                                                            <small> Created by: <a class="text-capitalize fw-bolder" href="#"> </a>
-                                                            </small>
-                                                        </li>
-                                                    </ul>
-    
-                                            
-    
-    
-    
-    
-    
-                                                <!--/FOR LOOP-->
-                                                {% endfor %}
-                                            <!-- Blog Pagination Section -->
+                                            <div class="row justify-content-center">
+                                                <div class="col-sm-6">
+                                                    <form action="{% url 'articles:search' %}">
+                                                        <input type="text" id="icon-search" class="form-control mb-4" 
+                                                            placeholder="Buscar . . " name="search" value="{{ request.GET.search }}" >
+                                                       
+                                                    </form>
+                                                   
+                                                </div>
+                                            </div>
+                                            <div class="i-main" id="icon-wrapper"></div>
                                         </div>
+
+                                        <!-- [ Main Content ] start -->
+                                    
+                                            <div class="col-xl-12">
+                                                <div class="card">
+                                                    
+                                                    <div class="card-block table-border-style">
+                                                        <div class="table-responsive">
+                                                        <!-- FOR LOOP -->
+                                                        {% for article in articles %}<!-- a varialvel post faz referencia ao que deve ser usado no html e o pots ta sendo trazido da viewr com a pesquisa--> 
+                                                        <!--  Articles Section -->
+                                                        <table class="table table-hover">
+                                                        
+                                                            <tr class="unread">
+                                                                <td>
+                                                                    <i class="fa fa-book" aria-hidden="true"></i>
+                                                                </td>
+                                                                <td>
+                                                                    <a href="{% url 'articles:article-details' article.slug %}"><i class="fas fa-circle text-c-green f-10 m-r-15"></i>{{ article.title }} </a>
+                                                                    <p class="m-0">Categoria: {{ article.category }}</p>
+                                                                </td>
+                                                                <td>
+                                                                    <h6 class="text-muted">{{ article.created_at }}</h6>
+                                                                            Criado por : {{ article.created_by }}
+                                                                </td>
+                                                                <td>
+                                                                    <a href="{% url 'articles:update-article' article.slug %}"class="label theme-bg2 text-white f-12">Editar</a>
+            
+                                                                    <a href="{% url 'articles:delete-article' article.slug %}"class="label theme-bg text-white f-12">Apagar</a>
+                                                                </td>
+                                                            </tr>
+                                                        </table>        
+                                    
+                                                        <!--/FOR LOOP-->
+                                                        {% endfor %}
+                                                        <!-- Articles Section --> 
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                                    
+                                    
+                                        <!-- [ Main Content ] end -->
+
+
                                     </div>
                                 </div>
-                            </div>
+                         
                             <!-- [ Main Content ] end -->
-                        </div>
+                        </div>        
                     </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <!-- [ Main Content ] end -->
 
 {% endblock content %}
 

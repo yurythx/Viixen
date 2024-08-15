@@ -17,12 +17,10 @@
                         <div class="page-block">
                             <div class="row align-items-center">
                                 <div class="col-md-12">
-                                    <div class="page-header-title">
-                                        <h5 class="m-b-10">Sample Page</h5>
-                                    </div>
+                                    
                                     <ul class="breadcrumb">
                                         <li class="breadcrumb-item"><a href="/"><i class="feather icon-home"></i></a></li>
-                                        <li class="breadcrumb-item"><a href="javascript:">Sample Page</a></li>
+                                        <li class="breadcrumb-item"><a href="javascript:">Deletar</a></li>
                                     </ul>
                                 </div>
                             </div>
@@ -32,12 +30,19 @@
                     <div class="main-body">
                         <div class="page-wrapper">
                             <!-- [ Main Content ] start -->
-                            <form method="post" action="{% url 'articles:article-details' article.slug %}">
-                                {% csrf_token %}
-                                    
-                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
-                                <button type="submit" class="btn btn-danger">Excluir</button>
-                            </form>
+
+                            <div class="pcoded-content">
+                                <h6 class="text-muted"><i
+                                    class="feather icon-cpu"></i>
+                                    Tem certeza que deseja deletar o artigo
+                                    {{ article.title }}</h6>
+                                   
+                                <form action="{% url 'articles:delete-article' article.slug %}" method="POST">
+                                    {% csrf_token %}
+                                    <input type="submit" class="btn btn-danger" value='Deletar Artigo ?'>
+                                </form>
+                            </div>
+                            
                             <!-- [ Main Content ] end -->
                         </div>
                     </div>

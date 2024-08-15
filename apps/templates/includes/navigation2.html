@@ -21,17 +21,7 @@
                 
             </li>
         </ul>
-        <ul class="navbar-nav ml-auto">
-
-            <li class="nav-item dropdown">
-                <a class="dropdown-toggle" href="javascript:" data-toggle="dropdown">Menu</a>
-                <ul class="dropdown-menu">
-                    <li><a class="dropdown-item" href="javascript:">Action</a></li>
-                    <li><a class="dropdown-item" href="javascript:">Another action</a></li>
-                    <li><a class="dropdown-item" href="javascript:">Something else here</a></li>
-                </ul>
-            </li>
-        </ul>
+       
 
         <ul class="navbar-nav ml-auto">
 
@@ -66,9 +56,9 @@
                             </a>
                         </div>
                         <ul class="pro-body">
-                            <li><a href="/profile.html" class="dropdown-item"><i class="feather icon-settings"></i>
+                            <li><a href="{% url 'index_config' %}" class="dropdown-item"><i class="feather icon-settings"></i>
                                 Settings</a></li>
-                            <li><a href="/profile.html" class="dropdown-item"><i class="feather icon-user"></i>
+                            <li><a href="{% url 'profile' %}" class="dropdown-item"><i class="feather icon-user"></i>
                                 Profile</a></li>
                             <li><a href="{% url 'logout' %}" class="dropdown-item">
                                 <i class="feather icon-lock"></i> Logout</a>
