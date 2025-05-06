@@ -1,0 +1,171 @@
+🗂️ Estrutura Completa por App (Artigos + Mangás)
+ruby
+
+front/
+├── public/
+│   └── images/
+│       ├── logo.png
+│       └── mangas/
+│           └── sample.jpg
+├── src/
+│   ├── apps/
+│   │   ├── core/
+│   │   │   ├── components/
+│   │   │   │   ├── Navbar.tsx
+│   │   │   │   └── Footer.tsx
+│   │   │   └── layout/
+│   │   │       └── MainLayout.tsx
+│   │   ├── articles/
+│   │   │   ├── components/
+│   │   │   │   ├── ArticleCard.tsx
+│   │   │   │   └── ArticleList.tsx
+│   │   │   ├── pages/
+│   │   │   │   ├── index.tsx         # /articles
+│   │   │   │   └── [slug].tsx        # /articles/:slug
+│   │   │   ├── data/
+│   │   │   │   └── articles.json
+│   │   │   ├── types/
+│   │   │   │   └── article.ts
+│   │   │   └── styles/
+│   │   │       └── articles.module.css
+│   │   ├── mangas/
+│   │   │   ├── components/
+│   │   │   │   ├── MangaCard.tsx
+│   │   │   │   ├── MangaList.tsx
+│   │   │   │   └── MangaReader.tsx
+│   │   │   ├── pages/
+│   │   │   │   ├── index.tsx         # /mangas
+│   │   │   │   └── [slug].tsx        # /mangas/:slug
+│   │   │   ├── data/
+│   │   │   │   └── mangas.json
+│   │   │   ├── types/
+│   │   │   │   └── manga.ts
+│   │   │   └── styles/
+│   │   │       └── mangas.module.css
+│   ├── pages/
+│   │   ├── index.tsx                # Página inicial → redireciona ou mostra opções
+│   │   ├── articles/
+│   │   │   └── [slug].tsx           # Importa da app de artigos
+│   │   ├── mangas/
+│   │   │   └── [slug].tsx           # Importa da app de mangas
+│   │   └── about.tsx                # Sobre o site
+│   ├── styles/
+│   │   └── globals.css
+│   ├── utils/
+│   │   └── slugify.ts
+│   ├── types/
+│   │   └── index.ts                 # Tipos globais e reexports
+├── .gitignore
+├── next.config.js
+├── package.json
+├── tsconfig.json
+└── README.md
+
+🔍 Explicação Detalhada
+🔸 public/
+·	Imagens acessíveis publicamente.
+·	Ex: capas de mangás, logo, etc.
+🔸 src/apps/
+Cada subpasta é um "app" com separação de responsabilidades.
+📁 core/
+Componentes e layouts comuns a toda aplicação:
+·	Navbar.tsx: navegação entre "Artigos", "Mangás", etc.
+·	Footer.tsx: rodapé do site.
+·	MainLayout.tsx: layout com Navbar e Footer, usado por todas as páginas.
+📁 articles/
+Funcionalidades relacionadas a artigos.
+·	components/
+·	ArticleCard.tsx: exibe título e resumo.
+·	ArticleList.tsx: lista todos os artigos mockados.
+·	pages/
+·	index.tsx: lista de artigos.
+·	[slug].tsx: artigo completo.
+·	data/articles.json: dados simulados.
+·	types/article.ts: tipos do artigo:
+ts
+CopiarEditar
+export interface Article {
+  id: number;
+  title: string;
+  slug: string;
+  summary: string;
+  content: string;
+}
+
+📁 mangas/
+Funcionalidades relacionadas a leitura de mangás.
+·	components/
+·	MangaCard.tsx: exibe título e imagem.
+·	MangaList.tsx: lista de mangás disponíveis.
+·	MangaReader.tsx: leitor de capítulos (pode exibir páginas em sequência).
+·	pages/
+·	index.tsx: lista de mangás.
+·	[slug].tsx: leitor de mangá (capítulo único ou vários).
+·	data/mangas.json: dados simulados.
+json
+CopiarEditar
+[
+  {
+    "id": 1,
+    "title": "One Code",
+    "slug": "one-code",
+    "cover": "/images/mangas/sample.jpg",
+    "chapters": [
+      {
+        "number": 1,
+        "pages": [
+          "/images/mangas/sample.jpg",
+          "/images/mangas/sample.jpg"
+        ]
+      }
+    ]
+  }
+]
+
+·	types/manga.ts:
+ts
+CopiarEditar
+export interface Chapter {
+  number: number;
+  pages: string[];
+}
+export interface Manga {
+  id: number;
+  title: string;
+  slug: string;
+  cover: string;
+  chapters: Chapter[];
+}
+
+🔸 pages/
+Roteamento principal da aplicação.
+·	index.tsx: redireciona para /articles ou mostra botão para ir para /articles ou /mangas.
+·	about.tsx: sobre o projeto.
+·	articles/[slug].tsx: importação dinâmica da página do app articles.
+·	mangas/[slug].tsx: importação dinâmica da página do app mangas.
+🔸 styles/
+·	globals.css: estilos globais aplicados via _app.tsx.
+🔸 utils/
+·	slugify.ts: transforma título em slug para URL amigável.
+🔸 types/index.ts
+Agrupa os tipos globais:
+ts
+CopiarEditar
+export * from "@/apps/articles/types/article";
+export * from "@/apps/mangas/types/manga";
+
+Arquivos Raiz
+·	.gitignore: ignora node_modules, .next, etc.
+·	next.config.js: configurações personalizadas do Next.
+·	package.json: dependências e scripts.
+·	tsconfig.json: configurações de TypeScript.
+·	README.md: descrição do projeto.
+🔄 Como Tudo Se Conecta
+1.	Usuário acessa /articles → ArticleList mostra artigos de articles.json.
+2.	Clica em um artigo → vai para /articles/meu-artigo, onde ArticleCard + content completo é exibido.
+3.	A mesma estrutura acontece em /mangas.
+4.	Cada página usa MainLayout com Navbar e Footer.
+5.	Tudo é tipado com TypeScript.
+6.	Quando for integrar com DRF:
+·	Troque data/*.json por chamadas API (fetch, axios, ou SWR/React Query).
+

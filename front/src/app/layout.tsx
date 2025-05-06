@@ -1,30 +1,17 @@
-import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
-import './globals.css';
-import Navbar from '@/components/Navbar';
-import { Toaster } from 'react-hot-toast';
-
-const inter = Inter({ subsets: ['latin'] });
-
-export const metadata: Metadata = {
-  title: 'Viixen - Gestão de Projetos e Artigos',
-  description: 'Plataforma de gestão de projetos e artigos',
-};
-
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  return (
-    <html lang="pt-BR">
-      <body className={inter.className}>
-        <Navbar />
-        <main className="min-h-screen bg-gray-50">
-          {children}
-        </main>
-        <Toaster position="top-right" />
-      </body>
-    </html>
-  );
-}
+// app/layout.tsx
+export const metadata = {
+    title: 'MangaVerse',
+    description: 'Portal definitivo para mangás, animes e cultura japonesa',
+  };
+  
+  export default function RootLayout({
+    children,
+  }: {
+    children: React.ReactNode;
+  }) {
+    return (
+      <html lang="pt-BR">
+        <body>{children}</body>
+      </html>
+    );
+  }
