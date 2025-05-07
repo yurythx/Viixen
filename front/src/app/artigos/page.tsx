@@ -1,87 +1,136 @@
 'use client';
 
+import { useEffect, useState } from 'react';
+import { FileText, Filter, Clock, Tag, Plus } from 'lucide-react';
+import Link from 'next/link';
 import Header from './components/Header';
 import Hero from './components/Hero';
 import FeaturedArticles from './components/FeaturedArticles';
-import { useState } from 'react';
-import { FileText, Filter, Clock, Tag } from 'lucide-react';
-import Link from 'next/link';
+import { Article, PaginatedResponse } from '../core/types/models';
+import { articlesService } from '../core/services/api';
+import ArticleCard from '../core/components/articles/ArticleCard';
+import { useAuth } from '../core/contexts/AuthContext';
+import Pagination from '../core/components/ui/Pagination';
+import { useNotification } from '../core/contexts/NotificationContext';
 
 export default function ArtigosPage() {
+  const { isAuthenticated } = useAuth();
+  const { showNotification } = useNotification();
+  const [articles, setArticles] = useState<Article[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalArticles, setTotalArticles] = useState(0);
 
-  const artigos = [
-    {
-      id: 1,
-      title: 'Como Criar um Blog com Next.js',
-      excerpt: 'Um guia completo para criar um blog moderno usando Next.js, Tailwind CSS e TypeScript.',
-      author: 'João Silva',
-      date: '2023-08-15',
-      readTime: '5 min',
-      category: 'Tecnologia',
-      tags: ['Next.js', 'React', 'Web Development'],
-      featured: true
-    },
-    {
-      id: 2,
-      title: 'Introdução ao TypeScript',
-      excerpt: 'Aprenda os conceitos básicos do TypeScript e como ele pode melhorar seu desenvolvimento.',
-      author: 'Maria Souza',
-      date: '2023-07-22',
-      readTime: '8 min',
-      category: 'Programação',
-      tags: ['TypeScript', 'JavaScript', 'Programação'],
-      featured: false
-    },
-    {
-      id: 3,
-      title: 'Tailwind CSS: Guia Definitivo',
-      excerpt: 'Domine o Tailwind CSS e crie interfaces modernas com facilidade.',
-      author: 'Pedro Oliveira',
-      date: '2023-06-10',
-      readTime: '6 min',
-      category: 'Design',
-      tags: ['CSS', 'Tailwind', 'UI/UX'],
-      featured: true
-    },
-    {
-      id: 4,
-      title: 'Os Melhores Mangás de 2023',
-      excerpt: 'Uma lista completa dos mangás mais populares e bem avaliados deste ano.',
-      author: 'Ana Costa',
-      date: '2023-09-05',
-      readTime: '10 min',
-      category: 'Mangá',
-      tags: ['Mangá', 'Anime', 'Cultura Japonesa'],
-      featured: true
-    },
-    {
-      id: 5,
-      title: 'História dos Mangás no Ocidente',
-      excerpt: 'Como os mangás conquistaram o público ocidental e transformaram a indústria de quadrinhos.',
-      author: 'Carlos Mendes',
-      date: '2023-05-18',
-      readTime: '12 min',
-      category: 'Cultura',
-      tags: ['Mangá', 'História', 'Cultura'],
-      featured: false
-    }
-  ];
+  // Buscar artigos da API
+  useEffect(() => {
+    const fetchArticles = async () => {
+      try {
+        setIsLoading(true);
+        const paginatedData = await articlesService.getPaginatedArticles(currentPage);
 
-  const filteredArtigos = filter === 'all'
-    ? artigos
-    : filter === 'featured'
-      ? artigos.filter(artigo => artigo.featured)
-      : artigos.filter(artigo => artigo.category.toLowerCase() === filter);
+        setArticles(paginatedData.results);
+        setTotalArticles(paginatedData.count);
 
-  const searchedArtigos = searchQuery
-    ? filteredArtigos.filter(artigo =>
-        artigo.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        artigo.excerpt.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        artigo.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()))
-      )
-    : filteredArtigos;
+        // Calcular o número total de páginas
+        const pages = Math.ceil(paginatedData.count / 10); // Assumindo 10 itens por página
+        setTotalPages(pages > 0 ? pages : 1);
+
+        setError(null);
+
+        console.log('Artigos carregados:', paginatedData.results);
+        console.log('Total de artigos:', paginatedData.count);
+        console.log('Total de páginas:', pages);
+      } catch (err: any) {
+        console.error('Erro ao buscar artigos:', err);
+        const errorMessage = 'Não foi possível carregar os artigos. Por favor, tente novamente mais tarde.';
+        setError(errorMessage);
+        showNotification('error', errorMessage);
+
+        // Dados de exemplo para desenvolvimento
+        setArticles([
+          {
+            id: 1,
+            title: 'Como Criar um Blog com Next.js',
+            slug: 'como-criar-um-blog-com-nextjs',
+            content: 'Um guia completo para criar um blog moderno usando Next.js, Tailwind CSS e TypeScript.',
+            created_at: '2023-08-15',
+            comments: [],
+            comments_count: 0
+          },
+          {
+            id: 2,
+            title: 'Introdução ao TypeScript',
+            slug: 'introducao-ao-typescript',
+            content: 'Aprenda os conceitos básicos do TypeScript e como ele pode melhorar seu desenvolvimento.',
+            created_at: '2023-07-22',
+            comments: [],
+            comments_count: 0
+          },
+          {
+            id: 3,
+            title: 'Tailwind CSS: Guia Definitivo',
+            slug: 'tailwind-css-guia-definitivo',
+            content: 'Domine o Tailwind CSS e crie interfaces modernas com facilidade.',
+            created_at: '2023-06-10',
+            comments: [],
+            comments_count: 0
+          }
+        ]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchArticles();
+  }, [currentPage, showNotification]);
+
+  // Função para mudar de página
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // Verificar se articles é um array válido
+  const articlesArray = Array.isArray(articles) ? articles : [];
+
+  // Filtrar artigos
+  const filteredArticles = articlesArray.filter(article => {
+    // Se não houver filtro, mostrar todos
+    if (filter === 'all') return true;
+
+    // Implementar lógica de filtro específica para sua aplicação
+    // Por exemplo, filtrar por categoria
+    return article.title.toLowerCase().includes(filter.toLowerCase());
+  });
+
+  // Buscar artigos
+  const searchedArticles = filteredArticles.filter(article => {
+    if (!searchQuery) return true;
+
+    return (
+      article.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      article.content.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  });
+
+  // Enquanto os artigos estão sendo carregados
+  if (isLoading) {
+    return (
+      <>
+        <Header />
+        <Hero />
+        <div className="container mx-auto px-4 py-8 space-y-8">
+          <div className="flex justify-center items-center py-12">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
+          </div>
+        </div>
+      </>
+    );
+  }
 
   return (
     <>
@@ -94,6 +143,15 @@ export default function ArtigosPage() {
           <div className="flex justify-between items-center">
             <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Todos os Artigos</h1>
             <div className="flex items-center gap-2">
+              {isAuthenticated && (
+                <Link
+                  href="/artigos/novo"
+                  className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Novo Artigo
+                </Link>
+              )}
               <div className="relative">
                 <input
                   type="text"
@@ -112,7 +170,6 @@ export default function ArtigosPage() {
                   className="bg-transparent border-none text-gray-700 dark:text-gray-300 focus:ring-0"
                 >
                   <option value="all">Todos</option>
-                  <option value="featured">Destaques</option>
                   <option value="tecnologia">Tecnologia</option>
                   <option value="programação">Programação</option>
                   <option value="design">Design</option>
@@ -123,50 +180,31 @@ export default function ArtigosPage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {searchedArtigos.map(artigo => (
-              <Link href={`/artigos/${artigo.id}`} key={artigo.id}>
-                <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow h-full flex flex-col">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 text-sm text-indigo-600 dark:text-indigo-400 mb-2">
-                      <Tag className="w-4 h-4" />
-                      <span>{artigo.category}</span>
-                      {artigo.featured && (
-                        <span className="bg-indigo-100 dark:bg-indigo-900 text-indigo-800 dark:text-indigo-200 px-2 py-0.5 rounded text-xs ml-2">
-                          Destaque
-                        </span>
-                      )}
-                    </div>
-                    <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-                      {artigo.title}
-                    </h2>
-                    <p className="text-gray-600 dark:text-gray-300 mb-4">
-                      {artigo.excerpt}
-                    </p>
-                    <div className="flex flex-wrap gap-1 mt-2">
-                      {artigo.tags.map((tag, idx) => (
-                        <span
-                          key={idx}
-                          className="text-xs bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 px-2 py-1 rounded"
-                        >
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-                    <span className="text-sm text-gray-500 dark:text-gray-400">
-                      {artigo.author}
-                    </span>
-                    <div className="flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400">
-                      <Clock className="w-4 h-4" />
-                      <span>{artigo.readTime}</span>
-                    </div>
-                  </div>
-                </div>
-              </Link>
-            ))}
-          </div>
+          {searchedArticles.length === 0 ? (
+            <div className="text-center py-12">
+              <p className="text-gray-500 dark:text-gray-400">Nenhum artigo encontrado.</p>
+            </div>
+          ) : (
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {searchedArticles.map(article => (
+                  <ArticleCard key={article.id} article={article} />
+                ))}
+              </div>
+
+              {/* Paginação */}
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={handlePageChange}
+              />
+
+              {/* Informação sobre total de artigos */}
+              <div className="text-center mt-4 text-sm text-gray-500 dark:text-gray-400">
+                Mostrando {articles.length} de {totalArticles} artigos
+              </div>
+            </>
+          )}
         </div>
       </div>
     </>

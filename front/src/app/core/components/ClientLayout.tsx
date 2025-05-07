@@ -1,9 +1,12 @@
 'use client';
 
-import { ReactNode, useState } from 'react';
+import { ReactNode, useState, useEffect } from 'react';
 import Sidebar from './Sidebar';
 import Navbar from './Navbar';
 import { SidebarProvider, useSidebar } from './SidebarProvider';
+import { AuthProvider, useAuth } from '../contexts/AuthContext';
+import { NotificationProvider } from '../contexts/NotificationContext';
+import ErrorBoundary from './ErrorBoundary';
 
 interface ClientLayoutProps {
   children: ReactNode;
@@ -11,21 +14,21 @@ interface ClientLayoutProps {
 
 function LayoutContent({ children }: ClientLayoutProps) {
   const { isCollapsed } = useSidebar();
-  const [isAuthenticated, setIsAuthenticated] = useState(true);
+  const { user, isAuthenticated, logout } = useAuth();
 
   return (
     <div className="flex min-h-screen bg-gray-900">
       <Sidebar
         isAuthenticated={isAuthenticated}
-        user={{
-          name: 'Usuário Teste',
-          email: 'usuario@teste.com'
-        }}
+        user={user ? {
+          name: user.first_name ? `${user.first_name} ${user.last_name}` : user.username,
+          email: user.email
+        } : null}
       />
       <div className={`flex-1 flex flex-col bg-purple-50 dark:bg-gray-900 transition-all duration-300 ${isCollapsed ? 'ml-20' : 'ml-80'}`}>
         <Navbar
           isAuthenticated={isAuthenticated}
-          onToggleAuth={() => setIsAuthenticated(!isAuthenticated)}
+          onToggleAuth={() => isAuthenticated ? logout() : null}
         />
         <main className="flex-1">
           <div className="max-w-7xl mx-auto p-6">
@@ -44,8 +47,14 @@ function LayoutContent({ children }: ClientLayoutProps) {
 
 export default function ClientLayout({ children }: ClientLayoutProps) {
   return (
-    <SidebarProvider>
-      <LayoutContent>{children}</LayoutContent>
-    </SidebarProvider>
+    <ErrorBoundary>
+      <AuthProvider>
+        <NotificationProvider>
+          <SidebarProvider>
+            <LayoutContent>{children}</LayoutContent>
+          </SidebarProvider>
+        </NotificationProvider>
+      </AuthProvider>
+    </ErrorBoundary>
   );
 }

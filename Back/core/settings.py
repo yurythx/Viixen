@@ -7,7 +7,17 @@ from dotenv import load_dotenv
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Carrega variáveis do arquivo .env
-load_dotenv(dotenv_path=BASE_DIR / '.env')
+env_path = BASE_DIR / '.env'
+load_dotenv(dotenv_path=env_path)
+
+# Verificar se o arquivo .env existe
+if not os.path.exists(env_path):
+    print(f"AVISO: Arquivo .env não encontrado em {env_path}")
+
+# Definir SECRET_KEY padrão caso não esteja no .env (apenas para desenvolvimento)
+if not os.getenv('SECRET_KEY'):
+    print("AVISO: SECRET_KEY não encontrada no arquivo .env. Usando chave padrão para desenvolvimento.")
+    os.environ['SECRET_KEY'] = 'django-insecure-default-dev-key-do-not-use-in-production'
 
 # Segurança
 SECRET_KEY = os.getenv('SECRET_KEY')
@@ -44,7 +54,7 @@ INSTALLED_APPS = [
     'django_filters',
     'djoser',
     'drf_yasg',
-    
+
     'axes',
 
     # Apps locais
@@ -216,6 +226,8 @@ SIMPLE_JWT = {
 
 # CORS
 CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3001",
+    "http://127.0.0.1:3001",
     "http://localhost:3000",
     "http://127.0.0.1:3000",
     "http://192.168.29.67:3000",

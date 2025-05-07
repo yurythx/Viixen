@@ -1,8 +1,10 @@
 'use client';
 
-import { LogIn, LogOut, Moon, Sun } from 'lucide-react';
+import { LogIn, LogOut, Moon, Sun, User, UserPlus } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useSidebar } from './SidebarProvider';
+import Link from 'next/link';
+import { useAuth } from '../contexts/AuthContext';
 
 interface NavbarProps {
   isAuthenticated: boolean;
@@ -12,6 +14,7 @@ interface NavbarProps {
 export default function Navbar({ isAuthenticated, onToggleAuth }: NavbarProps) {
   const [darkMode, setDarkMode] = useState(true);
   const { isCollapsed } = useSidebar();
+  const { user } = useAuth();
 
   useEffect(() => {
     const savedTheme = localStorage.getItem('theme');
@@ -52,13 +55,42 @@ export default function Navbar({ isAuthenticated, onToggleAuth }: NavbarProps) {
         >
           {darkMode ? <Sun className="w-6 h-6" /> : <Moon className="w-6 h-6" />}
         </button>
-        <button
-          onClick={onToggleAuth}
-          className="p-2 text-gray-600 dark:text-gray-200 hover:text-purple-600 dark:hover:text-indigo-400 transition rounded-lg hover:bg-purple-50 dark:hover:bg-gray-700"
-          title={isAuthenticated ? "Sair" : "Entrar"}
-        >
-          {isAuthenticated ? <LogOut className="w-6 h-6" /> : <LogIn className="w-6 h-6" />}
-        </button>
+
+        {isAuthenticated ? (
+          <>
+            <Link
+              href="/perfil"
+              className="p-2 text-gray-600 dark:text-gray-200 hover:text-purple-600 dark:hover:text-indigo-400 transition rounded-lg hover:bg-purple-50 dark:hover:bg-gray-700"
+              title="Perfil"
+            >
+              <User className="w-6 h-6" />
+            </Link>
+            <button
+              onClick={onToggleAuth}
+              className="p-2 text-gray-600 dark:text-gray-200 hover:text-purple-600 dark:hover:text-indigo-400 transition rounded-lg hover:bg-purple-50 dark:hover:bg-gray-700"
+              title="Sair"
+            >
+              <LogOut className="w-6 h-6" />
+            </button>
+          </>
+        ) : (
+          <>
+            <Link
+              href="/login"
+              className="p-2 text-gray-600 dark:text-gray-200 hover:text-purple-600 dark:hover:text-indigo-400 transition rounded-lg hover:bg-purple-50 dark:hover:bg-gray-700"
+              title="Entrar"
+            >
+              <LogIn className="w-6 h-6" />
+            </Link>
+            <Link
+              href="/registro"
+              className="p-2 text-gray-600 dark:text-gray-200 hover:text-purple-600 dark:hover:text-indigo-400 transition rounded-lg hover:bg-purple-50 dark:hover:bg-gray-700"
+              title="Registrar"
+            >
+              <UserPlus className="w-6 h-6" />
+            </Link>
+          </>
+        )}
       </div>
     </header>
   );
