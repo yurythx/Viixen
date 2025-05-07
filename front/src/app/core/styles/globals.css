@@ -1,0 +1,23 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 270 50% 98%;
+    --foreground: 270 50% 4.9%;
+  }
+
+  body {
+    @apply bg-purple-50 text-gray-900 antialiased;
+  }
+}
+
+@layer components {
+  .sidebar-link {
+    @apply flex items-center gap-3 p-3 rounded-lg cursor-pointer 
+           hover:bg-purple-100 dark:hover:bg-indigo-900 
+           text-gray-600 dark:text-gray-200 
+           transition-colors duration-200;
+  }
+} 
