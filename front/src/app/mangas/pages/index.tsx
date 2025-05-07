@@ -1,6 +1,6 @@
-import Header from './mangas/components/Header';
-import Hero from './mangas/components/Hero';
-import FeaturedManga from './mangas/components/FeaturedManga';
+import Header from '../components/Header';
+import Hero from '../components/Hero';
+import FeaturedManga from '../components/FeaturedManga';
 
 export default function Home() {
   return (

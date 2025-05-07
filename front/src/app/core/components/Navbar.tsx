@@ -37,7 +37,7 @@ export default function Navbar({ isAuthenticated, onToggleAuth }: NavbarProps) {
   };
 
   return (
-    <header className={`bg-white dark:bg-gray-800 shadow-md flex justify-between items-center transition-all duration-300 ${isCollapsed ? 'ml-20' : 'ml-80'} border-b border-gray-200 dark:border-gray-700`}>
+    <header className="bg-white dark:bg-gray-800 shadow-md flex justify-between items-center transition-all duration-300 border-b border-gray-200 dark:border-gray-700">
       <div className="flex items-center gap-4 p-4">
         {!isCollapsed && (
           <h1 className="text-2xl font-semibold text-purple-600 dark:text-indigo-300">Viixen</h1>
@@ -62,4 +62,4 @@ export default function Navbar({ isAuthenticated, onToggleAuth }: NavbarProps) {
       </div>
     </header>
   );
-} 
+}

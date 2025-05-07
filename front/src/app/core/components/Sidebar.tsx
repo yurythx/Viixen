@@ -39,8 +39,8 @@ interface SidebarProps {
   };
 }
 
-export default function Sidebar({ 
-  isAuthenticated = false, 
+export default function Sidebar({
+  isAuthenticated = false,
   user,
 }: SidebarProps) {
   const pathname = usePathname();
@@ -158,7 +158,7 @@ export default function Sidebar({
   return (
     <motion.aside
       initial={false}
-      animate={{ width: isCollapsed ? '80px' : '280px' }}
+      animate={{ width: isCollapsed ? '80px' : '320px' }}
       className="fixed inset-y-0 left-0 h-screen bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col z-50"
     >
       <div className="p-4 border-b border-gray-200 dark:border-gray-700">
@@ -219,15 +219,15 @@ export default function Sidebar({
       {isAuthenticated && (
         <div className="p-4 border-t border-gray-200 dark:border-gray-700">
           <Link href="/perfil">
-            <motion.div 
+            <motion.div
               whileHover={{ scale: 1.02 }}
               className="flex items-center gap-3 p-3 rounded-lg bg-gray-50 dark:bg-gray-700 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
             >
               <div className="w-10 h-10 rounded-full bg-indigo-100 dark:bg-indigo-900 flex items-center justify-center">
                 {user?.avatar ? (
-                  <img 
-                    src={user.avatar} 
-                    alt={user.name} 
+                  <img
+                    src={user.avatar}
+                    alt={user.name}
                     className="w-full h-full rounded-full object-cover"
                   />
                 ) : (
