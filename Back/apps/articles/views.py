@@ -7,6 +7,7 @@ from .models import Article, Comment, Tag
 from .serializers import ArticleSerializer, CommentSerializer, TagSerializer
 from django.shortcuts import get_object_or_404
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
+from .services import article_service, comment_service
 
 class ArticlePagination(PageNumberPagination):
     page_size = 10
@@ -49,10 +50,11 @@ class ArticleViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['post'])
     def increment_views(self, request, slug=None):
         article = self.get_object()
-        views_count = article.increment_views()
+        # Usar o serviço para incrementar visualizações
+        article_service.view_article(article.id)
         return Response({
             'status': 'success',
-            'views_count': views_count
+            'views_count': article.views_count
         })
 
     @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
@@ -60,18 +62,13 @@ class ArticleViewSet(viewsets.ModelViewSet):
         article = self.get_object()
         user = request.user
 
-        if article.favorites.filter(id=user.id).exists():
-            article.favorites.remove(user)
-            return Response({
-                'status': 'removed from favorites',
-                'is_favorite': False
-            })
-        else:
-            article.favorites.add(user)
-            return Response({
-                'status': 'added to favorites',
-                'is_favorite': True
-            })
+        # Usar o serviço para favoritar/desfavoritar
+        is_favorite = article_service.toggle_favorite_article(article.id, user.id)
+
+        return Response({
+            'status': 'added to favorites' if is_favorite else 'removed from favorites',
+            'is_favorite': is_favorite
+        })
 
     @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
     def favorites(self, request):
@@ -139,26 +136,27 @@ class CommentViewSet(viewsets.ModelViewSet):
     def approve(self, request, pk=None):
         """Aprovar um comentário."""
         comment = self.get_object()
-        comment.is_approved = True
-        comment.is_spam = False
-        comment.save()
+        # Usar o serviço para aprovar o comentário
+        comment_service.approve_comment(comment.id)
         return Response({'status': 'approved'})
 
     @action(detail=True, methods=['post'], permission_classes=[permissions.IsAdminUser])
     def reject(self, request, pk=None):
         """Rejeitar um comentário."""
         comment = self.get_object()
-        comment.is_approved = False
-        comment.save()
+        # Usar o serviço para rejeitar o comentário
+        comment_service.reject_comment(comment.id)
         return Response({'status': 'rejected'})
 
     @action(detail=True, methods=['post'], permission_classes=[permissions.IsAdminUser])
     def mark_as_spam(self, request, pk=None):
         """Marcar um comentário como spam."""
         comment = self.get_object()
-        comment.is_approved = False
+        # Primeiro rejeitar o comentário
+        comment_service.reject_comment(comment.id)
+        # Depois marcar como spam (atualização manual por enquanto)
         comment.is_spam = True
-        comment.save()
+        comment.save(update_fields=['is_spam'])
         return Response({'status': 'marked as spam'})
 
     def perform_create(self, serializer):

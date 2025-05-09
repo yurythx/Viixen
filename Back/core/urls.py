@@ -39,10 +39,6 @@ urlpatterns = [
 
     # App URLs
     path(f'{api_prefix}accounts/', include('apps.accounts.urls')),
-    path(f'{api_prefix}projects/boards/', include('apps.projects.boards.urls')),
-    path(f'{api_prefix}projects/tasks/', include('apps.projects.tasks.urls')),
-    path(f'{api_prefix}projects/teams/', include('apps.projects.teams.urls')),
-    path(f'{api_prefix}projects/comments/', include('apps.projects.comments.urls')),
     path(f'{api_prefix}articles/', include('apps.articles.urls')),
     path(f'{api_prefix}mangas/', include('apps.mangas.urls')),
     path(f'{api_prefix}', include('apps.categories.urls')),

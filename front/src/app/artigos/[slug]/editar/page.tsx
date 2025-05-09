@@ -2,16 +2,16 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '../../../core/contexts/AuthContext';
-import { articlesService } from '../../../core/services/api';
-import { Article } from '../../../core/types/models';
-import ArticleForm from '../../../core/components/articles/ArticleForm';
+import { useAuth } from '../../../../contexts/AuthContext';
+import { articlesService } from '../../../../services/api';
+import { Article } from '../../../../types/article.types';
+import ArticleForm from '../../../../components/articles/ArticleForm';
 import Header from '../../components/Header';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
-import PermissionGuard from '../../../core/components/auth/PermissionGuard';
-import AccessDenied from '../../../core/components/auth/AccessDenied';
-import { useNotification } from '../../../core/contexts/NotificationContext';
+import PermissionGuard from '../../../../components/auth/PermissionGuard';
+import AccessDenied from '../../../../components/auth/AccessDenied';
+import { useNotification } from '../../../../contexts/NotificationContext';
 
 interface EditarArtigoPageProps {
   params: {

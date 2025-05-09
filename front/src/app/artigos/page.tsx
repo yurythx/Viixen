@@ -3,12 +3,12 @@
 import { useEffect, useState } from 'react';
 import { FileText, Filter, Clock, Tag, Plus, Edit, Trash2, MessageSquare } from 'lucide-react';
 import Link from 'next/link';
-import { Article, PaginatedResponse } from '../core/types/models';
-import { articlesService } from '../core/services/api';
-import { useAuth } from '../core/contexts/AuthContext';
-import Pagination from '../core/components/ui/Pagination';
-import { useNotification } from '../core/contexts/NotificationContext';
-import DeleteArticleButton from '../core/components/articles/DeleteArticleButton';
+import { Article } from '../../types/models';
+import { articlesService } from '../../services/api';
+import { useAuth } from '../../contexts/AuthContext';
+import Pagination from '../../components/ui/Pagination';
+import { useNotification } from '../../contexts/NotificationContext';
+import DeleteArticleButton from '../../components/articles/DeleteArticleButton';
 import './styles/ArticleGallery.css';
 
 export default function ArtigosPage() {

@@ -4,9 +4,9 @@ import { useState, useEffect } from 'react';
 import { BookOpen, Star, Filter, Plus } from 'lucide-react';
 import Link from 'next/link';
 import './styles/MangaGallery.css';
-import mangasService, { Manga } from '../core/services/api/mangas.service';
-import { useAuth } from '../core/contexts/AuthContext';
-import { useNotification } from '../core/contexts/NotificationContext';
+import mangasService, { Manga } from '../../services/api/mangas.service';
+import { useAuth } from '../../contexts/AuthContext';
+import { useNotification } from '../../contexts/NotificationContext';
 
 // Interface para os mangás com informações de exibição
 interface DisplayManga {

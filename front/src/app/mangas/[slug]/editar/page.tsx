@@ -4,15 +4,15 @@ import { useState, useEffect, FormEvent, ChangeEvent } from 'react';
 import { ArrowLeft, Upload, Save } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { mangasService } from '../../../core/services/api';
-import { useAuth } from '../../../core/contexts/AuthContext';
-import { useNotification } from '../../../core/contexts/NotificationContext';
+import { mangasService } from '../../../../services/api';
+import { useAuth } from '../../../../contexts/AuthContext';
+import { useNotification } from '../../../../contexts/NotificationContext';
 
 export default function EditarMangaPage({ params }: { params: { slug: string } }) {
   const router = useRouter();
   const { isAuthenticated } = useAuth();
   const { showNotification } = useNotification();
-  
+
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
@@ -41,18 +41,18 @@ export default function EditarMangaPage({ params }: { params: { slug: string } }
       try {
         setIsLoading(true);
         const manga = await mangasService.getMangaBySlug(params.slug);
-        
+
         if (!manga) {
           showNotification('Mangá não encontrado', 'error');
           router.push('/mangas');
           return;
         }
-        
+
         setFormData({
           title: manga.title,
           description: manga.description || '',
         });
-        
+
         if (manga.cover) {
           setCurrentCover(manga.cover);
           setCoverPreview(manga.cover);
@@ -64,7 +64,7 @@ export default function EditarMangaPage({ params }: { params: { slug: string } }
         setIsLoading(false);
       }
     };
-    
+
     if (isAuthenticated) {
       fetchManga();
     }
@@ -76,15 +76,15 @@ export default function EditarMangaPage({ params }: { params: { slug: string } }
       description?: string;
       cover?: string;
     } = {};
-    
+
     if (!formData.title.trim()) {
       newErrors.title = 'O título é obrigatório';
     }
-    
+
     if (!formData.description.trim()) {
       newErrors.description = 'A descrição é obrigatória';
     }
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -100,7 +100,7 @@ export default function EditarMangaPage({ params }: { params: { slug: string } }
   const handleCoverChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
-      
+
       // Validar tipo de arquivo
       if (!file.type.startsWith('image/')) {
         setErrors(prev => ({
@@ -109,7 +109,7 @@ export default function EditarMangaPage({ params }: { params: { slug: string } }
         }));
         return;
       }
-      
+
       // Validar tamanho do arquivo (máximo 5MB)
       if (file.size > 5 * 1024 * 1024) {
         setErrors(prev => ({
@@ -118,7 +118,7 @@ export default function EditarMangaPage({ params }: { params: { slug: string } }
         }));
         return;
       }
-      
+
       setCoverFile(file);
       setCoverPreview(URL.createObjectURL(file));
       setErrors(prev => ({
@@ -130,13 +130,13 @@ export default function EditarMangaPage({ params }: { params: { slug: string } }
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
       return;
     }
-    
+
     setIsSubmitting(true);
-    
+
     try {
       const mangaData: {
         title: string;
@@ -146,14 +146,14 @@ export default function EditarMangaPage({ params }: { params: { slug: string } }
         title: formData.title,
         description: formData.description,
       };
-      
+
       // Só incluir a capa se uma nova foi selecionada
       if (coverFile) {
         mangaData.cover = coverFile;
       }
-      
+
       await mangasService.updateManga(params.slug, mangaData);
-      
+
       showNotification('Mangá atualizado com sucesso!', 'success');
       router.push(`/mangas/${params.slug}`);
     } catch (error) {
@@ -184,7 +184,7 @@ export default function EditarMangaPage({ params }: { params: { slug: string } }
       ) : (
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Editar Mangá</h1>
-          
+
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
               <label htmlFor="title" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -205,7 +205,7 @@ export default function EditarMangaPage({ params }: { params: { slug: string } }
                 <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.title}</p>
               )}
             </div>
-            
+
             <div>
               <label htmlFor="description" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Descrição
@@ -225,7 +225,7 @@ export default function EditarMangaPage({ params }: { params: { slug: string } }
                 <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.description}</p>
               )}
             </div>
-            
+
             <div>
               <label htmlFor="cover" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Capa
@@ -260,7 +260,7 @@ export default function EditarMangaPage({ params }: { params: { slug: string } }
                     <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.cover}</p>
                   )}
                 </div>
-                
+
                 {coverPreview && (
                   <div className="w-32 h-44 relative bg-gray-200 dark:bg-gray-700 rounded-lg overflow-hidden">
                     <img
@@ -272,7 +272,7 @@ export default function EditarMangaPage({ params }: { params: { slug: string } }
                 )}
               </div>
             </div>
-            
+
             <div className="flex justify-end">
               <button
                 type="submit"

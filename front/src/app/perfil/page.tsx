@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '../core/contexts/AuthContext';
-import { User } from '../core/types/models';
-import { usersService } from '../core/services/api';
+import { useAuth } from '../../contexts/AuthContext';
+import { User } from '../../types/models';
+import { usersService } from '../../services/api';
 import { Camera, Save, User as UserIcon } from 'lucide-react';
 
 export default function ProfilePage() {

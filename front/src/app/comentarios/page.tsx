@@ -2,61 +2,61 @@
 
 import React, { useState, useEffect } from 'react';
 import { MessageSquare, Check, AlertTriangle, Trash2, Filter, Search } from 'lucide-react';
-import { useAuth } from '../core/contexts/AuthContext';
-import { useNotification } from '../core/contexts/NotificationContext';
-import { Comment } from '../core/types/models';
-import { articlesService, commentModerationService } from '../core/services/api';
-import PageTitle from '../core/components/ui/PageTitle';
-import { Card } from '../core/components/ui/Card';
-import { Button } from '../core/components/ui/Button';
+import { useAuth } from '../../contexts/AuthContext';
+import { useNotification } from '../../contexts/NotificationContext';
+import { Comment } from '../../types/models';
+import { articlesService, commentModerationService } from '../../services/api';
+import PageTitle from '../../components/ui/PageTitle';
+import { Card } from '../../components/ui/Card';
+import { Button } from '../../components/ui/Button';
 import { useRouter } from 'next/navigation';
 
 export default function ComentariosPage() {
   const { isAuthenticated, user } = useAuth();
   const { showNotification } = useNotification();
   const router = useRouter();
-  
+
   const [comments, setComments] = useState<Comment[]>([]);
   const [filteredComments, setFilteredComments] = useState<Comment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'pending' | 'approved' | 'spam'>('all');
   const [searchTerm, setSearchTerm] = useState('');
-  
+
   // Verificar se o usuário está autenticado e é administrador
   useEffect(() => {
     if (!isAuthenticated) {
       router.push('/login');
       return;
     }
-    
+
     if (isAuthenticated && user && !(user as any).is_staff) {
       router.push('/');
       showNotification('error', 'Você não tem permissão para acessar esta página.');
       return;
     }
-    
+
     // Carregar todos os comentários
     loadComments();
   }, [isAuthenticated, user, router]);
-  
+
   // Função para carregar comentários
   const loadComments = async () => {
     setIsLoading(true);
-    
+
     try {
       // Obter todos os comentários de todos os artigos no localStorage
       const allComments: Comment[] = [];
-      
+
       for (let i = 0; i < localStorage.length; i++) {
         const key = localStorage.key(i);
-        
+
         if (key && key.startsWith('article_comments_')) {
           const articleId = parseInt(key.replace('article_comments_', ''), 10);
           const articleComments = await articlesService.getArticleComments(articleId);
           allComments.push(...articleComments);
         }
       }
-      
+
       setComments(allComments);
       applyFilters(allComments, filter, searchTerm);
       setIsLoading(false);
@@ -66,11 +66,11 @@ export default function ComentariosPage() {
       setIsLoading(false);
     }
   };
-  
+
   // Aplicar filtros aos comentários
   const applyFilters = (commentsToFilter: Comment[], currentFilter: string, term: string) => {
     let result = [...commentsToFilter];
-    
+
     // Aplicar filtro de status
     if (currentFilter === 'pending') {
       result = result.filter(comment => comment.is_approved === false && comment.is_spam !== true);
@@ -79,19 +79,19 @@ export default function ComentariosPage() {
     } else if (currentFilter === 'spam') {
       result = result.filter(comment => comment.is_spam === true);
     }
-    
+
     // Aplicar filtro de pesquisa
     if (term) {
       const lowerTerm = term.toLowerCase();
-      result = result.filter(comment => 
-        comment.text.toLowerCase().includes(lowerTerm) || 
+      result = result.filter(comment =>
+        comment.text.toLowerCase().includes(lowerTerm) ||
         comment.name.toLowerCase().includes(lowerTerm)
       );
     }
-    
+
     setFilteredComments(result);
   };
-  
+
   // Formatar data
   const formatDate = (dateString: string) => {
     const options: Intl.DateTimeFormatOptions = {
@@ -103,7 +103,7 @@ export default function ComentariosPage() {
     };
     return new Date(dateString).toLocaleDateString('pt-BR', options);
   };
-  
+
   // Aprovar comentário
   const approveComment = async (commentId: number) => {
     try {
@@ -115,7 +115,7 @@ export default function ComentariosPage() {
       showNotification('error', 'Erro ao aprovar comentário.');
     }
   };
-  
+
   // Rejeitar comentário
   const rejectComment = async (commentId: number) => {
     try {
@@ -127,7 +127,7 @@ export default function ComentariosPage() {
       showNotification('error', 'Erro ao rejeitar comentário.');
     }
   };
-  
+
   // Marcar como spam
   const markAsSpam = async (commentId: number) => {
     try {
@@ -139,7 +139,7 @@ export default function ComentariosPage() {
       showNotification('error', 'Erro ao marcar comentário como spam.');
     }
   };
-  
+
   // Excluir comentário
   const deleteComment = async (commentId: number) => {
     try {
@@ -151,24 +151,24 @@ export default function ComentariosPage() {
       showNotification('error', 'Erro ao excluir comentário.');
     }
   };
-  
+
   // Atualizar filtros
   const handleFilterChange = (newFilter: 'all' | 'pending' | 'approved' | 'spam') => {
     setFilter(newFilter);
     applyFilters(comments, newFilter, searchTerm);
   };
-  
+
   // Atualizar pesquisa
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const term = e.target.value;
     setSearchTerm(term);
     applyFilters(comments, filter, term);
   };
-  
+
   if (!isAuthenticated || !user || !(user as any).is_staff) {
     return null; // Redirecionando...
   }
-  
+
   return (
     <div className="container mx-auto px-4 py-8">
       <PageTitle
@@ -176,7 +176,7 @@ export default function ComentariosPage() {
         icon={<MessageSquare className="w-8 h-8" />}
         description="Gerencie e modere os comentários do site"
       />
-      
+
       <div className="mt-6 mb-8 flex flex-col sm:flex-row justify-between gap-4">
         <div className="flex space-x-2">
           <Button
@@ -204,7 +204,7 @@ export default function ComentariosPage() {
             Spam
           </Button>
         </div>
-        
+
         <div className="relative">
           <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
             <Search className="w-4 h-4 text-gray-500 dark:text-gray-400" />
@@ -218,7 +218,7 @@ export default function ComentariosPage() {
           />
         </div>
       </div>
-      
+
       {isLoading ? (
         <div className="text-center py-8">
           <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-indigo-500 border-t-transparent"></div>
@@ -229,8 +229,8 @@ export default function ComentariosPage() {
           <MessageSquare className="w-12 h-12 mx-auto text-gray-400" />
           <h3 className="mt-4 text-lg font-medium">Nenhum comentário encontrado</h3>
           <p className="mt-2 text-gray-500 dark:text-gray-400">
-            {filter !== 'all' 
-              ? `Não há comentários ${filter === 'pending' ? 'pendentes' : filter === 'approved' ? 'aprovados' : 'marcados como spam'}.` 
+            {filter !== 'all'
+              ? `Não há comentários ${filter === 'pending' ? 'pendentes' : filter === 'approved' ? 'aprovados' : 'marcados como spam'}.`
               : 'Não há comentários para moderar.'}
           </p>
         </Card>
@@ -262,7 +262,7 @@ export default function ComentariosPage() {
                     {formatDate(comment.created_at)}
                   </p>
                 </div>
-                
+
                 <div className="flex space-x-2">
                   {comment.is_approved === false && (
                     <Button
@@ -275,7 +275,7 @@ export default function ComentariosPage() {
                       Aprovar
                     </Button>
                   )}
-                  
+
                   {comment.is_approved !== false && comment.is_spam !== true && (
                     <Button
                       onClick={() => rejectComment(comment.id)}
@@ -287,7 +287,7 @@ export default function ComentariosPage() {
                       Rejeitar
                     </Button>
                   )}
-                  
+
                   {comment.is_spam !== true && (
                     <Button
                       onClick={() => markAsSpam(comment.id)}
@@ -299,7 +299,7 @@ export default function ComentariosPage() {
                       Spam
                     </Button>
                   )}
-                  
+
                   <Button
                     onClick={() => deleteComment(comment.id)}
                     variant="outline"
@@ -311,10 +311,10 @@ export default function ComentariosPage() {
                   </Button>
                 </div>
               </div>
-              
+
               <div className="p-4">
                 <p className="text-gray-600 dark:text-gray-300">{comment.text}</p>
-                
+
                 {comment.email && (
                   <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
                     Email: {comment.email}

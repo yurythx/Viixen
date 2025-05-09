@@ -2,19 +2,19 @@
 
 import React, { useState, useEffect } from 'react';
 import { Settings, MessageSquare, Shield, Bell, User, Lock, RefreshCw, Save, AlertTriangle } from 'lucide-react';
-import { useAuth } from '../core/contexts/AuthContext';
-import { useNotification } from '../core/contexts/NotificationContext';
-import { useSettings } from '../core/contexts/SettingsContext';
-import PageTitle from '../core/components/ui/PageTitle';
-import { Card } from '../core/components/ui/Card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../core/components/ui/Tabs';
-import { Switch } from '../core/components/ui/Switch';
-import { Button } from '../core/components/ui/Button';
+import { useAuth } from '../../contexts/AuthContext';
+import { useNotification } from '../../contexts/NotificationContext';
+import { useSettings } from '../../contexts/SettingsContext';
+import PageTitle from '../../components/ui/PageTitle';
+import { Card } from '../../components/ui/Card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/ui/Tabs';
+import { Switch } from '../../components/ui/Switch';
+import { Button } from '../../components/ui/Button';
 import { useRouter } from 'next/navigation';
-import ConfirmDialog from '../core/components/ui/ConfirmDialog';
-import { Label } from '../core/components/ui/Label';
-import { Input } from '../core/components/ui/Input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../core/components/ui/Select';
+import ConfirmDialog from '../../components/ui/ConfirmDialog';
+import { Label } from '../../components/ui/Label';
+import { Input } from '../../components/ui/Input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/Select';
 
 export default function ConfiguracoesPage() {
   const { isAuthenticated, user } = useAuth();

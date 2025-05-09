@@ -1,16 +1,16 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { Article } from '../../core/types/models';
-import { articlesService } from '../../core/services/api';
+import { Article } from '../../../types/article.types';
+import { articlesService } from '../../../services/api';
 import { ArrowLeft, Calendar, Edit, Tag, User, Eye, Heart, Share2, Bookmark, BookmarkCheck, MessageSquare } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import CommentList from '../../core/components/articles/CommentList';
-import CommentForm from '../../core/components/articles/CommentForm';
-import DeleteArticleButton from '../../core/components/articles/DeleteArticleButton';
-import { useAuth } from '../../core/contexts/AuthContext';
-import { useNotification } from '../../core/contexts/NotificationContext';
+import CommentList from '../../../components/articles/CommentList';
+import CommentForm from '../../../components/articles/CommentForm';
+import DeleteArticleButton from '../../../components/articles/DeleteArticleButton';
+import { useAuth } from '../../../contexts/AuthContext';
+import { useNotification } from '../../../contexts/NotificationContext';
 
 interface ArticlePageProps {
   params: {

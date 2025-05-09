@@ -1,11 +1,11 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import ArticleForm from '../../core/components/articles/ArticleForm';
+import ArticleForm from '../../../components/articles/ArticleForm';
 import Header from '../components/Header';
-import PermissionGuard from '../../core/components/auth/PermissionGuard';
-import AccessDenied from '../../core/components/auth/AccessDenied';
-import { useNotification } from '../../core/contexts/NotificationContext';
+import PermissionGuard from '../../../components/auth/PermissionGuard';
+import AccessDenied from '../../../components/auth/AccessDenied';
+import { useNotification } from '../../../contexts/NotificationContext';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 

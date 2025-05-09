@@ -59,10 +59,6 @@ INSTALLED_APPS = [
 
     # Apps locais
     'apps.accounts',
-    'apps.projects.boards',
-    'apps.projects.tasks',
-    'apps.projects.teams',
-    'apps.projects.comments',
     'apps.articles',
     'apps.categories',
     'apps.mangas',

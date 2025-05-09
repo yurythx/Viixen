@@ -1,8 +1,9 @@
 // app/layout.tsx
-import './core/styles/globals.css';
+import '../styles/globals.css';
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
-import ClientLayout from './core/components/ClientLayout';
+import ClientLayout from '../components/ClientLayout';
+import ThemeScript from '../components/ThemeScript';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -17,24 +18,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="pt-BR">
+    <html lang="pt-BR" suppressHydrationWarning>
       <head>
-        {/* Script para aplicar o tema salvo ou o tema escuro por padrão */}
-        <script dangerouslySetInnerHTML={{
-          __html: `
-            (function() {
-              // Verificar se há um tema salvo no localStorage
-              const savedTheme = localStorage.getItem('theme');
-              // Se houver um tema salvo, use-o, caso contrário, use o tema escuro como padrão
-              if (savedTheme) {
-                document.documentElement.classList.add(savedTheme);
-              } else {
-                document.documentElement.classList.add('dark');
-                localStorage.setItem('theme', 'dark');
-              }
-            })();
-          `
-        }} />
+        <ThemeScript />
       </head>
       <body className={`${inter.className} bg-purple-50 dark:bg-gray-900`}>
         <ClientLayout>{children}</ClientLayout>

@@ -3,9 +3,9 @@
 import { useState, useEffect } from 'react';
 import { ArrowLeft, BookOpen, Star, Clock, Calendar, User, Tag, ChevronDown, ChevronUp, Heart, Edit, Trash, Plus } from 'lucide-react';
 import Link from 'next/link';
-import mangasService, { Manga, Chapter } from '../../core/services/api/mangas.service';
-import { useAuth } from '../../core/contexts/AuthContext';
-import { useNotification } from '../../core/contexts/NotificationContext';
+import mangasService, { Manga, Chapter } from '../../../services/api/mangas.service';
+import { useAuth } from '../../../contexts/AuthContext';
+import { useNotification } from '../../../contexts/NotificationContext';
 
 export default function MangaDetailPage({ params }: { params: { slug: string } }) {
   const [showFullDescription, setShowFullDescription] = useState(false);

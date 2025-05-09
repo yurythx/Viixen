@@ -4,9 +4,9 @@ import { useState, useEffect } from 'react';
 import { ArrowLeft, BookOpen, Clock, Award, Eye, BarChart2 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { mangasService } from '../../core/services/api';
-import { useAuth } from '../../core/contexts/AuthContext';
-import { useNotification } from '../../core/contexts/NotificationContext';
+import { mangasService } from '../../../services/api';
+import { useAuth } from '../../../contexts/AuthContext';
+import { useNotification } from '../../../contexts/NotificationContext';
 
 interface UserStats {
   id: number;

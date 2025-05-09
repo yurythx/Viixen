@@ -4,10 +4,10 @@ import { useState, useEffect } from 'react';
 import { ArrowLeft, ChevronLeft, ChevronRight, Maximize, Minimize } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { mangasService } from '../../../../core/services/api';
-import { useAuth } from '../../../../core/contexts/AuthContext';
-import { useNotification } from '../../../../core/contexts/NotificationContext';
-import PdfImageViewer from '../../../../components/PdfImageViewer';
+import { mangasService } from '../../../../../services/api';
+import { useAuth } from '../../../../../contexts/AuthContext';
+import { useNotification } from '../../../../../contexts/NotificationContext';
+import PdfImageViewer from '../../../../../components/PdfImageViewer';
 
 interface Page {
   id: number;
@@ -308,29 +308,63 @@ export default function ChapterPage({ params }: { params: { slug: string; number
           <div className="w-full">
             <PdfImageViewer
               pdfUrl={chapter.pdf_file}
+              chapterId={chapter.id}
               isFullscreen={isFullscreen}
+              initialPage={pdfCurrentPage}
+              preloadPages={true}
+              renderQuality={1.5}
+              readingMode={readingMode}
               onPageChange={(pageNumber) => {
                 setPdfCurrentPage(pageNumber);
-                // Salvar progresso de leitura a cada 5 páginas
-                if (pageNumber % 5 === 0) {
-                  saveReadingProgress(chapter.id);
-                }
               }}
               onTotalPagesChange={(total) => setPdfTotalPages(total)}
+              onBookmark={(pageNumber) => {
+                console.log(`Marcador adicionado/removido na página ${pageNumber}`);
+              }}
+              onAnnotationAdd={(pageNumber, text) => {
+                console.log(`Anotação adicionada na página ${pageNumber}: ${text}`);
+              }}
+              onAnnotationUpdate={(id, text) => {
+                console.log(`Anotação atualizada: ${id} - ${text}`);
+              }}
+              onAnnotationDelete={(id) => {
+                console.log(`Anotação excluída: ${id}`);
+              }}
+              accessibilityLabels={{
+                nextPage: 'Ir para a próxima página',
+                prevPage: 'Voltar para a página anterior',
+                zoomIn: 'Aumentar zoom',
+                zoomOut: 'Diminuir zoom',
+                rotate: 'Rotacionar página',
+                bookmark: 'Marcar/desmarcar página',
+                annotation: 'Adicionar anotação',
+                settings: 'Configurações',
+                help: 'Ajuda',
+                pageIndicator: 'Página {current} de {total}'
+              }}
+              isMobile={typeof window !== 'undefined' ? window.innerWidth <= 768 : false}
             />
-            <div className="p-4 bg-gray-100 dark:bg-gray-700 border-t border-gray-200 dark:border-gray-600">
-              <p className="text-sm text-gray-600 dark:text-gray-300">
-                Se preferir visualizar o PDF original, você pode{' '}
-                <a
-                  href={`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}${chapter.pdf_file}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300"
-                >
-                  baixá-lo diretamente aqui
-                </a>.
-              </p>
-            </div>
+            {!isFullscreen && (
+              <div className="p-4 bg-gray-100 dark:bg-gray-700 border-t border-gray-200 dark:border-gray-600">
+                <p className="text-sm text-gray-600 dark:text-gray-300">
+                  Se preferir visualizar o PDF original, você pode{' '}
+                  <a
+                    href={`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}${chapter.pdf_file}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300"
+                  >
+                    baixá-lo diretamente aqui
+                  </a>.
+                </p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                  <strong>Dicas de navegação:</strong> Use as setas do teclado para navegar entre as páginas,
+                  teclas + e - para zoom, R para rotacionar, e Home/End para ir para a primeira/última página.
+                  Pressione M para alternar entre modo paginado e contínuo, B para adicionar marcadores, e A para adicionar anotações.
+                  Em dispositivos móveis, deslize para navegar entre as páginas.
+                </p>
+              </div>
+            )}
           </div>
         ) : chapter.pages.length > 0 ? (
           // Visualizador de imagens
