@@ -1,8 +1,10 @@
-from rest_framework import viewsets, permissions, status
+from rest_framework import viewsets, permissions, status, filters
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
-from .models import Article, Comment
-from .serializers import ArticleSerializer, CommentSerializer
+from rest_framework.decorators import action
+from django_filters.rest_framework import DjangoFilterBackend
+from .models import Article, Comment, Tag
+from .serializers import ArticleSerializer, CommentSerializer, TagSerializer
 from django.shortcuts import get_object_or_404
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 
@@ -16,36 +18,164 @@ class CommentPagination(PageNumberPagination):
     page_size_query_param = 'page_size'
     max_page_size = 100
 
+class TagPagination(PageNumberPagination):
+    page_size = 50
+    page_size_query_param = 'page_size'
+    max_page_size = 100
+
 class ArticleViewSet(viewsets.ModelViewSet):
     queryset = Article.objects.all()
     serializer_class = ArticleSerializer
     lookup_field = 'slug'
     pagination_class = ArticlePagination
     permission_classes = [IsAuthenticatedOrReadOnly]
-    
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filterset_fields = ['category__slug', 'tags__slug', 'featured']
+    search_fields = ['title', 'content']
+    ordering_fields = ['created_at', 'updated_at', 'views_count', 'title']
+    ordering = ['-created_at']
+
     def get_permissions(self):
         # Permitir leitura para todos, mas exigir autenticação para criar/editar/excluir
-        if self.action in ['list', 'retrieve']:
+        if self.action in ['list', 'retrieve', 'increment_views']:
             return [permissions.AllowAny()]
         return [permissions.IsAuthenticated()]
 
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['request'] = self.request
+        return context
+
+    @action(detail=True, methods=['post'])
+    def increment_views(self, request, slug=None):
+        article = self.get_object()
+        views_count = article.increment_views()
+        return Response({
+            'status': 'success',
+            'views_count': views_count
+        })
+
+    @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
+    def favorite(self, request, slug=None):
+        article = self.get_object()
+        user = request.user
+
+        if article.favorites.filter(id=user.id).exists():
+            article.favorites.remove(user)
+            return Response({
+                'status': 'removed from favorites',
+                'is_favorite': False
+            })
+        else:
+            article.favorites.add(user)
+            return Response({
+                'status': 'added to favorites',
+                'is_favorite': True
+            })
+
+    @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
+    def favorites(self, request):
+        """Obter todos os artigos favoritados pelo usuário atual"""
+        user = request.user
+        articles = Article.objects.filter(favorites=user)
+        page = self.paginate_queryset(articles)
+        serializer = self.get_serializer(page, many=True)
+        return self.get_paginated_response(serializer.data)
+
 class CommentViewSet(viewsets.ModelViewSet):
-    queryset = Comment.objects.all()
+    """
+    API endpoint para gerenciamento de comentários.
+    Permite comentários anônimos (sem autenticação).
+    """
     serializer_class = CommentSerializer
     pagination_class = CommentPagination
+    permission_classes = [permissions.AllowAny]  # Permitir acesso anônimo
+    filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
+    filterset_fields = ['article', 'parent', 'is_approved', 'is_spam']
+    ordering_fields = ['created_at', 'updated_at']
+    ordering = ['created_at']  # Ordenação padrão: mais antigos primeiro
+
+    def get_permissions(self):
+        """
+        Definir permissões com base na ação:
+        - Qualquer um pode listar, recuperar e criar comentários
+        - Apenas administradores podem atualizar, excluir ou aprovar/rejeitar comentários
+        """
+        if self.action in ['update', 'partial_update', 'destroy', 'approve', 'reject', 'mark_as_spam']:
+            return [permissions.IsAdminUser()]
+        return [permissions.AllowAny()]
+
+    def get_queryset(self):
+        """
+        Filtrar comentários com base nos parâmetros da requisição.
+        Por padrão, retorna apenas comentários aprovados e não marcados como spam.
+        Administradores podem ver todos os comentários.
+        """
+        # Definir queryset base
+        queryset = Comment.objects.all()
+
+        # Filtrar por artigo
+        article_id = self.request.query_params.get('article', None)
+        article_slug = self.request.query_params.get('article_slug', None)
+
+        if article_id:
+            queryset = queryset.filter(article_id=article_id)
+        elif article_slug:
+            article = get_object_or_404(Article, slug=article_slug)
+            queryset = queryset.filter(article=article)
+
+        # Filtrar por comentários de nível superior (sem parent)
+        top_level_only = self.request.query_params.get('top_level_only', 'false').lower() == 'true'
+        if top_level_only:
+            queryset = queryset.filter(parent__isnull=True)
+
+        # Filtrar por status de aprovação e spam (apenas para não-administradores)
+        if not self.request.user.is_staff:
+            queryset = queryset.filter(is_approved=True, is_spam=False)
+
+        return queryset
+
+    @action(detail=True, methods=['post'], permission_classes=[permissions.IsAdminUser])
+    def approve(self, request, pk=None):
+        """Aprovar um comentário."""
+        comment = self.get_object()
+        comment.is_approved = True
+        comment.is_spam = False
+        comment.save()
+        return Response({'status': 'approved'})
+
+    @action(detail=True, methods=['post'], permission_classes=[permissions.IsAdminUser])
+    def reject(self, request, pk=None):
+        """Rejeitar um comentário."""
+        comment = self.get_object()
+        comment.is_approved = False
+        comment.save()
+        return Response({'status': 'rejected'})
+
+    @action(detail=True, methods=['post'], permission_classes=[permissions.IsAdminUser])
+    def mark_as_spam(self, request, pk=None):
+        """Marcar um comentário como spam."""
+        comment = self.get_object()
+        comment.is_approved = False
+        comment.is_spam = True
+        comment.save()
+        return Response({'status': 'marked as spam'})
+
+    def perform_create(self, serializer):
+        """Salvar o comentário com informações adicionais."""
+        serializer.save()
+
+class TagViewSet(viewsets.ModelViewSet):
+    queryset = Tag.objects.all()
+    serializer_class = TagSerializer
+    lookup_field = 'slug'
+    pagination_class = TagPagination
     permission_classes = [IsAuthenticatedOrReadOnly]
-    
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['name']
+
     def get_permissions(self):
         # Permitir leitura para todos, mas exigir autenticação para criar/editar/excluir
         if self.action in ['list', 'retrieve']:
             return [permissions.AllowAny()]
         return [permissions.IsAuthenticated()]
-    
-    def get_queryset(self):
-        """Filtrar comentários por artigo se o parâmetro 'article_slug' estiver presente"""
-        queryset = Comment.objects.all()
-        article_slug = self.request.query_params.get('article_slug', None)
-        if article_slug:
-            article = get_object_or_404(Article, slug=article_slug)
-            queryset = queryset.filter(article=article)
-        return queryset

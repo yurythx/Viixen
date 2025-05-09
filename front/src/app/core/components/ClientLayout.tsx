@@ -6,6 +6,8 @@ import Navbar from './Navbar';
 import { SidebarProvider, useSidebar } from './SidebarProvider';
 import { AuthProvider, useAuth } from '../contexts/AuthContext';
 import { NotificationProvider } from '../contexts/NotificationContext';
+import { ThemeProvider } from '../contexts/ThemeContext';
+import { SettingsProvider } from '../contexts/SettingsContext';
 import ErrorBoundary from './ErrorBoundary';
 
 interface ClientLayoutProps {
@@ -50,9 +52,13 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
     <ErrorBoundary>
       <AuthProvider>
         <NotificationProvider>
-          <SidebarProvider>
-            <LayoutContent>{children}</LayoutContent>
-          </SidebarProvider>
+          <ThemeProvider>
+            <SettingsProvider>
+              <SidebarProvider>
+                <LayoutContent>{children}</LayoutContent>
+              </SidebarProvider>
+            </SettingsProvider>
+          </ThemeProvider>
         </NotificationProvider>
       </AuthProvider>
     </ErrorBoundary>

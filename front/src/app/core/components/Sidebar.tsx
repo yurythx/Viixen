@@ -123,6 +123,11 @@ export default function Sidebar({
           label: 'Favoritos',
           href: '/mangas/favoritos',
         },
+        {
+          icon: <BarChart className="w-4 h-4" />,
+          label: 'Estatísticas',
+          href: '/mangas/estatisticas',
+        },
       ],
     },
   };
@@ -142,6 +147,8 @@ export default function Sidebar({
       icon: <MessageSquare className="w-5 h-5" />,
       label: 'Comentários',
       href: '/comentarios',
+      requiresAuth: true,
+      requiresAdmin: true,
     },
     {
       icon: <BarChart className="w-5 h-5" />,
@@ -152,6 +159,7 @@ export default function Sidebar({
       icon: <Settings className="w-5 h-5" />,
       label: 'Configurações',
       href: '/configuracoes',
+      requiresAuth: true,
     },
   ];
 
@@ -184,23 +192,29 @@ export default function Sidebar({
 
       <nav className="flex-1 overflow-y-auto p-4 space-y-6">
         <div className="space-y-2">
-          {mainMenuItems.map((item, idx) => (
-            <Link key={idx} href={item.href}>
-              <motion.div
-                whileHover={{ scale: 1.02, x: 5 }}
-                className={`sidebar-link ${
-                  pathname === item.href ? 'active' : ''
-                }`}
-              >
-                <span className="text-indigo-500 dark:text-indigo-400">
-                  {item.icon}
-                </span>
-                {!isCollapsed && (
-                  <span className="font-medium">{item.label}</span>
-                )}
-              </motion.div>
-            </Link>
-          ))}
+          {mainMenuItems.map((item, idx) => {
+            // Verificar permissões
+            if (item.requiresAuth && !isAuthenticated) return null;
+            if (item.requiresAdmin && (!user || !(user as any).is_staff)) return null;
+
+            return (
+              <Link key={idx} href={item.href}>
+                <motion.div
+                  whileHover={{ scale: 1.02, x: 5 }}
+                  className={`sidebar-link ${
+                    pathname === item.href ? 'active' : ''
+                  }`}
+                >
+                  <span className="text-indigo-500 dark:text-indigo-400">
+                    {item.icon}
+                  </span>
+                  {!isCollapsed && (
+                    <span className="font-medium">{item.label}</span>
+                  )}
+                </motion.div>
+              </Link>
+            );
+          })}
         </div>
 
         <div className="space-y-4">

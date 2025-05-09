@@ -57,9 +57,10 @@ export default function EditarArtigoPage({ params }: EditarArtigoPageProps) {
     return (
       <>
         <Header />
-        <div className="container mx-auto px-4 py-8">
-          <div className="flex justify-center items-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
+        <div className="container-fluid w-full max-w-[1800px] mx-auto px-3 md:px-6 lg:px-8 xl:px-10 py-8">
+          <div className="flex flex-col justify-center items-center py-12 bg-white dark:bg-gray-800 rounded-lg shadow-sm">
+            <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-indigo-500"></div>
+            <p className="mt-4 text-gray-500 dark:text-gray-400 text-sm">Carregando artigo...</p>
           </div>
         </div>
       </>
@@ -70,11 +71,11 @@ export default function EditarArtigoPage({ params }: EditarArtigoPageProps) {
     return (
       <>
         <Header />
-        <div className="container mx-auto px-4 py-8">
-          <div className="max-w-3xl mx-auto">
-            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-              <p>{error}</p>
-              <Link href={`/artigos/${params.slug}`} className="mt-4 inline-flex items-center text-indigo-600 hover:text-indigo-800">
+        <div className="container-fluid w-full max-w-[1800px] mx-auto px-3 md:px-6 lg:px-8 xl:px-10 py-8">
+          <div className="w-full max-w-4xl mx-auto">
+            <div className="bg-red-100 dark:bg-red-900/30 border border-red-400 dark:border-red-800 text-red-700 dark:text-red-300 px-4 py-5 rounded-lg shadow-sm">
+              <p className="font-medium">{error}</p>
+              <Link href={`/artigos/${params.slug}`} className="mt-4 inline-flex items-center text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300">
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Voltar para o artigo
               </Link>
@@ -89,11 +90,11 @@ export default function EditarArtigoPage({ params }: EditarArtigoPageProps) {
     return (
       <>
         <Header />
-        <div className="container mx-auto px-4 py-8">
-          <div className="max-w-3xl mx-auto">
-            <div className="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded">
-              <p>Artigo não encontrado.</p>
-              <Link href="/artigos" className="mt-4 inline-flex items-center text-indigo-600 hover:text-indigo-800">
+        <div className="container-fluid w-full max-w-[1800px] mx-auto px-3 md:px-6 lg:px-8 xl:px-10 py-8">
+          <div className="w-full max-w-4xl mx-auto">
+            <div className="bg-yellow-100 dark:bg-yellow-900/30 border border-yellow-400 dark:border-yellow-800 text-yellow-700 dark:text-yellow-300 px-4 py-5 rounded-lg shadow-sm">
+              <p className="font-medium">Artigo não encontrado.</p>
+              <Link href="/artigos" className="mt-4 inline-flex items-center text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300">
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Voltar para a lista de artigos
               </Link>
@@ -107,14 +108,16 @@ export default function EditarArtigoPage({ params }: EditarArtigoPageProps) {
   return (
     <>
       <Header />
-      <div className="container mx-auto px-4 py-8">
-        <div className="max-w-3xl mx-auto">
-          <Link href={`/artigos/${params.slug}`} className="inline-flex items-center text-indigo-600 hover:text-indigo-800 mb-6">
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Voltar para o artigo
-          </Link>
+      <div className="container-fluid w-full max-w-[1800px] mx-auto px-3 md:px-6 lg:px-8 xl:px-10 py-8">
+        <div className="w-full max-w-4xl mx-auto">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+            <Link href={`/artigos/${params.slug}`} className="inline-flex items-center text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300">
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Voltar para o artigo
+            </Link>
+          </div>
 
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">Editar Artigo</h1>
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-6">Editar Artigo</h1>
 
           <PermissionGuard
             requiredPermission="author"
@@ -127,7 +130,7 @@ export default function EditarArtigoPage({ params }: EditarArtigoPageProps) {
               />
             }
           >
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 md:p-6 lg:p-8">
               <ArticleForm
                 article={article}
                 onSuccess={() => {

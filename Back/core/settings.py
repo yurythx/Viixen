@@ -64,6 +64,9 @@ INSTALLED_APPS = [
     'apps.projects.teams',
     'apps.projects.comments',
     'apps.articles',
+    'apps.categories',
+    'apps.mangas',
+
 ]
 
 # Middleware
@@ -212,6 +215,7 @@ REST_FRAMEWORK = {
     'PAGE_SIZE': 20,
     'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema',
     'DEFAULT_VERSIONING_CLASS': 'rest_framework.versioning.URLPathVersioning',
+    'EXCEPTION_HANDLER': 'utils.error_handling.custom_exception_handler',
 }
 
 # Simple JWT
@@ -276,3 +280,8 @@ DJOSER = {
 
 # Email (modo dev)
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+# Configurações de upload de arquivos
+DATA_UPLOAD_MAX_MEMORY_SIZE = 104857600  # 100MB
+FILE_UPLOAD_MAX_MEMORY_SIZE = 104857600  # 100MB
+MAX_UPLOAD_SIZE = 104857600  # 100MB

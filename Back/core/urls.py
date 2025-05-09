@@ -27,23 +27,25 @@ api_prefix = 'api/v1/'
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    
+
     # API Documentation
     path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     path('swagger.json', schema_view.without_ui(cache_timeout=0), name='schema-json'),
     path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
-    
+
     # Authentication
     path(f'{api_prefix}auth/', include('djoser.urls')),
     path(f'{api_prefix}auth/', include('djoser.urls.jwt')),
-    
+
     # App URLs
     path(f'{api_prefix}accounts/', include('apps.accounts.urls')),
     path(f'{api_prefix}projects/boards/', include('apps.projects.boards.urls')),
     path(f'{api_prefix}projects/tasks/', include('apps.projects.tasks.urls')),
     path(f'{api_prefix}projects/teams/', include('apps.projects.teams.urls')),
     path(f'{api_prefix}projects/comments/', include('apps.projects.comments.urls')),
-    path(f'{api_prefix}articles/', include('apps.articles.urls')), 
+    path(f'{api_prefix}articles/', include('apps.articles.urls')),
+    path(f'{api_prefix}mangas/', include('apps.mangas.urls')),
+    path(f'{api_prefix}', include('apps.categories.urls')),
 ]
 
 # Add media URL in development

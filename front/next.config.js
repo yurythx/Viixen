@@ -6,10 +6,8 @@ const nextConfig = {
     domains: [],
   },
   experimental: {
-    serverActions: {
-      allowedOrigins: ['localhost:3000']
-    }
+    serverActions: true
   }
 };
 
-module.exports = nextConfig; 
+module.exports = nextConfig;

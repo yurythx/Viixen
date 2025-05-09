@@ -6,11 +6,14 @@ from django.contrib.auth import get_user_model, authenticate
 from django_filters.rest_framework import DjangoFilterBackend
 
 from .serializers import (
-    UserSerializer, 
-    UserDetailSerializer, 
-    UserCreateSerializer, 
-    PasswordChangeSerializer
+    UserSerializer,
+    UserDetailSerializer,
+    UserCreateSerializer,
+    PasswordChangeSerializer,
+    UserSettingsSerializer,
+    UserSettingsDetailSerializer
 )
+from .models import UserSettings
 
 User = get_user_model()
 
@@ -26,33 +29,33 @@ class UserViewSet(viewsets.ModelViewSet):
     search_fields = ['username', 'email', 'first_name', 'last_name', 'position']
     ordering_fields = ['username', 'email', 'created_at', 'updated_at']
     lookup_field = 'slug'
-    
+
     def get_serializer_class(self):
         if self.action == 'create':
             return UserCreateSerializer
         elif self.action == 'retrieve':
             return UserDetailSerializer
         return UserSerializer
-    
+
     def get_permissions(self):
         if self.action in ['create', 'login']:
             return [permissions.AllowAny()]
         return super().get_permissions()
-    
+
     @action(detail=False, methods=['post'])
     def login(self, request):
         """Endpoint para autenticação de usuários."""
         email = request.data.get('email')
         password = request.data.get('password')
-        
+
         if not email or not password:
             return Response(
                 {'error': 'Por favor, forneça email e senha.'},
                 status=status.HTTP_400_BAD_REQUEST
             )
-        
+
         user = authenticate(email=email, password=password)
-        
+
         if user:
             refresh = RefreshToken.for_user(user)
             return Response({
@@ -60,18 +63,18 @@ class UserViewSet(viewsets.ModelViewSet):
                 'refresh': str(refresh),
                 'user': UserSerializer(user).data
             })
-        
+
         return Response(
             {'error': 'Credenciais inválidas.'},
             status=status.HTTP_401_UNAUTHORIZED
         )
-    
+
     @action(detail=False, methods=['get'])
     def me(self, request, *args, **kwargs):
         """Retorna informações do usuário atual."""
         serializer = UserDetailSerializer(request.user)
         return Response(serializer.data)
-    
+
     @action(detail=False, methods=['put'], url_path='change-password')
     def change_password(self, request, *args, **kwargs):
         """Altera a senha do usuário atual."""
@@ -83,7 +86,7 @@ class UserViewSet(viewsets.ModelViewSet):
             serializer.save()
             return Response({"detail": "Senha alterada com sucesso."}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
+
     @action(detail=False, methods=['put'], url_path='update-profile')
     def update_profile(self, request, *args, **kwargs):
         """Atualiza o perfil do usuário atual."""
@@ -92,3 +95,51 @@ class UserViewSet(viewsets.ModelViewSet):
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    @action(detail=False, methods=['get', 'put'], url_path='settings')
+    def settings(self, request, *args, **kwargs):
+        """Gerencia as configurações do usuário atual."""
+        try:
+            settings = UserSettings.objects.get(user=request.user)
+        except UserSettings.DoesNotExist:
+            settings = UserSettings.objects.create(user=request.user)
+
+        if request.method == 'GET':
+            serializer = UserSettingsDetailSerializer(settings)
+            return Response(serializer.data)
+
+        serializer = UserSettingsSerializer(settings, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class UserSettingsViewSet(viewsets.ModelViewSet):
+    """
+    API endpoint para gerenciamento de configurações de usuários.
+    """
+    queryset = UserSettings.objects.all()
+    serializer_class = UserSettingsDetailSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        # Usuários normais só podem ver suas próprias configurações
+        if not self.request.user.is_staff:
+            return UserSettings.objects.filter(user=self.request.user)
+        # Administradores podem ver todas as configurações
+        return UserSettings.objects.all()
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+    @action(detail=False, methods=['get'])
+    def my_settings(self, request):
+        """Retorna as configurações do usuário atual."""
+        try:
+            settings = UserSettings.objects.get(user=request.user)
+        except UserSettings.DoesNotExist:
+            settings = UserSettings.objects.create(user=request.user)
+
+        serializer = self.get_serializer(settings)
+        return Response(serializer.data)

@@ -9,9 +9,18 @@ import { useNotification } from '../../contexts/NotificationContext';
 interface DeleteArticleButtonProps {
   slug: string;
   className?: string;
+  buttonText?: string;
+  onDelete?: () => void;
+  showIcon?: boolean;
 }
 
-export default function DeleteArticleButton({ slug, className = '' }: DeleteArticleButtonProps) {
+export default function DeleteArticleButton({
+  slug,
+  className = '',
+  buttonText,
+  onDelete,
+  showIcon = true
+}: DeleteArticleButtonProps) {
   const router = useRouter();
   const { showNotification } = useNotification();
   const [isDeleting, setIsDeleting] = useState(false);
@@ -28,8 +37,13 @@ export default function DeleteArticleButton({ slug, className = '' }: DeleteArti
       // Mostrar notificação de sucesso
       showNotification('success', 'Artigo excluído com sucesso!');
 
-      // Redirecionar para a lista de artigos após excluir
-      router.push('/artigos');
+      // Executar callback ou redirecionar
+      if (onDelete) {
+        onDelete();
+      } else {
+        // Redirecionar para a lista de artigos após excluir
+        router.push('/artigos');
+      }
     } catch (err: any) {
       console.error('Erro ao excluir artigo:', err);
       const errorMessage = err.message || 'Ocorreu um erro ao excluir o artigo. Por favor, tente novamente.';
@@ -45,17 +59,26 @@ export default function DeleteArticleButton({ slug, className = '' }: DeleteArti
     <>
       <button
         type="button"
-        onClick={() => setShowConfirmation(true)}
-        className={`text-red-600 hover:text-red-800 focus:outline-none ${className}`}
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          setShowConfirmation(true);
+        }}
+        className={`${className || 'text-red-600 hover:text-red-800 focus:outline-none'}`}
         title="Excluir artigo"
       >
-        <Trash2 className="w-5 h-5" />
+        {showIcon && <Trash2 className="w-5 h-5 inline mr-1" />}
+        {buttonText}
       </button>
 
       {/* Modal de confirmação */}
       {showConfirmation && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          setShowConfirmation(false);
+        }}>
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full" onClick={(e) => e.stopPropagation()}>
             <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
               Confirmar exclusão
             </h3>
@@ -73,7 +96,11 @@ export default function DeleteArticleButton({ slug, className = '' }: DeleteArti
             <div className="flex justify-end space-x-4">
               <button
                 type="button"
-                onClick={() => setShowConfirmation(false)}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setShowConfirmation(false);
+                }}
                 className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 dark:bg-gray-700 dark:text-white dark:border-gray-600 dark:hover:bg-gray-600"
                 disabled={isDeleting}
               >
@@ -81,7 +108,11 @@ export default function DeleteArticleButton({ slug, className = '' }: DeleteArti
               </button>
               <button
                 type="button"
-                onClick={handleDelete}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handleDelete();
+                }}
                 className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50"
                 disabled={isDeleting}
               >
