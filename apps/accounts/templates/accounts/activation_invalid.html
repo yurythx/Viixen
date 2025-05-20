@@ -1,0 +1,6 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Link inválido</h2>
+<p>O link de ativação é inválido ou expirou.</p>
+<a href="{% url 'accounts:register' %}">Registrar novamente</a>
+{% endblock %}

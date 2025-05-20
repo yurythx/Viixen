@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-5">
+    <h2>Olá, {{ user.first_name|default:user.username }}!</h2>
+    <p>Último login: {{ last_login|date:"d/m/Y H:i" }}</p>
+
+    <hr>
+
+    <h5>Seus dados</h5>
+    <ul>
+        <li>Nome: {{ user.get_full_name }}</li>
+        <li>Email: {{ user.email }}</li>
+        <li>Grupo(s): 
+            {% for group in user.groups.all %}
+                <span class="badge bg-info">{{ group.name }}</span>
+            {% empty %}
+                <span class="text-muted">Nenhum grupo</span>
+            {% endfor %}
+        </li>
+    </ul>
+
+    <a href="{% url 'accounts:edit_profile' %}" class="btn btn-warning mt-3">Editar Perfil</a>
+    <a href="{% url 'accounts:logout' %}" class="btn btn-outline-secondary mt-3">Sair</a>
+</div>
+{% endblock %}

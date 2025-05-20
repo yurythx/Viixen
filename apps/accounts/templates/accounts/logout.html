@@ -1,0 +1,17 @@
+{% extends "accounts/base.html" %}
+
+{% block title %}Desconectado{% endblock %}
+
+{% block content %}
+    <div class="logout-container">
+        <div class="done-icon">
+            <i class="fas fa-sign-out-alt"></i>
+        </div>
+        <h2>Desconectado</h2>
+        <p class="logout-message">Você foi desconectado com sucesso.</p>
+        
+        <div class="logout-actions">
+            <a href="{% url 'accounts:login' %}" class="btn">Voltar para Login</a>
+        </div>
+    </div>
+{% endblock %}
