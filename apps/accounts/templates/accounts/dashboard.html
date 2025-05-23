@@ -1,25 +1,141 @@
-{% extends "base.html" %}
+{% extends "accounts/base_auth.html" %}
+
+{% block title %}Dashboard{% endblock %}
+
 {% block content %}
-<div class="container mt-5">
-    <h2>Olá, {{ user.first_name|default:user.username }}!</h2>
-    <p>Último login: {{ last_login|date:"d/m/Y H:i" }}</p>
+    <div class="dashboard-container">
+        <div class="welcome-section">
+            <h2>Olá, {{ user.first_name|default:user.username }}!</h2>
+            <p class="last-login">Último login: {{ last_login|date:"d/m/Y H:i" }}</p>
+        </div>
 
-    <hr>
+        <div class="user-data-section">
+            <h3>Seus dados</h3>
+            <div class="user-info">
+                <div class="info-item">
+                    <span class="info-label"><i class="fas fa-user"></i> Nome:</span>
+                    <span class="info-value">{{ user.get_full_name }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label"><i class="fas fa-envelope"></i> Email:</span>
+                    <span class="info-value">{{ user.email }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label"><i class="fas fa-users"></i> Grupo(s):</span>
+                    <span class="info-value">
+                        {% for group in user.groups.all %}
+                            <span class="group-badge">{{ group.name }}</span>
+                        {% empty %}
+                            <span class="no-group">Nenhum grupo</span>
+                        {% endfor %}
+                    </span>
+                </div>
+            </div>
+        </div>
 
-    <h5>Seus dados</h5>
-    <ul>
-        <li>Nome: {{ user.get_full_name }}</li>
-        <li>Email: {{ user.email }}</li>
-        <li>Grupo(s): 
-            {% for group in user.groups.all %}
-                <span class="badge bg-info">{{ group.name }}</span>
-            {% empty %}
-                <span class="text-muted">Nenhum grupo</span>
-            {% endfor %}
-        </li>
-    </ul>
+        <div class="dashboard-actions">
+            <a href="{% url 'accounts:edit_profile' %}" class="btn btn-edit">
+                <i class="fas fa-user-edit"></i> Editar Perfil
+            </a>
+            <a href="{% url 'accounts:logout' %}" class="btn btn-logout">
+                <i class="fas fa-sign-out-alt"></i> Sair
+            </a>
+        </div>
+    </div>
 
-    <a href="{% url 'accounts:edit_profile' %}" class="btn btn-warning mt-3">Editar Perfil</a>
-    <a href="{% url 'accounts:logout' %}" class="btn btn-outline-secondary mt-3">Sair</a>
-</div>
+    <style>
+        .dashboard-container {
+            text-align: left;
+            padding: 10px;
+        }
+
+        .welcome-section {
+            margin-bottom: 30px;
+            border-bottom: 1px solid #e1e5ee;
+            padding-bottom: 20px;
+        }
+
+        .last-login {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .user-data-section {
+            margin-bottom: 30px;
+        }
+
+        .user-data-section h3 {
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+            color: var(--primary-color);
+        }
+
+        .user-info {
+            background-color: #f9fafc;
+            border-radius: 8px;
+            padding: 20px;
+        }
+
+        .info-item {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: flex-start;
+        }
+
+        .info-label {
+            min-width: 120px;
+            font-weight: 500;
+        }
+
+        .info-label i {
+            color: var(--primary-color);
+            margin-right: 5px;
+        }
+
+        .group-badge {
+            display: inline-block;
+            background-color: var(--primary-color);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            margin-right: 5px;
+        }
+
+        .no-group {
+            color: var(--text-muted);
+            font-style: italic;
+        }
+
+        .dashboard-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .btn-edit {
+            background-color: var(--primary-color);
+        }
+
+        .btn-logout {
+            background-color: transparent;
+            border: 1px solid #e1e5ee;
+            color: var(--text-color);
+        }
+
+        .btn-logout:hover {
+            background-color: #f1f3f9;
+            color: var(--text-color);
+        }
+
+        @media (max-width: 768px) {
+            .info-item {
+                flex-direction: column;
+            }
+
+            .info-label {
+                margin-bottom: 5px;
+            }
+        }
+    </style>
 {% endblock %}

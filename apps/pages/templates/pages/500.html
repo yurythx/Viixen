@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}Erro Interno (500){% endblock %}
+{% block content %}
+<section>
+    <h2>500 - Erro Interno do Servidor</h2>
+    <p>Ocorreu um erro inesperado. Já estamos trabalhando para corrigir isso.</p>
+    <a href="{% url 'home' %}">Voltar para a página inicial</a>
+</section>
+{% endblock %}

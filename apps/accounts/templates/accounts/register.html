@@ -1,4 +1,4 @@
-{% extends "accounts/base.html" %}
+{% extends "accounts/base_auth.html" %}
 
 {% block title %}Criar Conta{% endblock %}
 
@@ -6,44 +6,54 @@
     <div class="register-container">
         <h2>Criar Nova Conta</h2>
         <p class="register-subtitle">Preencha os campos abaixo para criar sua conta</p>
-        
+
         <form method="post" class="register-form">
             {% csrf_token %}
-            
+
             <div class="form-group">
-                <label for="{{ form.username.id_for_label }}">Usuário</label>
+                <label for="{{ form.username.id_for_label }}">
+                    <i class="fas fa-user"></i> Usuário
+                </label>
                 {{ form.username }}
                 {% if form.username.errors %}
                     <div class="form-error">{{ form.username.errors.0 }}</div>
                 {% endif %}
             </div>
-            
+
             <div class="form-group">
-                <label for="{{ form.email.id_for_label }}">Email</label>
+                <label for="{{ form.email.id_for_label }}">
+                    <i class="fas fa-envelope"></i> Email
+                </label>
                 {{ form.email }}
                 {% if form.email.errors %}
                     <div class="form-error">{{ form.email.errors.0 }}</div>
                 {% endif %}
             </div>
-            
+
             <div class="form-group">
-                <label for="{{ form.password1.id_for_label }}">Senha</label>
+                <label for="{{ form.password1.id_for_label }}">
+                    <i class="fas fa-lock"></i> Senha
+                </label>
                 {{ form.password1 }}
                 {% if form.password1.errors %}
                     <div class="form-error">{{ form.password1.errors.0 }}</div>
                 {% endif %}
             </div>
-            
+
             <div class="form-group">
-                <label for="{{ form.password2.id_for_label }}">Confirmar Senha</label>
+                <label for="{{ form.password2.id_for_label }}">
+                    <i class="fas fa-check-circle"></i> Confirmar Senha
+                </label>
                 {{ form.password2 }}
                 {% if form.password2.errors %}
                     <div class="form-error">{{ form.password2.errors.0 }}</div>
                 {% endif %}
             </div>
-            
+
             <div class="form-actions">
-                <button type="submit" class="btn">Criar Conta</button>
+                <button type="submit" class="btn">
+                    <i class="fas fa-user-plus"></i> Criar Conta
+                </button>
             </div>
         </form>
 

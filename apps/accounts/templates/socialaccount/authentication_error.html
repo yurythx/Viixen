@@ -1,0 +1,21 @@
+{% extends "accounts/base_auth.html" %}
+{% load i18n %}
+{% load allauth %}
+
+{% block title %}Erro de Login{% endblock %}
+
+{% block content %}
+    <div class="authentication-error-container">
+        <div class="error-icon">
+            <i class="fas fa-exclamation-circle"></i>
+        </div>
+        <h2>Erro de Login</h2>
+        <p class="error-message">Ocorreu um erro ao tentar fazer login com sua conta de terceiros.</p>
+        
+        <div class="error-actions">
+            <a href="{% url 'accounts:login' %}" class="btn">
+                <i class="fas fa-arrow-left"></i> Voltar para Login
+            </a>
+        </div>
+    </div>
+{% endblock %}

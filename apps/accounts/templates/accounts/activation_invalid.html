@@ -1,6 +1,17 @@
-{% extends "base.html" %}
+{% extends "accounts/base_auth.html" %}
+
+{% block title %}Link Inválido{% endblock %}
+
 {% block content %}
-<h2>Link inválido</h2>
-<p>O link de ativação é inválido ou expirou.</p>
-<a href="{% url 'accounts:register' %}">Registrar novamente</a>
+    <div class="activation-invalid-container">
+        <div class="error-icon">
+            <i class="fas fa-exclamation-circle"></i>
+        </div>
+        <h2>Link Inválido</h2>
+        <p class="error-message">O link de ativação é inválido ou expirou.</p>
+
+        <div class="error-actions">
+            <a href="{% url 'accounts:register' %}" class="btn">Registrar Novamente</a>
+        </div>
+    </div>
 {% endblock %}

@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}Página Não Encontrada (404){% endblock %}
+{% block content %}
+<section>
+    <h2>404 - Página Não Encontrada</h2>
+    <p>A página que você está procurando não existe ou foi movida.</p>
+    <a href="{% url 'home' %}">Voltar para a página inicial</a>
+</section>
+{% endblock %}

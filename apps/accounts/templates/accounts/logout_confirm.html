@@ -1,0 +1,70 @@
+{% extends "accounts/base_auth.html" %}
+
+{% block title %}Confirmar Logout{% endblock %}
+
+{% block content %}
+<div class="logout-confirm-container">
+    <div class="logout-icon">
+        <i class="fas fa-sign-out-alt"></i>
+    </div>
+    
+    <h2>Confirmar Saída</h2>
+    <p class="logout-message">Tem certeza que deseja sair do sistema?</p>
+    
+    <div class="logout-actions">
+        <form method="post" action="{% url 'accounts:logout' %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger">
+                <i class="fas fa-sign-out-alt"></i> Sim, sair agora
+            </button>
+        </form>
+        
+        <a href="{% url 'accounts:profile' %}" class="btn btn-secondary">
+            <i class="fas fa-times"></i> Cancelar
+        </a>
+    </div>
+</div>
+
+<style>
+    .logout-confirm-container {
+        max-width: 500px;
+        margin: 100px auto;
+        padding: 30px;
+        background: var(--card-bg);
+        border-radius: 10px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+        border-top: 5px solid var(--danger);
+    }
+    
+    .logout-icon {
+        font-size: 3rem;
+        color: var(--danger);
+        margin-bottom: 20px;
+    }
+    
+    .logout-message {
+        font-size: 1.1rem;
+        margin-bottom: 30px;
+        color: var(--text-secondary);
+    }
+    
+    .logout-actions {
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+    }
+    
+    .logout-actions form {
+        display: inline-block;
+    }
+    
+    @media (max-width: 576px) {
+        .logout-actions {
+            flex-direction: column;
+        }
+    }
+</style>
+{% endblock %}
