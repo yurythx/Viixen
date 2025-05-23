@@ -12,6 +12,8 @@ Ambiente Virtual
 			
 			-- pip install -r requirements.txt
 
+            pip freeze > requirements.txt
+
 
         caso de erro no windows
 
