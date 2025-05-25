@@ -93,7 +93,6 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-                'django.template.context_processors.request',
             ],
         },
     },
@@ -113,9 +112,9 @@ AUTHENTICATION_BACKENDS = [
     # 'guardian.backends.ObjectPermissionBackend',
 ]
 
-# Configurações do Django-guardian
-GUARDIAN_RAISE_403 = True
-GUARDIAN_RENDER_403 = False
+# Configurações do Django-guardian (remover se não usar)
+# GUARDIAN_RAISE_403 = True
+# GUARDIAN_RENDER_403 = False
 
 # Configurações do Allauth
 ACCOUNT_LOGIN_METHODS = {'email'}
@@ -204,9 +203,9 @@ DATABASES = {
 }
 
 # Suporte para configuração de banco de dados via URL (para PostgreSQL, MySQL, etc.)
-import dj_database_url
 db_from_env = config('DATABASE_URL', default=None)
 if db_from_env and not db_from_env.startswith('sqlite'):
+    import dj_database_url
     DATABASES['default'] = dj_database_url.parse(db_from_env)
 
 
@@ -232,9 +231,9 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = config('LANGUAGE_CODE', default='pt-br')
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = config('TIME_ZONE', default='America/Sao_Paulo')
 
 USE_I18N = True
 

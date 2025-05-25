@@ -19,7 +19,11 @@ class AppControlMiddleware:
 
             # Resolver a URL para obter o app
             resolver_match = resolve(request.path)
-            app_name = resolver_match.app_name.split('.')[1] if '.' in resolver_match.app_name else resolver_match.app_name
+            app_name = resolver_match.app_name
+
+            # Extrair o nome do app se estiver no formato 'apps.nome'
+            if app_name and '.' in app_name:
+                app_name = app_name.split('.')[-1]
 
             # Verificar se o app está ativo
             try:

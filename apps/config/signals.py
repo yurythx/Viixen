@@ -32,18 +32,16 @@ def delete_social_app(sender, instance, **kwargs):
     except SocialApp.DoesNotExist:
         pass
 
-@receiver(post_migrate)
-def register_apps_after_migrate(sender, **kwargs):
+def register_project_apps():
     """
-    Registra automaticamente os apps instalados após a migração.
-    Isso garante que novos apps sejam registrados automaticamente.
+    Função utilitária para registrar apps do projeto.
+    Centraliza a lógica de registro para evitar duplicação.
     """
-    # Evitar execução durante migrações de outros apps
-    if sender.name != 'config':
-        return
+    from django.apps import apps as django_apps
 
     # Apps core que não podem ser desativados
     core_apps = ['accounts', 'config', 'pages']
+    registered_count = 0
 
     # Registrar apps do projeto
     for app_config in django_apps.get_app_configs():
@@ -60,3 +58,21 @@ def register_apps_after_migrate(sender, **kwargs):
                     'description': f'Módulo {app_label.capitalize()} do sistema',
                 }
             )
+
+            if created:
+                registered_count += 1
+
+    return registered_count
+
+
+@receiver(post_migrate)
+def register_apps_after_migrate(sender, **kwargs):
+    """
+    Registra automaticamente os apps instalados após a migração.
+    Isso garante que novos apps sejam registrados automaticamente.
+    """
+    # Evitar execução durante migrações de outros apps
+    if sender.name != 'config':
+        return
+
+    register_project_apps()

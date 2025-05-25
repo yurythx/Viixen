@@ -1,0 +1,166 @@
+{% extends 'base.html' %}
+
+{% block title %}Configurações - {{ block.super }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .config-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 0.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    .config-card {
+        border: none;
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        transition: transform 0.2s ease-in-out;
+    }
+    
+    .config-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    }
+    
+    .config-section-title {
+        color: #495057;
+        border-bottom: 2px solid #e9ecef;
+        padding-bottom: 0.5rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .status-badge {
+        font-size: 0.75rem;
+        padding: 0.25rem 0.5rem;
+    }
+    
+    .nav-link-static {
+        padding: 0.5rem 1rem;
+        color: rgba(255, 255, 255, 0.8);
+    }
+    
+    .breadcrumb-config {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 0.375rem;
+        padding: 0.75rem 1rem;
+        margin-bottom: 1rem;
+    }
+    
+    .breadcrumb-config .breadcrumb-item + .breadcrumb-item::before {
+        color: rgba(255, 255, 255, 0.6);
+    }
+    
+    .breadcrumb-config .breadcrumb-item a {
+        color: rgba(255, 255, 255, 0.8);
+        text-decoration: none;
+    }
+    
+    .breadcrumb-config .breadcrumb-item.active {
+        color: white;
+    }
+</style>
+{% endblock %}
+
+{% block breadcrumb %}
+<div class="config-header p-4">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h1 class="h3 mb-1">
+                <i class="fas fa-cogs me-2"></i>
+                {% block config_title %}Configurações do Sistema{% endblock %}
+            </h1>
+            <p class="mb-0 opacity-75">
+                {% block config_description %}Gerencie as configurações e módulos do sistema{% endblock %}
+            </p>
+        </div>
+        <div class="text-end">
+            <div class="badge bg-white text-dark">
+                <i class="fas fa-user me-1"></i>{{ user.username }}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mt-3">
+        <ol class="breadcrumb breadcrumb-config mb-0">
+            <li class="breadcrumb-item">
+                <a href="{% url 'pages:home' %}">
+                    <i class="fas fa-home me-1"></i>Dashboard
+                </a>
+            </li>
+            <li class="breadcrumb-item">
+                <a href="{% url 'config:config' %}">Configurações</a>
+            </li>
+            {% block config_breadcrumb %}{% endblock %}
+        </ol>
+    </nav>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        {% block config_content %}
+        <div class="config-card card">
+            <div class="card-body">
+                <h5 class="config-section-title">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Bem-vindo ao Painel de Configurações
+                </h5>
+                <p>Use o menu lateral para navegar pelas diferentes seções de configuração.</p>
+            </div>
+        </div>
+        {% endblock %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Adicionar efeitos visuais aos cards de configuração
+    const configCards = document.querySelectorAll('.config-card');
+    
+    configCards.forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-2px)';
+        });
+        
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+        });
+    });
+    
+    // Auto-save para formulários de configuração
+    const configForms = document.querySelectorAll('form[data-auto-save]');
+    
+    configForms.forEach(form => {
+        const inputs = form.querySelectorAll('input, select, textarea');
+        
+        inputs.forEach(input => {
+            input.addEventListener('change', function() {
+                // Mostrar indicador de salvamento
+                const saveIndicator = document.createElement('small');
+                saveIndicator.className = 'text-success ms-2';
+                saveIndicator.innerHTML = '<i class="fas fa-check me-1"></i>Salvo automaticamente';
+                
+                // Remover indicador anterior se existir
+                const existingIndicator = this.parentNode.querySelector('.text-success');
+                if (existingIndicator) {
+                    existingIndicator.remove();
+                }
+                
+                this.parentNode.appendChild(saveIndicator);
+                
+                // Remover indicador após 3 segundos
+                setTimeout(() => {
+                    if (saveIndicator.parentNode) {
+                        saveIndicator.remove();
+                    }
+                }, 3000);
+            });
+        });
+    });
+});
+</script>
+{% endblock %}

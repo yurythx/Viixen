@@ -1,6 +1,8 @@
 from django.test import TestCase
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.core.exceptions import ValidationError
+from django.urls import reverse
+from unittest.mock import patch
 from .models import CustomUser
 from .forms import CustomUserCreationForm, EditProfileForm
 
@@ -83,7 +85,7 @@ class EditProfileFormTests(TestCase):
             'email': 'test@example.com'
         }
         form_files = {'avatar': avatar}
-        
+
         form = EditProfileForm(data=form_data, files=form_files, instance=self.user)
         self.assertTrue(form.is_valid())
 
@@ -100,7 +102,7 @@ class EditProfileFormTests(TestCase):
             'email': 'test@example.com'
         }
         form_files = {'avatar': large_avatar}
-        
+
         form = EditProfileForm(data=form_data, files=form_files, instance=self.user)
         self.assertFalse(form.is_valid())
         self.assertIn('avatar', form.errors)
@@ -109,9 +111,16 @@ class EditProfileFormTests(TestCase):
 class LDAPAuthTests(TestCase):
     @patch('apps.accounts.auth_backends.LDAPBackend.authenticate')
     def test_ldap_auth_success(self, mock_auth):
-        mock_auth.return_value = UserFactory()
-        response = self.client.post(reverse('login'), {
-            'username': 'ldap_user', 
+        # Criar usuário mock para teste LDAP
+        mock_user = CustomUser.objects.create_user(
+            username='ldap_user',
+            email='ldap@example.com',
+            password='valid_pass'
+        )
+        mock_auth.return_value = mock_user
+
+        response = self.client.post(reverse('accounts:login'), {
+            'username': 'ldap_user',
             'password': 'valid_pass'
         })
         self.assertEqual(response.status_code, 302)

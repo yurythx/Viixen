@@ -1,9 +1,14 @@
-{% extends 'base.html' %}
+{% extends 'config/base_config.html' %}
 {% load crispy_forms_tags %}
 
-{% block content %}
-<div class="container py-4">
-    <h1 class="mb-4">Gerenciamento de Módulos</h1>
+{% block config_title %}Gerenciamento de Módulos{% endblock %}
+{% block config_description %}Visualize e gerencie todos os módulos instalados no sistema{% endblock %}
+
+{% block config_breadcrumb %}
+<li class="breadcrumb-item active">Módulos</li>
+{% endblock %}
+
+{% block config_content %}
 
     <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
@@ -77,5 +82,5 @@
             <i class="fas fa-eye"></i> Visualizar Página de Módulo Desabilitado
         </a>
     </div>
-</div>
+
 {% endblock %}

@@ -1,0 +1,140 @@
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary sticky-top">
+    <div class="container-fluid">
+        <!-- Brand -->
+        <a class="navbar-brand d-flex align-items-center" href="{% url 'pages:home' %}">
+            <i class="fas fa-rocket me-2"></i>
+            Viixen
+        </a>
+
+        <!-- Mobile Toggle Button -->
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" 
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <!-- Navbar Content -->
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <!-- Left Side Navigation -->
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}" 
+                       href="{% url 'pages:home' %}">
+                        <i class="fas fa-home me-1"></i>Home
+                    </a>
+                </li>
+                
+                {% if user.is_authenticated %}
+                    <li class="nav-item">
+                        <a class="nav-link {% if 'accounts' in request.resolver_match.namespace %}active{% endif %}" 
+                           href="{% url 'accounts:profile' %}">
+                            <i class="fas fa-user me-1"></i>Perfil
+                        </a>
+                    </li>
+                    
+                    <li class="nav-item">
+                        <a class="nav-link {% if 'articles' in request.resolver_match.namespace %}active{% endif %}" 
+                           href="{% url 'articles:home' %}">
+                            <i class="fas fa-newspaper me-1"></i>Artigos
+                        </a>
+                    </li>
+                {% endif %}
+
+                {% if user.is_staff %}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle {% if 'config' in request.resolver_match.namespace %}active{% endif %}" 
+                           href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-cogs me-1"></i>Administração
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{% url 'config:config' %}">
+                                <i class="fas fa-sliders-h me-2"></i>Configurações
+                            </a></li>
+                            <li><a class="dropdown-item" href="{% url 'config:app-list' %}">
+                                <i class="fas fa-puzzle-piece me-2"></i>Módulos
+                            </a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="/admin/">
+                                <i class="fas fa-shield-alt me-2"></i>Admin Django
+                            </a></li>
+                        </ul>
+                    </li>
+                {% endif %}
+            </ul>
+
+            <!-- Right Side Navigation -->
+            <ul class="navbar-nav">
+                <!-- Notifications (if user is authenticated) -->
+                {% if user.is_authenticated %}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link position-relative" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-bell"></i>
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.6rem;">
+                                3
+                                <span class="visually-hidden">notificações não lidas</span>
+                            </span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><h6 class="dropdown-header">Notificações</h6></li>
+                            <li><a class="dropdown-item" href="#">
+                                <small class="text-muted">Há 5 min</small><br>
+                                Nova mensagem recebida
+                            </a></li>
+                            <li><a class="dropdown-item" href="#">
+                                <small class="text-muted">Há 1 hora</small><br>
+                                Sistema atualizado
+                            </a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item text-center" href="#">Ver todas</a></li>
+                        </ul>
+                    </li>
+                {% endif %}
+
+                <!-- User Menu -->
+                {% if user.is_authenticated %}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" 
+                           data-bs-toggle="dropdown" aria-expanded="false">
+                            {% if user.avatar %}
+                                <img src="{{ user.avatar.url }}" alt="Avatar" class="rounded-circle me-2" 
+                                     style="width: 32px; height: 32px; object-fit: cover;">
+                            {% else %}
+                                <div class="bg-secondary rounded-circle me-2 d-flex align-items-center justify-content-center" 
+                                     style="width: 32px; height: 32px;">
+                                    <i class="fas fa-user text-white" style="font-size: 0.8rem;"></i>
+                                </div>
+                            {% endif %}
+                            <span class="d-none d-md-inline">{{ user.get_full_name|default:user.username }}</span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><h6 class="dropdown-header">{{ user.email }}</h6></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{% url 'accounts:profile' %}">
+                                <i class="fas fa-user me-2"></i>Meu Perfil
+                            </a></li>
+                            <li><a class="dropdown-item" href="{% url 'accounts:edit_profile' %}">
+                                <i class="fas fa-edit me-2"></i>Editar Perfil
+                            </a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item text-danger" href="{% url 'accounts:logout' %}">
+                                <i class="fas fa-sign-out-alt me-2"></i>Sair
+                            </a></li>
+                        </ul>
+                    </li>
+                {% else %}
+                    <!-- Guest Menu -->
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'accounts:login' %}">
+                            <i class="fas fa-sign-in-alt me-1"></i>Entrar
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="btn btn-outline-light btn-sm ms-2" href="{% url 'accounts:register' %}">
+                            <i class="fas fa-user-plus me-1"></i>Registrar
+                        </a>
+                    </li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+</nav>

@@ -5,7 +5,7 @@ from django.utils import timezone
 from django.core.validators import FileExtensionValidator
 
 def avatar_upload_path(instance, filename):
-    return f'avatars/{instance.username}/{filename}'
+    return f'avatar/{instance.username}/{filename}'
 
 class Departamento(models.Model):
     nome = models.CharField(max_length=100)

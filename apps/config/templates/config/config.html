@@ -1,9 +1,10 @@
-{% extends 'base.html' %}
+{% extends 'config/base_config.html' %}
 {% load crispy_forms_tags %}
 
-{% block content %}
-<div class="container py-4">
-    <h1 class="mb-4">Configurações do Sistema</h1>
+{% block config_title %}Configurações do Sistema{% endblock %}
+{% block config_description %}Gerencie as configurações gerais e módulos do sistema{% endblock %}
+
+{% block config_content %}
 
     <!-- Configurações do Sistema -->
     <div class="card mb-4">
@@ -104,9 +105,9 @@
                                     <dt class="col-sm-3">Status</dt>
                                     <dd class="col-sm-9">{{ email_config.is_active|yesno:"Ativo,Inativo" }}</dd>
                                 </dl>
-                                <a href="{% url 'config:email-update' email_config.slug %}" class="btn btn-primary">
+                                <button class="btn btn-primary" onclick="alert('Funcionalidade Email em desenvolvimento')">
                                     <i class="fas fa-edit"></i> Editar Configurações
-                                </a>
+                                </button>
                             {% else %}
                                 <p>Nenhuma configuração de email encontrada.</p>
                             {% endif %}
@@ -137,9 +138,9 @@
                                     <dt class="col-sm-3">Status</dt>
                                     <dd class="col-sm-9">{{ ldap_config.is_active|yesno:"Ativo,Inativo" }}</dd>
                                 </dl>
-                                <a href="{% url 'config:ldap-update' ldap_config.slug %}" class="btn btn-primary">
+                                <button class="btn btn-primary" onclick="alert('Funcionalidade LDAP em desenvolvimento')">
                                     <i class="fas fa-edit"></i> Editar Configurações LDAP
-                                </a>
+                                </button>
                             {% else %}
                                 <p>Nenhuma configuração LDAP encontrada.</p>
                             {% endif %}
@@ -195,5 +196,5 @@
         </div>
     </div>
     {% endif %}
-</div>
+
 {% endblock %}
