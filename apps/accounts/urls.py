@@ -22,7 +22,6 @@ urlpatterns = [
     # Login e logout personalizados com mensagens
     path('login/', CustomLoginView.as_view(), name='login'),
     path('logout/', CustomLogoutView.as_view(), name='logout'),
-    path('logout/confirm/', CustomLogoutView.as_view(template_name='accounts/logout_confirm.html'), name='logout_confirm'),
 
     # Perfil
     path('profile/', ProfileView.as_view(), name='profile'),

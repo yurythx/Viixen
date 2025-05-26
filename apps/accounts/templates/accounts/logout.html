@@ -1,4 +1,4 @@
-{% extends "accounts/base_auth.html" %}
+{% extends "layouts/auth/base_auth.html" %}
 
 {% block title %}{% if user.is_authenticated %}Confirmar Logout{% else %}Desconectado{% endif %}{% endblock %}
 
@@ -13,6 +13,8 @@
             <p class="logout-message">Tem certeza que deseja sair do sistema? Você precisará fazer login novamente para acessar sua conta.</p>
 
             <div class="logout-actions">
+
+                
                 <form method="post" action="{% url 'accounts:logout' %}">
                     {% csrf_token %}
                     <button type="submit" class="btn btn-danger">

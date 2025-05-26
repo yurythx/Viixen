@@ -1,4 +1,4 @@
-from django.contrib.admin.views.decorators import staff_member_required
+from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
 from django.views.generic import TemplateView, UpdateView, ListView, View
 from django.urls import reverse_lazy
@@ -6,10 +6,27 @@ from django.shortcuts import redirect, render
 from django.contrib import messages
 from django.http import HttpResponse
 from django.db import models
-from .models import SocialProviderConfig, EmailConfig, SystemConfig, AppConfig, LDAPConfig, EnvironmentVariable, DatabaseConfig
+from django.core.exceptions import PermissionDenied
+from .models import (
+    SocialProviderConfig, EmailConfig, SystemConfig, AppConfig, LDAPConfig,
+    EnvironmentVariable, DatabaseConfig, Widget, MenuConfig, Plugin, ConfigBackup
+)
 from .forms import SocialProviderConfigForm, EmailConfigForm, SystemConfigForm, AppConfigForm, EnvironmentVariableForm, EnvironmentVariableFilterForm, DatabaseConfigForm, LDAPConfigForm
 
-@method_decorator(staff_member_required, name='dispatch')
+def staff_required(view_func):
+    """Decorator personalizado que verifica se o usuário é staff e redireciona para o login correto."""
+    def _wrapped_view(request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            from django.contrib.auth.views import redirect_to_login
+            return redirect_to_login(request.get_full_path())
+
+        if not request.user.is_staff:
+            raise PermissionDenied("Você precisa ser um usuário staff para acessar esta página.")
+
+        return view_func(request, *args, **kwargs)
+    return _wrapped_view
+
+@method_decorator(staff_required, name='dispatch')
 class ConfigView(TemplateView):
     template_name = 'config/config.html'
 
@@ -26,17 +43,85 @@ class ConfigView(TemplateView):
             context['social_providers'] = SocialProviderConfig.objects.all()
             context['email_config'] = EmailConfig.objects.first()
             context['ldap_config'] = LDAPConfig.objects.first()
+
+            # Estatísticas de Social Providers
+            context['social_provider_count'] = SocialProviderConfig.objects.count()
+            context['active_social_provider_count'] = SocialProviderConfig.objects.filter(is_active=True).count()
+
+            # Estatísticas de Email
+            context['email_config_count'] = EmailConfig.objects.count()
+            context['active_email_config_count'] = EmailConfig.objects.filter(is_active=True).count()
+
+            # Estatísticas de LDAP
+            context['ldap_config_count'] = LDAPConfig.objects.count()
+            context['active_ldap_config_count'] = LDAPConfig.objects.filter(is_active=True).count()
+
+            # Estatísticas de Environment Variables
+            context['env_variable_count'] = EnvironmentVariable.objects.count()
+            context['active_env_variable_count'] = EnvironmentVariable.objects.filter(is_active=True).count()
+            context['sensitive_env_variable_count'] = EnvironmentVariable.objects.filter(is_sensitive=True).count()
+
+            # Estatísticas de Database Config
+            context['database_config_count'] = DatabaseConfig.objects.count()
+            context['active_database_config_count'] = DatabaseConfig.objects.filter(is_active=True).count()
+
+            # Estatísticas de Widgets
+            context['widget_count'] = Widget.objects.count()
+            context['active_widget_count'] = Widget.objects.filter(is_active=True).count()
+
+            # Estatísticas de Menus
+            context['menu_count'] = MenuConfig.objects.count()
+            context['active_menu_count'] = MenuConfig.objects.filter(is_active=True).count()
+
+            # Estatísticas de Plugins
+            context['plugin_count'] = Plugin.objects.count()
+            context['active_plugin_count'] = Plugin.objects.filter(status='active').count()
+
+            # Estatísticas de Backups
+            context['backup_count'] = ConfigBackup.objects.count()
+            context['protected_backup_count'] = ConfigBackup.objects.filter(is_protected=True).count()
+
+            # Último backup
+            last_backup = ConfigBackup.objects.order_by('-created_at').first()
+            context['last_backup_date'] = last_backup.created_at if last_backup else None
         else:
             context['is_admin'] = False
 
         return context
 
-@method_decorator(staff_member_required, name='dispatch')
+@method_decorator(staff_required, name='dispatch')
+class SocialProviderConfigListView(ListView):
+    """View para listar provedores sociais"""
+    model = SocialProviderConfig
+    template_name = 'config/social_provider_list.html'
+    context_object_name = 'social_providers'
+    ordering = ['-is_active', 'provider']
+
+
+@method_decorator(staff_required, name='dispatch')
+class SocialProviderConfigCreateView(View):
+    """View para criar novo provedor social"""
+    template_name = 'config/social_provider_form.html'
+
+    def get(self, request):
+        form = SocialProviderConfigForm()
+        return render(request, self.template_name, {'form': form, 'action': 'Criar'})
+
+    def post(self, request):
+        form = SocialProviderConfigForm(request.POST)
+        if form.is_valid():
+            provider_config = form.save()
+            messages.success(request, f'Provedor social "{provider_config.provider}" criado com sucesso!')
+            return redirect('config:social-provider-list')
+        return render(request, self.template_name, {'form': form, 'action': 'Criar'})
+
+
+@method_decorator(staff_required, name='dispatch')
 class SocialProviderConfigUpdateView(UpdateView):
     model = SocialProviderConfig
     form_class = SocialProviderConfigForm
     template_name = 'config/social_provider_form.html'
-    success_url = reverse_lazy('config:config')
+    success_url = reverse_lazy('config:social-provider-list')
 
     def dispatch(self, request, *args, **kwargs):
         # Verificar se o usuário é admin ou superuser
@@ -49,12 +134,39 @@ class SocialProviderConfigUpdateView(UpdateView):
         messages.success(self.request, 'Configurações do provedor social atualizadas com sucesso!')
         return super().form_valid(form)
 
-@method_decorator(staff_member_required, name='dispatch')
+@method_decorator(staff_required, name='dispatch')
+class EmailConfigListView(ListView):
+    """View para listar configurações de email"""
+    model = EmailConfig
+    template_name = 'config/email_config_list.html'
+    context_object_name = 'email_configs'
+    ordering = ['-is_active', 'email_host']
+
+
+@method_decorator(staff_required, name='dispatch')
+class EmailConfigCreateView(View):
+    """View para criar nova configuração de email"""
+    template_name = 'config/email_config_form.html'
+
+    def get(self, request):
+        form = EmailConfigForm()
+        return render(request, self.template_name, {'form': form, 'action': 'Criar'})
+
+    def post(self, request):
+        form = EmailConfigForm(request.POST)
+        if form.is_valid():
+            email_config = form.save()
+            messages.success(request, f'Configuração de email criada com sucesso!')
+            return redirect('config:email-list')
+        return render(request, self.template_name, {'form': form, 'action': 'Criar'})
+
+
+@method_decorator(staff_required, name='dispatch')
 class EmailConfigUpdateView(UpdateView):
     model = EmailConfig
     form_class = EmailConfigForm
     template_name = 'config/email_config_form.html'
-    success_url = reverse_lazy('config:config')
+    success_url = reverse_lazy('config:email-list')
 
     def dispatch(self, request, *args, **kwargs):
         # Verificar se o usuário é admin ou superuser
@@ -83,12 +195,38 @@ class EmailConfigUpdateView(UpdateView):
         messages.success(self.request, 'Configurações de email atualizadas com sucesso!')
         return super().form_valid(form)
 
-@method_decorator(staff_member_required, name='dispatch')
+@method_decorator(staff_required, name='dispatch')
 class SystemConfigUpdateView(UpdateView):
     model = SystemConfig
     form_class = SystemConfigForm
     template_name = 'config/system_config_form.html'
     success_url = reverse_lazy('config:config')
+
+    def get_object(self, queryset=None):
+        """Retorna o objeto SystemConfig ou cria um se não existir"""
+        try:
+            return SystemConfig.objects.get(slug='system-config')
+        except SystemConfig.DoesNotExist:
+            # Criar configuração padrão se não existir
+            return SystemConfig.objects.create(
+                site_name='Viixen',
+                site_description='Sistema de Gerenciamento Modular',
+                maintenance_mode=False,
+                allow_registration=True,
+                require_email_verification=False,
+                enable_app_management=True,
+                theme='default',
+                primary_color='#4361ee',
+                secondary_color='#6c757d',
+                accent_color='#f72585',
+                sidebar_style='default',
+                header_style='default',
+                enable_dark_mode_toggle=True,
+                enable_breadcrumbs=True,
+                enable_search=True,
+                enable_notifications=True,
+                notification_position='top-right'
+            )
 
     def get_form(self, form_class=None):
         form = super().get_form(form_class)
@@ -102,7 +240,7 @@ class SystemConfigUpdateView(UpdateView):
         messages.success(self.request, 'Configurações do sistema atualizadas com sucesso!')
         return super().form_valid(form)
 
-@method_decorator(staff_member_required, name='dispatch')
+@method_decorator(staff_required, name='dispatch')
 class AppConfigListView(ListView):
     model = AppConfig
     template_name = 'config/app_config_list.html'
@@ -116,7 +254,25 @@ class AppConfigListView(ListView):
             return redirect('config:config')
         return super().dispatch(request, *args, **kwargs)
 
-@method_decorator(staff_member_required, name='dispatch')
+@method_decorator(staff_required, name='dispatch')
+class AppConfigCreateView(View):
+    """View para criar nova configuração de app"""
+    template_name = 'config/app_config_form.html'
+
+    def get(self, request):
+        form = AppConfigForm()
+        return render(request, self.template_name, {'form': form, 'action': 'Criar'})
+
+    def post(self, request):
+        form = AppConfigForm(request.POST)
+        if form.is_valid():
+            app_config = form.save()
+            messages.success(request, f'Configuração do app "{app_config.name}" criada com sucesso!')
+            return redirect('config:app-list')
+        return render(request, self.template_name, {'form': form, 'action': 'Criar'})
+
+
+@method_decorator(staff_required, name='dispatch')
 class AppConfigUpdateView(UpdateView):
     model = AppConfig
     form_class = AppConfigForm
@@ -156,7 +312,7 @@ class ModuleDisabledTestView(View):
         return render(request, 'config/module_disabled.html', context)
 
 
-@method_decorator(staff_member_required, name='dispatch')
+@method_decorator(staff_required, name='dispatch')
 class EnvironmentVariableListView(ListView):
     """View para listar e filtrar variáveis de ambiente"""
     model = EnvironmentVariable
@@ -210,7 +366,7 @@ class EnvironmentVariableListView(ListView):
         return context
 
 
-@method_decorator(staff_member_required, name='dispatch')
+@method_decorator(staff_required, name='dispatch')
 class EnvironmentVariableCreateView(View):
     """View para criar nova variável de ambiente"""
     template_name = 'config/environment_variable_form.html'
@@ -228,7 +384,7 @@ class EnvironmentVariableCreateView(View):
         return render(request, self.template_name, {'form': form, 'action': 'Criar'})
 
 
-@method_decorator(staff_member_required, name='dispatch')
+@method_decorator(staff_required, name='dispatch')
 class EnvironmentVariableUpdateView(UpdateView):
     """View para editar variável de ambiente"""
     model = EnvironmentVariable
@@ -246,7 +402,7 @@ class EnvironmentVariableUpdateView(UpdateView):
         return super().form_valid(form)
 
 
-@method_decorator(staff_member_required, name='dispatch')
+@method_decorator(staff_required, name='dispatch')
 class EnvironmentVariableDeleteView(View):
     """View para deletar variável de ambiente"""
 
@@ -262,7 +418,7 @@ class EnvironmentVariableDeleteView(View):
         return redirect('config:env-variables')
 
 
-@method_decorator(staff_member_required, name='dispatch')
+@method_decorator(staff_required, name='dispatch')
 class EnvironmentVariableExportView(View):
     """View para exportar variáveis como arquivo .env"""
 
@@ -309,7 +465,7 @@ class EnvironmentVariableExportView(View):
         return '\n'.join(content)
 
 
-@method_decorator(staff_member_required, name='dispatch')
+@method_decorator(staff_required, name='dispatch')
 class EnvironmentVariableImportView(View):
     """View para importar variáveis de um arquivo .env"""
     template_name = 'config/environment_variable_import.html'
@@ -380,7 +536,7 @@ class EnvironmentVariableImportView(View):
         return imported_count
 
 
-@method_decorator(staff_member_required, name='dispatch')
+@method_decorator(staff_required, name='dispatch')
 class DatabaseConfigListView(ListView):
     """View para listar configurações de banco de dados"""
     model = DatabaseConfig
@@ -389,7 +545,7 @@ class DatabaseConfigListView(ListView):
     ordering = ['-is_default', 'name']
 
 
-@method_decorator(staff_member_required, name='dispatch')
+@method_decorator(staff_required, name='dispatch')
 class DatabaseConfigCreateView(View):
     """View para criar nova configuração de banco"""
     template_name = 'config/database_config_form.html'
@@ -407,7 +563,7 @@ class DatabaseConfigCreateView(View):
         return render(request, self.template_name, {'form': form, 'action': 'Criar'})
 
 
-@method_decorator(staff_member_required, name='dispatch')
+@method_decorator(staff_required, name='dispatch')
 class DatabaseConfigUpdateView(UpdateView):
     """View para editar configuração de banco"""
     model = DatabaseConfig
@@ -425,7 +581,7 @@ class DatabaseConfigUpdateView(UpdateView):
         return super().form_valid(form)
 
 
-@method_decorator(staff_member_required, name='dispatch')
+@method_decorator(staff_required, name='dispatch')
 class DatabaseConfigDeleteView(View):
     """View para deletar configuração de banco"""
 
@@ -447,7 +603,7 @@ class DatabaseConfigDeleteView(View):
         return redirect('config:database-list')
 
 
-@method_decorator(staff_member_required, name='dispatch')
+@method_decorator(staff_required, name='dispatch')
 class DatabaseConfigTestView(View):
     """View para testar conexão com banco"""
 
@@ -467,7 +623,7 @@ class DatabaseConfigTestView(View):
         return redirect('config:database-list')
 
 
-@method_decorator(staff_member_required, name='dispatch')
+@method_decorator(staff_required, name='dispatch')
 class LDAPConfigListView(ListView):
     """View para listar configurações LDAP"""
     model = LDAPConfig
@@ -476,7 +632,7 @@ class LDAPConfigListView(ListView):
     ordering = ['-is_active', 'server']
 
 
-@method_decorator(staff_member_required, name='dispatch')
+@method_decorator(staff_required, name='dispatch')
 class LDAPConfigCreateView(View):
     """View para criar nova configuração LDAP"""
     template_name = 'config/ldap_config_form.html'
@@ -494,7 +650,7 @@ class LDAPConfigCreateView(View):
         return render(request, self.template_name, {'form': form, 'action': 'Criar'})
 
 
-@method_decorator(staff_member_required, name='dispatch')
+@method_decorator(staff_required, name='dispatch')
 class LDAPConfigUpdateView(UpdateView):
     """View para editar configuração LDAP"""
     model = LDAPConfig
@@ -512,7 +668,7 @@ class LDAPConfigUpdateView(UpdateView):
         return super().form_valid(form)
 
 
-@method_decorator(staff_member_required, name='dispatch')
+@method_decorator(staff_required, name='dispatch')
 class LDAPConfigDeleteView(View):
     """View para deletar configuração LDAP"""
 
@@ -528,7 +684,7 @@ class LDAPConfigDeleteView(View):
         return redirect('config:ldap-list')
 
 
-@method_decorator(staff_member_required, name='dispatch')
+@method_decorator(staff_required, name='dispatch')
 class LDAPConfigTestView(View):
     """View para testar conexão LDAP"""
 

@@ -2,9 +2,14 @@ from django.urls import path
 from .views import (
     ConfigView,
     SocialProviderConfigUpdateView,
+    SocialProviderConfigListView,
+    SocialProviderConfigCreateView,
     EmailConfigUpdateView,
+    EmailConfigListView,
+    EmailConfigCreateView,
     SystemConfigUpdateView,
     AppConfigListView,
+    AppConfigCreateView,
     AppConfigUpdateView,
     ModuleDisabledTestView,
     EnvironmentVariableListView,
@@ -25,17 +30,33 @@ from .views import (
     LDAPConfigTestView,
 )
 
+# Importar views avançadas
+from .views_advanced import (
+    WidgetListView, WidgetCreateView, WidgetUpdateView, WidgetDeleteView,
+    MenuConfigListView, MenuConfigCreateView, MenuConfigUpdateView, MenuConfigDeleteView,
+    PluginListView, PluginCreateView, PluginUpdateView, PluginDeleteView,
+    ConfigBackupListView, plugin_toggle, widget_reorder, create_backup, download_backup
+)
+
 app_name = 'config'
 
 urlpatterns = [
     path('', ConfigView.as_view(), name='config'),
-    path('social-provider/<slug:slug>/', SocialProviderConfigUpdateView.as_view(), name='social-provider-update'),
-    path('email/', EmailConfigUpdateView.as_view(), name='email-config'),
-    path('email/<slug:slug>/', EmailConfigUpdateView.as_view(), name='email-update'),
     path('system/<slug:slug>/', SystemConfigUpdateView.as_view(), name='system-update'),
     path('apps/', AppConfigListView.as_view(), name='app-list'),
+    path('apps/create/', AppConfigCreateView.as_view(), name='app-create'),
     path('apps/<int:pk>/', AppConfigUpdateView.as_view(), name='app-update'),
     path('test-module-disabled/', ModuleDisabledTestView.as_view(), name='test-module-disabled'),
+
+    # Email Configuration URLs
+    path('email/', EmailConfigListView.as_view(), name='email-list'),
+    path('email/create/', EmailConfigCreateView.as_view(), name='email-create'),
+    path('email/<slug:slug>/', EmailConfigUpdateView.as_view(), name='email-update'),
+
+    # Social Provider URLs
+    path('social-providers/', SocialProviderConfigListView.as_view(), name='social-provider-list'),
+    path('social-providers/create/', SocialProviderConfigCreateView.as_view(), name='social-provider-create'),
+    path('social-providers/<slug:slug>/', SocialProviderConfigUpdateView.as_view(), name='social-provider-update'),
 
     # Environment Variables URLs
     path('environment-variables/', EnvironmentVariableListView.as_view(), name='env-variables'),
@@ -58,4 +79,29 @@ urlpatterns = [
     path('ldap/<int:pk>/edit/', LDAPConfigUpdateView.as_view(), name='ldap-edit'),
     path('ldap/<int:pk>/delete/', LDAPConfigDeleteView.as_view(), name='ldap-delete'),
     path('ldap/<int:pk>/test/', LDAPConfigTestView.as_view(), name='ldap-test'),
+
+    # Widget Management URLs
+    path('widgets/', WidgetListView.as_view(), name='widget-list'),
+    path('widgets/create/', WidgetCreateView.as_view(), name='widget-create'),
+    path('widgets/<int:pk>/edit/', WidgetUpdateView.as_view(), name='widget-edit'),
+    path('widgets/<int:pk>/delete/', WidgetDeleteView.as_view(), name='widget-delete'),
+    path('widgets/reorder/', widget_reorder, name='widget-reorder'),
+
+    # Menu Configuration URLs
+    path('menus/', MenuConfigListView.as_view(), name='menu-list'),
+    path('menus/create/', MenuConfigCreateView.as_view(), name='menu-create'),
+    path('menus/<int:pk>/edit/', MenuConfigUpdateView.as_view(), name='menu-edit'),
+    path('menus/<int:pk>/delete/', MenuConfigDeleteView.as_view(), name='menu-delete'),
+
+    # Plugin Management URLs
+    path('plugins/', PluginListView.as_view(), name='plugin-list'),
+    path('plugins/create/', PluginCreateView.as_view(), name='plugin-create'),
+    path('plugins/<int:pk>/edit/', PluginUpdateView.as_view(), name='plugin-edit'),
+    path('plugins/<int:pk>/delete/', PluginDeleteView.as_view(), name='plugin-delete'),
+    path('plugins/<int:pk>/toggle/', plugin_toggle, name='plugin-toggle'),
+
+    # Backup Management URLs
+    path('backups/', ConfigBackupListView.as_view(), name='backup-list'),
+    path('backups/create/', create_backup, name='backup-create'),
+    path('backups/<int:pk>/download/', download_backup, name='backup-download'),
 ]

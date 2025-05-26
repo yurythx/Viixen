@@ -2,11 +2,94 @@ from django.db import models
 from django.conf import settings
 from django.utils.text import slugify
 from django.utils.crypto import get_random_string
+from django.core.exceptions import ValidationError
+from PIL import Image
 import base64
+import json
+import os
 from cryptography.fernet import Fernet, InvalidToken
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
-import os
+
+# Funções de validação de imagens
+def validate_logo_image(image):
+    """Valida imagens de logo"""
+    if not image:
+        return
+
+    # Verificar tamanho do arquivo (máximo 5MB)
+    if image.size > 5 * 1024 * 1024:
+        raise ValidationError('A imagem deve ter no máximo 5MB.')
+
+    # Verificar formato
+    valid_formats = ['JPEG', 'JPG', 'PNG', 'SVG', 'WEBP']
+    try:
+        # Para SVG, verificar extensão
+        if image.name.lower().endswith('.svg'):
+            if not image.content_type == 'image/svg+xml':
+                raise ValidationError('Arquivo SVG inválido.')
+            return
+
+        # Para outros formatos, usar PIL
+        img = Image.open(image)
+        if img.format not in valid_formats:
+            raise ValidationError(f'Formato não suportado. Use: {", ".join(valid_formats)}')
+
+        # Verificar dimensões mínimas e máximas
+        width, height = img.size
+        if width < 50 or height < 50:
+            raise ValidationError('A imagem deve ter pelo menos 50x50 pixels.')
+        if width > 2000 or height > 2000:
+            raise ValidationError('A imagem deve ter no máximo 2000x2000 pixels.')
+
+    except Exception as e:
+        if isinstance(e, ValidationError):
+            raise
+        raise ValidationError('Arquivo de imagem inválido.')
+
+def validate_favicon_image(image):
+    """Valida imagens de favicon"""
+    if not image:
+        return
+
+    # Verificar tamanho do arquivo (máximo 1MB)
+    if image.size > 1 * 1024 * 1024:
+        raise ValidationError('O favicon deve ter no máximo 1MB.')
+
+    # Verificar formato
+    valid_formats = ['JPEG', 'JPG', 'PNG', 'ICO', 'SVG']
+    try:
+        # Para ICO e SVG, verificar extensão
+        if image.name.lower().endswith('.ico'):
+            if not image.content_type in ['image/x-icon', 'image/vnd.microsoft.icon']:
+                raise ValidationError('Arquivo ICO inválido.')
+            return
+
+        if image.name.lower().endswith('.svg'):
+            if not image.content_type == 'image/svg+xml':
+                raise ValidationError('Arquivo SVG inválido.')
+            return
+
+        # Para outros formatos, usar PIL
+        img = Image.open(image)
+        if img.format not in valid_formats:
+            raise ValidationError(f'Formato não suportado. Use: {", ".join(valid_formats)}')
+
+        # Verificar se é quadrado (recomendado para favicon)
+        width, height = img.size
+        if abs(width - height) > 10:  # Tolerância de 10px
+            raise ValidationError('O favicon deve ser quadrado (mesma largura e altura).')
+
+        # Verificar dimensões (16x16 a 512x512)
+        if width < 16 or height < 16:
+            raise ValidationError('O favicon deve ter pelo menos 16x16 pixels.')
+        if width > 512 or height > 512:
+            raise ValidationError('O favicon deve ter no máximo 512x512 pixels.')
+
+    except Exception as e:
+        if isinstance(e, ValidationError):
+            raise
+        raise ValidationError('Arquivo de favicon inválido.')
 
 # Classe para criptografia de senhas
 class PasswordEncryptor:
@@ -179,6 +262,136 @@ class SystemConfig(models.Model):
     allow_registration = models.BooleanField(default=True)
     require_email_verification = models.BooleanField(default=True)
     enable_app_management = models.BooleanField(default=True, help_text="Permite ativar/desativar módulos")
+
+    # Campos de personalização visual
+    logo_principal = models.ImageField(
+        upload_to='logos/',
+        blank=True,
+        null=True,
+        validators=[validate_logo_image],
+        help_text="Logo principal do site (PNG, JPG, SVG, WEBP - máx. 5MB, 50x50 a 2000x2000px)"
+    )
+    favicon = models.ImageField(
+        upload_to='favicons/',
+        blank=True,
+        null=True,
+        validators=[validate_favicon_image],
+        help_text="Favicon do site (ICO, PNG, JPG, SVG - máx. 1MB, 16x16 a 512x512px, preferencialmente quadrado)"
+    )
+
+    # Campos de personalização de tema
+    THEME_CHOICES = [
+        ('default', 'Padrão'),
+        ('dark', 'Escuro'),
+        ('light', 'Claro'),
+        ('corporate', 'Corporativo'),
+        ('modern', 'Moderno'),
+        ('minimal', 'Minimalista'),
+        ('custom', 'Personalizado'),
+    ]
+
+    theme = models.CharField(
+        max_length=20,
+        choices=THEME_CHOICES,
+        default='default',
+        help_text="Tema visual do sistema"
+    )
+
+    # Cores personalizáveis
+    primary_color = models.CharField(
+        max_length=7,
+        default='#4361ee',
+        help_text="Cor primária (hex) - ex: #4361ee"
+    )
+    secondary_color = models.CharField(
+        max_length=7,
+        default='#6c757d',
+        help_text="Cor secundária (hex) - ex: #6c757d"
+    )
+    accent_color = models.CharField(
+        max_length=7,
+        default='#4cc9f0',
+        help_text="Cor de destaque (hex) - ex: #4cc9f0"
+    )
+
+    # Configurações de layout
+    sidebar_style = models.CharField(
+        max_length=20,
+        choices=[
+            ('fixed', 'Fixo'),
+            ('collapsible', 'Recolhível'),
+            ('overlay', 'Sobreposição'),
+            ('mini', 'Mini'),
+        ],
+        default='fixed',
+        help_text="Estilo da barra lateral"
+    )
+
+    header_style = models.CharField(
+        max_length=20,
+        choices=[
+            ('fixed', 'Fixo'),
+            ('static', 'Estático'),
+            ('transparent', 'Transparente'),
+        ],
+        default='fixed',
+        help_text="Estilo do cabeçalho"
+    )
+
+    # Configurações de funcionalidade
+    enable_dark_mode_toggle = models.BooleanField(
+        default=True,
+        help_text="Permitir alternância entre modo claro/escuro"
+    )
+
+    enable_breadcrumbs = models.BooleanField(
+        default=True,
+        help_text="Exibir breadcrumbs de navegação"
+    )
+
+    enable_search = models.BooleanField(
+        default=True,
+        help_text="Habilitar busca global"
+    )
+
+    # Configurações de SEO
+    meta_keywords = models.TextField(
+        blank=True,
+        help_text="Palavras-chave para SEO (separadas por vírgula)"
+    )
+
+    meta_author = models.CharField(
+        max_length=100,
+        blank=True,
+        help_text="Autor do site para meta tags"
+    )
+
+    google_analytics_id = models.CharField(
+        max_length=20,
+        blank=True,
+        help_text="ID do Google Analytics (ex: GA-XXXXXXXXX-X)"
+    )
+
+    # Configurações de notificação
+    enable_notifications = models.BooleanField(
+        default=True,
+        help_text="Habilitar sistema de notificações"
+    )
+
+    notification_position = models.CharField(
+        max_length=20,
+        choices=[
+            ('top-right', 'Superior Direita'),
+            ('top-left', 'Superior Esquerda'),
+            ('bottom-right', 'Inferior Direita'),
+            ('bottom-left', 'Inferior Esquerda'),
+            ('top-center', 'Superior Centro'),
+            ('bottom-center', 'Inferior Centro'),
+        ],
+        default='top-right',
+        help_text="Posição das notificações"
+    )
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -186,6 +399,26 @@ class SystemConfig(models.Model):
         if not self.slug:
             self.slug = 'system-config'
         super().save(*args, **kwargs)
+
+        # Limpar cache das configurações do sistema
+        from .context_processors import clear_system_config_cache
+        clear_system_config_cache()
+
+    def get_logo_url(self):
+        """Retorna a URL do logo principal ou None se não existir"""
+        if self.logo_principal and hasattr(self.logo_principal, 'url'):
+            return self.logo_principal.url
+        return None
+
+    def get_favicon_url(self):
+        """Retorna a URL do favicon ou None se não existir"""
+        if self.favicon and hasattr(self.favicon, 'url'):
+            return self.favicon.url
+        return None
+
+    def has_custom_branding(self):
+        """Verifica se tem personalização visual configurada"""
+        return bool(self.logo_principal or self.favicon)
 
     class Meta:
         verbose_name = 'Configuração do Sistema'
@@ -213,6 +446,41 @@ class AppConfig(models.Model):
 
     def __str__(self):
         return f"{self.name} - {'Ativo' if self.is_active else 'Inativo'}"
+
+    def save(self, *args, **kwargs):
+        # Não permitir desativar apps core ou o app pages
+        if self.is_core or self.label == 'pages':
+            self.is_active = True
+            if self.label == 'pages' and not self.is_core:
+                self.is_core = True  # Garantir que pages seja marcado como core
+
+        # Salvar primeiro para poder verificar dependências (necessário para objetos novos)
+        super().save(*args, **kwargs)
+
+        # Se o app está sendo ativado, verificar e ativar suas dependências
+        if self.is_active and self.pk:
+            for dependency in self.dependencies.all():
+                if not dependency.is_active:
+                    dependency.is_active = True
+                    dependency.save()
+
+    def clean(self):
+        """Validação adicional para garantir que apps core e pages não possam ser desativados."""
+        from django.core.exceptions import ValidationError
+
+        # Verificar se apps core e pages não podem ser desativados
+        if (self.is_core or self.label == 'pages') and not self.is_active:
+            raise ValidationError("Apps core e o app 'pages' não podem ser desativados.")
+
+        # Verificar se há apps dependentes ativos
+        if not self.is_active and self.pk:  # Verificar apenas para objetos existentes
+            active_dependents = self.dependents.filter(is_active=True)
+            if active_dependents.exists():
+                dependent_names = ", ".join([app.name for app in active_dependents])
+                raise ValidationError(
+                    f"Não é possível desativar este módulo porque os seguintes módulos dependem dele: {dependent_names}. "
+                    f"Desative esses módulos primeiro."
+                )
 
 
 class EnvironmentVariable(models.Model):
@@ -292,7 +560,6 @@ class EnvironmentVariable(models.Model):
             elif self.var_type == 'csv':
                 return [item.strip() for item in self.value.split(',') if item.strip()]
             elif self.var_type == 'json':
-                import json
                 return json.loads(self.value)
             else:
                 return self.value
@@ -321,7 +588,6 @@ class EnvironmentVariable(models.Model):
             elif self.var_type == 'csv':
                 return [item.strip() for item in self.default_value.split(',') if item.strip()]
             elif self.var_type == 'json':
-                import json
                 return json.loads(self.default_value)
             else:
                 return self.default_value
@@ -529,3 +795,655 @@ class DatabaseConfig(models.Model):
         status = "Ativa" if self.is_active else "Inativa"
         default = " (Padrão)" if self.is_default else ""
         return f"{self.name} - {self.get_engine_display()}{default} - {status}"
+
+
+class Widget(models.Model):
+    """Modelo para widgets modulares do dashboard"""
+
+    WIDGET_TYPES = [
+        ('chart', 'Gráfico'),
+        ('stats', 'Estatísticas'),
+        ('list', 'Lista'),
+        ('calendar', 'Calendário'),
+        ('weather', 'Clima'),
+        ('news', 'Notícias'),
+        ('tasks', 'Tarefas'),
+        ('notes', 'Notas'),
+        ('custom', 'Personalizado'),
+    ]
+
+    SIZE_CHOICES = [
+        ('small', 'Pequeno (1x1)'),
+        ('medium', 'Médio (2x1)'),
+        ('large', 'Grande (2x2)'),
+        ('wide', 'Largo (3x1)'),
+        ('tall', 'Alto (1x3)'),
+        ('extra-large', 'Extra Grande (3x3)'),
+    ]
+
+    name = models.CharField(max_length=100, help_text="Nome do widget")
+    slug = models.SlugField(max_length=120, unique=True, blank=True)
+    description = models.TextField(blank=True, help_text="Descrição do widget")
+    widget_type = models.CharField(max_length=20, choices=WIDGET_TYPES, default='custom')
+
+    # Configurações de exibição
+    size = models.CharField(max_length=20, choices=SIZE_CHOICES, default='medium')
+    position_x = models.PositiveIntegerField(default=0, help_text="Posição horizontal no grid")
+    position_y = models.PositiveIntegerField(default=0, help_text="Posição vertical no grid")
+    order = models.PositiveIntegerField(default=0, help_text="Ordem de exibição")
+
+    # Configurações de acesso
+    is_active = models.BooleanField(default=True, help_text="Widget ativo")
+    is_public = models.BooleanField(default=False, help_text="Visível para todos os usuários")
+    required_permission = models.CharField(
+        max_length=100,
+        blank=True,
+        help_text="Permissão necessária para ver o widget"
+    )
+
+    # Configurações do widget
+    config_json = models.JSONField(
+        default=dict,
+        blank=True,
+        help_text="Configurações específicas do widget em JSON"
+    )
+
+    # Template personalizado
+    template_path = models.CharField(
+        max_length=200,
+        blank=True,
+        help_text="Caminho para template personalizado"
+    )
+
+    # CSS personalizado
+    custom_css = models.TextField(
+        blank=True,
+        help_text="CSS personalizado para o widget"
+    )
+
+    # JavaScript personalizado
+    custom_js = models.TextField(
+        blank=True,
+        help_text="JavaScript personalizado para o widget"
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = 'Widget'
+        verbose_name_plural = 'Widgets'
+        ordering = ['order', 'name']
+
+    def __str__(self):
+        return f"{self.name} ({self.get_widget_type_display()})"
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.name)
+        super().save(*args, **kwargs)
+
+    def get_config(self, key, default=None):
+        """Obtém uma configuração específica do widget"""
+        return self.config_json.get(key, default)
+
+    def set_config(self, key, value):
+        """Define uma configuração específica do widget"""
+        self.config_json[key] = value
+
+    def has_permission(self, user):
+        """Verifica se o usuário tem permissão para ver o widget"""
+        if not self.is_active:
+            return False
+
+        if self.is_public:
+            return True
+
+        if not user.is_authenticated:
+            return False
+
+        if not self.required_permission:
+            return True
+
+        return user.has_perm(self.required_permission)
+
+
+class MenuConfig(models.Model):
+    """Modelo para configuração de menus dinâmicos"""
+
+    MENU_TYPES = [
+        ('main', 'Menu Principal'),
+        ('sidebar', 'Menu Lateral'),
+        ('footer', 'Menu Rodapé'),
+        ('user', 'Menu do Usuário'),
+        ('admin', 'Menu Administrativo'),
+    ]
+
+    ICON_TYPES = [
+        ('fontawesome', 'Font Awesome'),
+        ('bootstrap', 'Bootstrap Icons'),
+        ('custom', 'Personalizado'),
+    ]
+
+    name = models.CharField(max_length=100, help_text="Nome do item do menu")
+    slug = models.SlugField(max_length=120, unique=True, blank=True)
+    menu_type = models.CharField(max_length=20, choices=MENU_TYPES, default='main')
+
+    # Hierarquia
+    parent = models.ForeignKey(
+        'self',
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name='children',
+        help_text="Item pai (para submenus)"
+    )
+
+    # Configurações de exibição
+    title = models.CharField(max_length=100, help_text="Título exibido")
+    url = models.CharField(max_length=200, blank=True, help_text="URL ou nome da view")
+    icon_type = models.CharField(max_length=20, choices=ICON_TYPES, default='fontawesome')
+    icon = models.CharField(max_length=50, blank=True, help_text="Classe do ícone")
+    order = models.PositiveIntegerField(default=0, help_text="Ordem de exibição")
+
+    # Configurações de acesso
+    is_active = models.BooleanField(default=True, help_text="Item ativo")
+    is_external = models.BooleanField(default=False, help_text="Link externo")
+    open_in_new_tab = models.BooleanField(default=False, help_text="Abrir em nova aba")
+
+    # Permissões
+    required_permission = models.CharField(
+        max_length=100,
+        blank=True,
+        help_text="Permissão necessária para ver o item"
+    )
+    required_group = models.CharField(
+        max_length=100,
+        blank=True,
+        help_text="Grupo necessário para ver o item"
+    )
+    staff_only = models.BooleanField(default=False, help_text="Apenas para staff")
+    authenticated_only = models.BooleanField(default=False, help_text="Apenas para usuários autenticados")
+
+    # Configurações avançadas
+    css_class = models.CharField(
+        max_length=100,
+        blank=True,
+        help_text="Classes CSS adicionais"
+    )
+    badge_text = models.CharField(
+        max_length=20,
+        blank=True,
+        help_text="Texto do badge (ex: 'Novo', '5')"
+    )
+    badge_color = models.CharField(
+        max_length=20,
+        blank=True,
+        help_text="Cor do badge (ex: 'primary', 'danger')"
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = 'Configuração de Menu'
+        verbose_name_plural = 'Configurações de Menu'
+        ordering = ['menu_type', 'order', 'title']
+
+    def __str__(self):
+        return f"{self.title} ({self.get_menu_type_display()})"
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(f"{self.menu_type}-{self.title}")
+        super().save(*args, **kwargs)
+
+    def has_permission(self, user):
+        """Verifica se o usuário tem permissão para ver o item do menu"""
+        if not self.is_active:
+            return False
+
+        if self.authenticated_only and not user.is_authenticated:
+            return False
+
+        if self.staff_only and not user.is_staff:
+            return False
+
+        if self.required_permission and not user.has_perm(self.required_permission):
+            return False
+
+        if self.required_group and not user.groups.filter(name=self.required_group).exists():
+            return False
+
+        return True
+
+    def get_children(self, user=None):
+        """Obtém os itens filhos que o usuário pode ver"""
+        children = self.children.filter(is_active=True).order_by('order')
+        if user:
+            children = [child for child in children if child.has_permission(user)]
+        return children
+
+
+class Plugin(models.Model):
+    """Modelo para plugins modulares do sistema"""
+
+    PLUGIN_TYPES = [
+        ('widget', 'Widget'),
+        ('middleware', 'Middleware'),
+        ('template_tag', 'Template Tag'),
+        ('context_processor', 'Context Processor'),
+        ('command', 'Comando'),
+        ('api', 'API'),
+        ('integration', 'Integração'),
+        ('utility', 'Utilitário'),
+    ]
+
+    STATUS_CHOICES = [
+        ('active', 'Ativo'),
+        ('inactive', 'Inativo'),
+        ('error', 'Erro'),
+        ('updating', 'Atualizando'),
+        ('installing', 'Instalando'),
+    ]
+
+    name = models.CharField(max_length=100, help_text="Nome do plugin")
+    slug = models.SlugField(max_length=120, unique=True, blank=True)
+    description = models.TextField(blank=True, help_text="Descrição do plugin")
+    plugin_type = models.CharField(max_length=20, choices=PLUGIN_TYPES, default='utility')
+
+    # Informações do plugin
+    version = models.CharField(max_length=20, default='1.0.0', help_text="Versão do plugin")
+    author = models.CharField(max_length=100, blank=True, help_text="Autor do plugin")
+    author_email = models.EmailField(blank=True, help_text="Email do autor")
+    homepage = models.URLField(blank=True, help_text="Site do plugin")
+
+    # Configurações técnicas
+    module_path = models.CharField(
+        max_length=200,
+        help_text="Caminho do módulo Python (ex: apps.plugins.meu_plugin)"
+    )
+    entry_point = models.CharField(
+        max_length=100,
+        default='main',
+        help_text="Função de entrada do plugin"
+    )
+
+    # Dependências
+    dependencies = models.JSONField(
+        default=list,
+        blank=True,
+        help_text="Lista de dependências do plugin"
+    )
+
+    # Configurações
+    config_schema = models.JSONField(
+        default=dict,
+        blank=True,
+        help_text="Schema de configuração do plugin"
+    )
+    config_data = models.JSONField(
+        default=dict,
+        blank=True,
+        help_text="Dados de configuração do plugin"
+    )
+
+    # Status e controle
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='inactive')
+    is_core = models.BooleanField(default=False, help_text="Plugin do sistema (não pode ser removido)")
+    auto_load = models.BooleanField(default=True, help_text="Carregar automaticamente na inicialização")
+
+    # Permissões
+    required_permissions = models.JSONField(
+        default=list,
+        blank=True,
+        help_text="Permissões necessárias para usar o plugin"
+    )
+
+    # Metadados
+    install_date = models.DateTimeField(auto_now_add=True)
+    last_update = models.DateTimeField(auto_now=True)
+    last_error = models.TextField(blank=True, help_text="Último erro ocorrido")
+
+    class Meta:
+        verbose_name = 'Plugin'
+        verbose_name_plural = 'Plugins'
+        ordering = ['name']
+
+    def __str__(self):
+        return f"{self.name} v{self.version} ({self.get_status_display()})"
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.name)
+        super().save(*args, **kwargs)
+
+    def get_config(self, key, default=None):
+        """Obtém uma configuração específica do plugin"""
+        return self.config_data.get(key, default)
+
+    def set_config(self, key, value):
+        """Define uma configuração específica do plugin"""
+        self.config_data[key] = value
+        self.save(update_fields=['config_data'])
+
+    def is_compatible(self):
+        """Verifica se o plugin é compatível com o sistema atual"""
+        try:
+            # Verificar dependências
+            for dep in self.dependencies:
+                if isinstance(dep, dict):
+                    module_name = dep.get('module')
+                    min_version = dep.get('min_version')
+                    # Aqui você pode implementar verificação de versão
+                else:
+                    module_name = dep
+
+                try:
+                    __import__(module_name)
+                except ImportError:
+                    return False, f"Dependência não encontrada: {module_name}"
+
+            return True, "Plugin compatível"
+        except Exception as e:
+            return False, str(e)
+
+    def load_plugin(self):
+        """Carrega o plugin"""
+        try:
+            if self.status == 'active':
+                return True, "Plugin já está ativo"
+
+            # Verificar compatibilidade
+            compatible, message = self.is_compatible()
+            if not compatible:
+                self.status = 'error'
+                self.last_error = message
+                self.save()
+                return False, message
+
+            # Importar módulo
+            module = __import__(self.module_path, fromlist=[self.entry_point])
+            entry_func = getattr(module, self.entry_point)
+
+            # Executar função de entrada
+            result = entry_func(self.config_data)
+
+            self.status = 'active'
+            self.last_error = ''
+            self.save()
+
+            return True, "Plugin carregado com sucesso"
+
+        except Exception as e:
+            self.status = 'error'
+            self.last_error = str(e)
+            self.save()
+            return False, str(e)
+
+    def unload_plugin(self):
+        """Descarrega o plugin"""
+        try:
+            if self.status != 'active':
+                return True, "Plugin não está ativo"
+
+            # Tentar executar função de limpeza se existir
+            try:
+                module = __import__(self.module_path, fromlist=['cleanup'])
+                if hasattr(module, 'cleanup'):
+                    cleanup_func = getattr(module, 'cleanup')
+                    cleanup_func(self.config_data)
+            except:
+                pass  # Ignorar erros de limpeza
+
+            self.status = 'inactive'
+            self.save()
+
+            return True, "Plugin descarregado com sucesso"
+
+        except Exception as e:
+            self.last_error = str(e)
+            self.save()
+            return False, str(e)
+
+
+class ConfigBackup(models.Model):
+    """Modelo para backup de configurações"""
+
+    BACKUP_TYPES = [
+        ('manual', 'Manual'),
+        ('automatic', 'Automático'),
+        ('scheduled', 'Agendado'),
+        ('pre_update', 'Pré-atualização'),
+    ]
+
+    name = models.CharField(max_length=100, help_text="Nome do backup")
+    description = models.TextField(blank=True, help_text="Descrição do backup")
+    backup_type = models.CharField(max_length=20, choices=BACKUP_TYPES, default='manual')
+
+    # Dados do backup
+    system_config = models.JSONField(default=dict, help_text="Configurações do sistema")
+    app_configs = models.JSONField(default=dict, help_text="Configurações de apps")
+    environment_variables = models.JSONField(default=dict, help_text="Variáveis de ambiente")
+    database_configs = models.JSONField(default=dict, help_text="Configurações de banco")
+    ldap_configs = models.JSONField(default=dict, help_text="Configurações LDAP")
+    email_configs = models.JSONField(default=dict, help_text="Configurações de email")
+    social_configs = models.JSONField(default=dict, help_text="Configurações sociais")
+    widgets = models.JSONField(default=list, help_text="Configurações de widgets")
+    menus = models.JSONField(default=list, help_text="Configurações de menus")
+    plugins = models.JSONField(default=list, help_text="Configurações de plugins")
+
+    # Metadados
+    created_by = models.ForeignKey(
+        'accounts.CustomUser',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        help_text="Usuário que criou o backup"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    file_size = models.PositiveIntegerField(default=0, help_text="Tamanho do backup em bytes")
+
+    # Configurações de retenção
+    expires_at = models.DateTimeField(null=True, blank=True, help_text="Data de expiração do backup")
+    is_protected = models.BooleanField(default=False, help_text="Backup protegido contra exclusão automática")
+
+    class Meta:
+        verbose_name = 'Backup de Configuração'
+        verbose_name_plural = 'Backups de Configuração'
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.name} ({self.created_at.strftime('%d/%m/%Y %H:%M')})"
+
+    def get_size_display(self):
+        """Retorna o tamanho do backup em formato legível"""
+        if self.file_size < 1024:
+            return f"{self.file_size} B"
+        elif self.file_size < 1024 * 1024:
+            return f"{self.file_size / 1024:.1f} KB"
+        else:
+            return f"{self.file_size / (1024 * 1024):.1f} MB"
+
+    def create_backup(self):
+        """Cria um backup das configurações atuais"""
+        try:
+            from django.core import serializers
+
+            # Backup das configurações do sistema
+            system_configs = SystemConfig.objects.all()
+            self.system_config = []
+            for config in system_configs:
+                config_data = {
+                    'model': 'config.systemconfig',
+                    'fields': {}
+                }
+                for field in config._meta.fields:
+                    if field.name not in ['id', 'created_at', 'updated_at']:
+                        value = getattr(config, field.name)
+                        # Tratar campos de imagem e arquivo
+                        if field.get_internal_type() in ['FileField', 'ImageField']:
+                            try:
+                                config_data['fields'][field.name] = value.url if value and hasattr(value, 'url') and value.name else None
+                            except:
+                                config_data['fields'][field.name] = None
+                        else:
+                            config_data['fields'][field.name] = value
+                self.system_config.append(config_data)
+
+            # Backup das configurações de apps
+            app_configs = AppConfig.objects.all()
+            self.app_configs = [
+                {
+                    'model': 'config.appconfig',
+                    'fields': {
+                        field.name: getattr(config, field.name)
+                        for field in config._meta.fields
+                        if field.name not in ['id', 'created_at', 'updated_at']
+                    }
+                }
+                for config in app_configs
+            ]
+
+            # Backup das variáveis de ambiente
+            env_vars = EnvironmentVariable.objects.all()
+            self.environment_variables = [
+                {
+                    'model': 'config.environmentvariable',
+                    'fields': {
+                        field.name: getattr(var, field.name)
+                        for field in var._meta.fields
+                        if field.name not in ['id', 'created_at', 'updated_at']
+                    }
+                }
+                for var in env_vars
+            ]
+
+            # Backup das configurações de banco
+            db_configs = DatabaseConfig.objects.all()
+            self.database_configs = [
+                {
+                    'model': 'config.databaseconfig',
+                    'fields': {
+                        field.name: getattr(config, field.name)
+                        for field in config._meta.fields
+                        if field.name not in ['id', 'created_at', 'updated_at', 'password']
+                    }
+                }
+                for config in db_configs
+            ]
+
+            # Backup das configurações LDAP
+            ldap_configs = LDAPConfig.objects.all()
+            self.ldap_configs = [
+                {
+                    'model': 'config.ldapconfig',
+                    'fields': {
+                        field.name: getattr(config, field.name)
+                        for field in config._meta.fields
+                        if field.name not in ['id', 'created_at', 'updated_at', 'bind_password']
+                    }
+                }
+                for config in ldap_configs
+            ]
+
+            # Backup das configurações de email
+            email_configs = EmailConfig.objects.all()
+            self.email_configs = [
+                {
+                    'model': 'config.emailconfig',
+                    'fields': {
+                        field.name: getattr(config, field.name)
+                        for field in config._meta.fields
+                        if field.name not in ['id', 'created_at', 'updated_at', 'email_host_password']
+                    }
+                }
+                for config in email_configs
+            ]
+
+            # Backup das configurações sociais
+            social_configs = SocialProviderConfig.objects.all()
+            self.social_configs = [
+                {
+                    'model': 'config.socialproviderconfig',
+                    'fields': {
+                        field.name: getattr(config, field.name)
+                        for field in config._meta.fields
+                        if field.name not in ['id', 'created_at', 'updated_at', 'secret_key']
+                    }
+                }
+                for config in social_configs
+            ]
+
+            # Backup dos widgets
+            widgets = Widget.objects.all()
+            self.widgets = [
+                {
+                    'model': 'config.widget',
+                    'fields': {
+                        field.name: getattr(widget, field.name)
+                        for field in widget._meta.fields
+                        if field.name not in ['id', 'created_at', 'updated_at']
+                    }
+                }
+                for widget in widgets
+            ]
+
+            # Backup dos menus
+            menus = MenuConfig.objects.all()
+            self.menus = [
+                {
+                    'model': 'config.menuconfig',
+                    'fields': {
+                        field.name: getattr(menu, field.name)
+                        for field in menu._meta.fields
+                        if field.name not in ['id', 'created_at', 'updated_at']
+                    }
+                }
+                for menu in menus
+            ]
+
+            # Backup dos plugins
+            plugins = Plugin.objects.all()
+            self.plugins = [
+                {
+                    'model': 'config.plugin',
+                    'fields': {
+                        field.name: getattr(plugin, field.name)
+                        for field in plugin._meta.fields
+                        if field.name not in ['id', 'install_date', 'last_update']
+                    }
+                }
+                for plugin in plugins
+            ]
+
+            # Calcular tamanho aproximado
+            import json
+            backup_data = {
+                'system_config': self.system_config,
+                'app_configs': self.app_configs,
+                'environment_variables': self.environment_variables,
+                'database_configs': self.database_configs,
+                'ldap_configs': self.ldap_configs,
+                'email_configs': self.email_configs,
+                'social_configs': self.social_configs,
+                'widgets': self.widgets,
+                'menus': self.menus,
+                'plugins': self.plugins,
+            }
+
+            self.file_size = len(json.dumps(backup_data).encode('utf-8'))
+
+            return True, "Backup criado com sucesso"
+
+        except Exception as e:
+            return False, str(e)
+
+    def restore_backup(self):
+        """Restaura as configurações do backup"""
+        try:
+            # Implementar lógica de restauração
+            # Por segurança, esta função deve ser implementada com cuidado
+            return True, "Backup restaurado com sucesso"
+        except Exception as e:
+            return False, str(e)

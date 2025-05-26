@@ -1,0 +1,12 @@
+{% extends 'layouts/universal.html' %}
+
+{% block body_class %}admin-layout{% endblock %}
+
+{# Layout de administração - força sidebar de configuração #}
+{% block sidebar_content %}
+    {% if user.is_authenticated and user.is_staff %}
+        {% include 'partials/_sidebar_config.html' %}
+    {% endif %}
+{% endblock %}
+
+{# CSS movido para arquivos modulares #}

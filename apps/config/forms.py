@@ -1,5 +1,9 @@
 from django import forms
-from .models import SocialProviderConfig, EmailConfig, SystemConfig, AppConfig, LDAPConfig, EnvironmentVariable, DatabaseConfig
+import json
+from .models import (
+    SocialProviderConfig, EmailConfig, SystemConfig, AppConfig, LDAPConfig,
+    EnvironmentVariable, DatabaseConfig, Widget, MenuConfig, Plugin, ConfigBackup
+)
 
 class SocialProviderConfigForm(forms.ModelForm):
     class Meta:
@@ -22,7 +26,68 @@ class SystemConfigForm(forms.ModelForm):
     class Meta:
         model = SystemConfig
         fields = ['site_name', 'site_description', 'maintenance_mode',
-                 'allow_registration', 'require_email_verification', 'enable_app_management']
+                 'allow_registration', 'require_email_verification', 'enable_app_management',
+                 'logo_principal', 'favicon', 'theme', 'primary_color', 'secondary_color',
+                 'accent_color', 'sidebar_style', 'header_style', 'enable_dark_mode_toggle',
+                 'enable_breadcrumbs', 'enable_search', 'meta_keywords', 'meta_author',
+                 'google_analytics_id', 'enable_notifications', 'notification_position']
+        widgets = {
+            'site_description': forms.Textarea(attrs={'rows': 3}),
+            'meta_keywords': forms.Textarea(attrs={'rows': 2}),
+            'logo_principal': forms.ClearableFileInput(attrs={
+                'class': 'form-control',
+                'accept': 'image/*'
+            }),
+            'favicon': forms.ClearableFileInput(attrs={
+                'class': 'form-control',
+                'accept': 'image/*,.ico'
+            }),
+            'primary_color': forms.TextInput(attrs={
+                'type': 'color',
+                'class': 'form-control form-control-color'
+            }),
+            'secondary_color': forms.TextInput(attrs={
+                'type': 'color',
+                'class': 'form-control form-control-color'
+            }),
+            'accent_color': forms.TextInput(attrs={
+                'type': 'color',
+                'class': 'form-control form-control-color'
+            }),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # Adicionar classes CSS aos campos
+        for field_name, field in self.fields.items():
+            if field_name not in ['logo_principal', 'favicon', 'primary_color', 'secondary_color', 'accent_color']:
+                if isinstance(field.widget, forms.CheckboxInput):
+                    field.widget.attrs.update({'class': 'form-check-input'})
+                elif isinstance(field.widget, forms.Textarea):
+                    field.widget.attrs.update({'class': 'form-control'})
+                elif isinstance(field.widget, forms.Select):
+                    field.widget.attrs.update({'class': 'form-select'})
+                else:
+                    field.widget.attrs.update({'class': 'form-control'})
+
+        # Adicionar help text personalizado
+        self.fields['logo_principal'].help_text = (
+            "Faça upload do logo principal do site. "
+            "Formatos aceitos: PNG, JPG, SVG, WEBP. "
+            "Tamanho máximo: 5MB. Dimensões: 50x50 a 2000x2000 pixels."
+        )
+
+        self.fields['favicon'].help_text = (
+            "Faça upload do favicon do site (ícone que aparece na aba do navegador). "
+            "Formatos aceitos: ICO, PNG, JPG, SVG. "
+            "Tamanho máximo: 1MB. Dimensões: 16x16 a 512x512 pixels (preferencialmente quadrado)."
+        )
+
+        self.fields['primary_color'].help_text = "Cor principal do tema (botões, links, etc.)"
+        self.fields['secondary_color'].help_text = "Cor secundária do tema (textos, bordas, etc.)"
+        self.fields['accent_color'].help_text = "Cor de destaque do tema (notificações, badges, etc.)"
+        self.fields['google_analytics_id'].help_text = "ID do Google Analytics para rastreamento (ex: GA-XXXXXXXXX-X)"
 
 class AppConfigForm(forms.ModelForm):
     class Meta:
@@ -40,6 +105,24 @@ class AppConfigForm(forms.ModelForm):
         if self.instance and self.instance.is_core:
             self.fields['is_active'].disabled = True
             self.fields['is_active'].help_text = "Apps core não podem ser desativados"
+
+        # Filtrar dependências disponíveis (excluir o próprio app e apps que dependem dele)
+        if self.instance and self.instance.pk:
+            # Excluir o próprio app das opções de dependência
+            self.fields['dependencies'].queryset = AppConfig.objects.exclude(pk=self.instance.pk)
+
+            # Excluir apps que já dependem deste app (para evitar dependências circulares)
+            dependent_apps = self.instance.dependents.all()
+            if dependent_apps.exists():
+                self.fields['dependencies'].queryset = self.fields['dependencies'].queryset.exclude(
+                    pk__in=dependent_apps.values_list('pk', flat=True)
+                )
+
+        # Adicionar help text para o campo de dependências
+        self.fields['dependencies'].help_text = (
+            "Selecione os módulos que este app precisa para funcionar. "
+            "Quando este app for ativado, suas dependências serão ativadas automaticamente."
+        )
 
 
 class EnvironmentVariableForm(forms.ModelForm):
@@ -132,7 +215,6 @@ class EnvironmentVariableForm(forms.ModelForm):
             elif var_type == 'float':
                 float(value)
             elif var_type == 'json':
-                import json
                 json.loads(value)
             elif var_type == 'email':
                 from django.core.validators import validate_email
@@ -264,19 +346,206 @@ class DatabaseConfigForm(forms.ModelForm):
 
         return cleaned_data
 
-    def save(self, commit=True):
-        """Salvar com tratamento de senha"""
-        instance = super().save(commit=False)
 
-        # Tratar senha
-        password = self.cleaned_data.get('password')
-        if password:
-            instance.set_password(password)
+class WidgetForm(forms.ModelForm):
+    """Formulário para configuração de widgets"""
 
-        if commit:
-            instance.save()
+    class Meta:
+        model = Widget
+        fields = ['name', 'description', 'widget_type', 'size', 'position_x', 'position_y',
+                 'order', 'is_active', 'is_public', 'required_permission', 'config_json',
+                 'template_path', 'custom_css', 'custom_js']
+        widgets = {
+            'description': forms.Textarea(attrs={'rows': 3}),
+            'config_json': forms.Textarea(attrs={'rows': 5, 'placeholder': '{"key": "value"}'}),
+            'custom_css': forms.Textarea(attrs={'rows': 8, 'placeholder': '.widget-custom { ... }'}),
+            'custom_js': forms.Textarea(attrs={'rows': 8, 'placeholder': 'function initWidget() { ... }'}),
+        }
 
-        return instance
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # Adicionar classes CSS
+        for field_name, field in self.fields.items():
+            if isinstance(field.widget, forms.CheckboxInput):
+                field.widget.attrs.update({'class': 'form-check-input'})
+            elif isinstance(field.widget, forms.Textarea):
+                field.widget.attrs.update({'class': 'form-control'})
+            elif isinstance(field.widget, forms.Select):
+                field.widget.attrs.update({'class': 'form-select'})
+            else:
+                field.widget.attrs.update({'class': 'form-control'})
+
+    def clean_config_json(self):
+        """Valida o JSON de configuração"""
+        config_json = self.cleaned_data.get('config_json')
+        if config_json:
+            try:
+                json.loads(config_json)
+            except json.JSONDecodeError:
+                raise forms.ValidationError('JSON inválido. Verifique a sintaxe.')
+        return config_json
+
+
+class MenuConfigForm(forms.ModelForm):
+    """Formulário para configuração de menus"""
+
+    class Meta:
+        model = MenuConfig
+        fields = ['name', 'menu_type', 'parent', 'title', 'url', 'icon_type', 'icon',
+                 'order', 'is_active', 'is_external', 'open_in_new_tab', 'required_permission',
+                 'required_group', 'staff_only', 'authenticated_only', 'css_class',
+                 'badge_text', 'badge_color']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # Filtrar parent para mostrar apenas itens do mesmo tipo de menu
+        if 'menu_type' in self.data:
+            menu_type = self.data['menu_type']
+            self.fields['parent'].queryset = MenuConfig.objects.filter(
+                menu_type=menu_type,
+                parent__isnull=True
+            )
+        elif self.instance.pk:
+            self.fields['parent'].queryset = MenuConfig.objects.filter(
+                menu_type=self.instance.menu_type,
+                parent__isnull=True
+            ).exclude(pk=self.instance.pk)
+
+        # Adicionar classes CSS
+        for field_name, field in self.fields.items():
+            if isinstance(field.widget, forms.CheckboxInput):
+                field.widget.attrs.update({'class': 'form-check-input'})
+            elif isinstance(field.widget, forms.Select):
+                field.widget.attrs.update({'class': 'form-select'})
+            else:
+                field.widget.attrs.update({'class': 'form-control'})
+
+    def clean(self):
+        cleaned_data = super().clean()
+        parent = cleaned_data.get('parent')
+        menu_type = cleaned_data.get('menu_type')
+
+        # Verificar se o parent é do mesmo tipo de menu
+        if parent and parent.menu_type != menu_type:
+            raise forms.ValidationError('O item pai deve ser do mesmo tipo de menu.')
+
+        # Verificar se não está tentando ser pai de si mesmo
+        if self.instance.pk and parent and parent.pk == self.instance.pk:
+            raise forms.ValidationError('Um item não pode ser pai de si mesmo.')
+
+        return cleaned_data
+
+
+class PluginForm(forms.ModelForm):
+    """Formulário para configuração de plugins"""
+
+    class Meta:
+        model = Plugin
+        fields = ['name', 'description', 'plugin_type', 'version', 'author', 'author_email',
+                 'homepage', 'module_path', 'entry_point', 'dependencies', 'config_schema',
+                 'config_data', 'is_core', 'auto_load', 'required_permissions']
+        widgets = {
+            'description': forms.Textarea(attrs={'rows': 3}),
+            'dependencies': forms.Textarea(attrs={
+                'rows': 4,
+                'placeholder': '["django", "requests", {"module": "numpy", "min_version": "1.0.0"}]'
+            }),
+            'config_schema': forms.Textarea(attrs={
+                'rows': 6,
+                'placeholder': '{"type": "object", "properties": {"api_key": {"type": "string"}}}'
+            }),
+            'config_data': forms.Textarea(attrs={
+                'rows': 6,
+                'placeholder': '{"api_key": "your-api-key", "timeout": 30}'
+            }),
+            'required_permissions': forms.Textarea(attrs={
+                'rows': 3,
+                'placeholder': '["auth.view_user", "config.change_systemconfig"]'
+            }),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # Adicionar classes CSS
+        for field_name, field in self.fields.items():
+            if isinstance(field.widget, forms.CheckboxInput):
+                field.widget.attrs.update({'class': 'form-check-input'})
+            elif isinstance(field.widget, forms.Textarea):
+                field.widget.attrs.update({'class': 'form-control'})
+            elif isinstance(field.widget, forms.Select):
+                field.widget.attrs.update({'class': 'form-select'})
+            else:
+                field.widget.attrs.update({'class': 'form-control'})
+
+    def clean_dependencies(self):
+        """Valida a lista de dependências"""
+        dependencies = self.cleaned_data.get('dependencies')
+        if dependencies:
+            try:
+                deps = json.loads(dependencies)
+                if not isinstance(deps, list):
+                    raise forms.ValidationError('Dependências devem ser uma lista.')
+            except json.JSONDecodeError:
+                raise forms.ValidationError('JSON inválido para dependências.')
+        return dependencies
+
+    def clean_config_schema(self):
+        """Valida o schema de configuração"""
+        config_schema = self.cleaned_data.get('config_schema')
+        if config_schema:
+            try:
+                json.loads(config_schema)
+            except json.JSONDecodeError:
+                raise forms.ValidationError('JSON inválido para schema de configuração.')
+        return config_schema
+
+    def clean_config_data(self):
+        """Valida os dados de configuração"""
+        config_data = self.cleaned_data.get('config_data')
+        if config_data:
+            try:
+                json.loads(config_data)
+            except json.JSONDecodeError:
+                raise forms.ValidationError('JSON inválido para dados de configuração.')
+        return config_data
+
+    def clean_required_permissions(self):
+        """Valida a lista de permissões necessárias"""
+        required_permissions = self.cleaned_data.get('required_permissions')
+        if required_permissions:
+            try:
+                perms = json.loads(required_permissions)
+                if not isinstance(perms, list):
+                    raise forms.ValidationError('Permissões devem ser uma lista.')
+            except json.JSONDecodeError:
+                raise forms.ValidationError('JSON inválido para permissões.')
+        return required_permissions
+
+
+class ConfigBackupForm(forms.ModelForm):
+    """Formulário para criação de backup de configurações"""
+
+    class Meta:
+        model = ConfigBackup
+        fields = ['name', 'description', 'backup_type']
+        widgets = {
+            'description': forms.Textarea(attrs={'rows': 3}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # Adicionar classes CSS
+        for field_name, field in self.fields.items():
+            if isinstance(field.widget, forms.Textarea):
+                field.widget.attrs.update({'class': 'form-control'})
+            elif isinstance(field.widget, forms.Select):
+                field.widget.attrs.update({'class': 'form-select'})
+            else:
+                field.widget.attrs.update({'class': 'form-control'})
 
 
 class LDAPConfigForm(forms.ModelForm):

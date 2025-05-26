@@ -1,21 +1,343 @@
-{% extends 'base.html' %}
+{% extends "config/base_config.html" %}
 {% load crispy_forms_tags %}
 
-{% block content %}
-<div class="container py-4">
-    <h1 class="mb-4">Configurações do Sistema</h1>
+{% block config_title %}Configurações do Sistema{% endblock %}
+{% block config_description %}Configure as opções gerais do sistema e personalização visual{% endblock %}
 
-    <div class="card">
-        <div class="card-body">
-            <form method="post">
-                {% csrf_token %}
-                {{ form|crispy }}
-                <div class="mt-3">
-                    <button type="submit" class="btn btn-primary">Salvar Alterações</button>
-                    <a href="{% url 'config:config' %}" class="btn btn-secondary">Cancelar</a>
-                </div>
-            </form>
+{% block config_breadcrumb %}
+<li class="breadcrumb-item active">Sistema</li>
+{% endblock %}
+
+{% block config_content %}
+<div class="row">
+    <!-- Formulário Principal -->
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-cogs"></i> Configurações Gerais
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data" id="system-config-form">
+                    {% csrf_token %}
+
+                    <!-- Configurações Básicas -->
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form.site_name.label_tag }}
+                                {{ form.site_name }}
+                                {% if form.site_name.help_text %}
+                                    <div class="form-text">{{ form.site_name.help_text }}</div>
+                                {% endif %}
+                                {% if form.site_name.errors %}
+                                    <div class="text-danger">{{ form.site_name.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form.site_description.label_tag }}
+                                {{ form.site_description }}
+                                {% if form.site_description.help_text %}
+                                    <div class="form-text">{{ form.site_description.help_text }}</div>
+                                {% endif %}
+                                {% if form.site_description.errors %}
+                                    <div class="text-danger">{{ form.site_description.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Configurações de Funcionalidade -->
+                    <h6 class="mt-4 mb-3">
+                        <i class="fas fa-toggle-on"></i> Funcionalidades
+                    </h6>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-check mb-3">
+                                {{ form.maintenance_mode }}
+                                {{ form.maintenance_mode.label_tag }}
+                                {% if form.maintenance_mode.help_text %}
+                                    <div class="form-text">{{ form.maintenance_mode.help_text }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-check mb-3">
+                                {{ form.allow_registration }}
+                                {{ form.allow_registration.label_tag }}
+                                {% if form.allow_registration.help_text %}
+                                    <div class="form-text">{{ form.allow_registration.help_text }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-check mb-3">
+                                {{ form.require_email_verification }}
+                                {{ form.require_email_verification.label_tag }}
+                                {% if form.require_email_verification.help_text %}
+                                    <div class="form-text">{{ form.require_email_verification.help_text }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-check mb-3">
+                                {{ form.enable_app_management }}
+                                {{ form.enable_app_management.label_tag }}
+                                {% if form.enable_app_management.help_text %}
+                                    <div class="form-text">{{ form.enable_app_management.help_text }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Personalização Visual -->
+                    <h6 class="mt-4 mb-3">
+                        <i class="fas fa-palette"></i> Personalização Visual
+                    </h6>
+
+                    <!-- Logo Principal -->
+                    <div class="row mb-4">
+                        <div class="col-md-8">
+                            <div class="mb-3">
+                                {{ form.logo_principal.label_tag }}
+                                {{ form.logo_principal }}
+                                {% if form.logo_principal.help_text %}
+                                    <div class="form-text">{{ form.logo_principal.help_text }}</div>
+                                {% endif %}
+                                {% if form.logo_principal.errors %}
+                                    <div class="text-danger">{{ form.logo_principal.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="text-center">
+                                <label class="form-label">Preview do Logo</label>
+                                <div class="border rounded p-3 bg-light" style="min-height: 120px;">
+                                    {% if form.instance.logo_principal %}
+                                        <img src="{{ form.instance.logo_principal.url }}"
+                                             alt="Logo atual"
+                                             class="img-fluid"
+                                             style="max-height: 100px; max-width: 100%;"
+                                             id="logo-preview">
+                                    {% else %}
+                                        <div class="text-muted d-flex align-items-center justify-content-center h-100" id="logo-placeholder">
+                                            <div class="text-center">
+                                                <i class="fas fa-image fa-2x mb-2"></i>
+                                                <br>
+                                                <small>Nenhum logo</small>
+                                            </div>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Favicon -->
+                    <div class="row mb-4">
+                        <div class="col-md-8">
+                            <div class="mb-3">
+                                {{ form.favicon.label_tag }}
+                                {{ form.favicon }}
+                                {% if form.favicon.help_text %}
+                                    <div class="form-text">{{ form.favicon.help_text }}</div>
+                                {% endif %}
+                                {% if form.favicon.errors %}
+                                    <div class="text-danger">{{ form.favicon.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="text-center">
+                                <label class="form-label">Preview do Favicon</label>
+                                <div class="border rounded p-3 bg-light" style="min-height: 80px;">
+                                    {% if form.instance.favicon %}
+                                        <img src="{{ form.instance.favicon.url }}"
+                                             alt="Favicon atual"
+                                             class="img-fluid"
+                                             style="max-height: 32px; max-width: 32px;"
+                                             id="favicon-preview">
+                                    {% else %}
+                                        <div class="text-muted d-flex align-items-center justify-content-center h-100" id="favicon-placeholder">
+                                            <div class="text-center">
+                                                <i class="fas fa-globe fa-lg mb-1"></i>
+                                                <br>
+                                                <small>Nenhum favicon</small>
+                                            </div>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Botões -->
+                    <div class="mt-4 pt-3 border-top">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Salvar Configurações
+                        </button>
+                        <a href="{% url 'config:config' %}" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> Cancelar
+                        </a>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
+
+    <!-- Painel de Informações -->
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-info-circle"></i> Informações
+                </h5>
+            </div>
+            <div class="card-body">
+                <h6><i class="fas fa-image"></i> Sobre as Imagens</h6>
+                <div class="mb-3">
+                    <strong>Logo Principal:</strong>
+                    <ul class="small mb-2">
+                        <li>Usado no cabeçalho do site</li>
+                        <li>Formatos: PNG, JPG, SVG, WEBP</li>
+                        <li>Tamanho máximo: 5MB</li>
+                        <li>Dimensões: 50x50 a 2000x2000px</li>
+                    </ul>
+                </div>
+
+                <div class="mb-3">
+                    <strong>Favicon:</strong>
+                    <ul class="small mb-2">
+                        <li>Ícone da aba do navegador</li>
+                        <li>Formatos: ICO, PNG, JPG, SVG</li>
+                        <li>Tamanho máximo: 1MB</li>
+                        <li>Dimensões: 16x16 a 512x512px</li>
+                        <li>Preferencialmente quadrado</li>
+                    </ul>
+                </div>
+
+                <div class="alert alert-info">
+                    <i class="fas fa-lightbulb"></i>
+                    <strong>Dica:</strong> Para melhores resultados, use imagens em alta resolução e formatos otimizados para web.
+                </div>
+            </div>
+        </div>
+
+        {% if form.instance.has_custom_branding %}
+        <div class="card mt-3">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-eye"></i> Personalização Ativa
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-success">
+                    <i class="fas fa-check-circle"></i>
+                    Seu site possui personalização visual configurada!
+                </div>
+
+                {% if form.instance.logo_principal %}
+                <div class="mb-2">
+                    <i class="fas fa-image text-success"></i>
+                    Logo principal configurado
+                </div>
+                {% endif %}
+
+                {% if form.instance.favicon %}
+                <div class="mb-2">
+                    <i class="fas fa-globe text-success"></i>
+                    Favicon configurado
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
 </div>
+
+<script>
+// Preview de imagens
+document.addEventListener('DOMContentLoaded', function() {
+    // Preview do logo
+    const logoInput = document.getElementById('id_logo_principal');
+    const logoPreview = document.getElementById('logo-preview');
+    const logoPlaceholder = document.getElementById('logo-placeholder');
+
+    if (logoInput) {
+        logoInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    if (logoPreview) {
+                        logoPreview.src = e.target.result;
+                        logoPreview.style.display = 'block';
+                    } else {
+                        // Criar nova imagem
+                        const img = document.createElement('img');
+                        img.src = e.target.result;
+                        img.alt = 'Preview do logo';
+                        img.className = 'img-fluid';
+                        img.style.maxHeight = '100px';
+                        img.style.maxWidth = '100%';
+                        img.id = 'logo-preview';
+
+                        const container = logoPlaceholder.parentNode;
+                        container.innerHTML = '';
+                        container.appendChild(img);
+                    }
+
+                    if (logoPlaceholder) {
+                        logoPlaceholder.style.display = 'none';
+                    }
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    }
+
+    // Preview do favicon
+    const faviconInput = document.getElementById('id_favicon');
+    const faviconPreview = document.getElementById('favicon-preview');
+    const faviconPlaceholder = document.getElementById('favicon-placeholder');
+
+    if (faviconInput) {
+        faviconInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    if (faviconPreview) {
+                        faviconPreview.src = e.target.result;
+                        faviconPreview.style.display = 'block';
+                    } else {
+                        // Criar nova imagem
+                        const img = document.createElement('img');
+                        img.src = e.target.result;
+                        img.alt = 'Preview do favicon';
+                        img.className = 'img-fluid';
+                        img.style.maxHeight = '32px';
+                        img.style.maxWidth = '32px';
+                        img.id = 'favicon-preview';
+
+                        const container = faviconPlaceholder.parentNode;
+                        container.innerHTML = '';
+                        container.appendChild(img);
+                    }
+
+                    if (faviconPlaceholder) {
+                        faviconPlaceholder.style.display = 'none';
+                    }
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    }
+});
+</script>
 {% endblock %}

@@ -525,19 +525,31 @@ class CustomLoginView(LoginView):
 
         # Registrar o login bem-sucedido
         logger.info(f"Login bem-sucedido para o usuário: {user.username}")
-        messages.success(self.request, f"Bem-vindo de volta, {user.get_nome_completo() or user.username}! Login realizado com sucesso.")
+        messages.success(self.request, f"Bem-vindo de volta, {user.get_full_name() or user.username}! Login realizado com sucesso.")
         return super().form_valid(form)
 
 
 # --- LOGOUT PERSONALIZADO ---
-class CustomLogoutView(LogoutView):
-    template_name = 'accounts/logout.html'
+class CustomLogoutView(View):
+    """View personalizada para logout que aceita GET e POST"""
 
-    def dispatch(self, request, *args, **kwargs):
-        """Adiciona mensagem de sucesso antes de fazer logout"""
+    def get(self, request, *args, **kwargs):
+        """Fazer logout via GET"""
+        return self._do_logout(request)
+
+    def post(self, request, *args, **kwargs):
+        """Fazer logout via POST"""
+        return self._do_logout(request)
+
+    def _do_logout(self, request):
+        """Executa o logout do usuário"""
         if request.user.is_authenticated:
-            messages.success(request, 'Você saiu do sistema com sucesso. Até logo!')
-        response = super().dispatch(request, *args, **kwargs)
+            username = request.user.get_full_name() or request.user.username
+            messages.success(request, f'Até logo, {username}! Você saiu do sistema com sucesso.')
+            logout(request)
+
+        # Redirecionar para a página inicial
+        response = redirect('pages:home')
 
         # Adicionar cabeçalhos para prevenir cache
         response['Cache-Control'] = 'no-cache, no-store, must-revalidate'
@@ -545,9 +557,3 @@ class CustomLogoutView(LogoutView):
         response['Expires'] = '0'
 
         return response
-
-    def get(self, request, *args, **kwargs):
-        """Permitir logout via GET se configurado"""
-        if hasattr(settings, 'ACCOUNT_LOGOUT_ON_GET') and settings.ACCOUNT_LOGOUT_ON_GET:
-            return self.post(request, *args, **kwargs)
-        return super().get(request, *args, **kwargs)

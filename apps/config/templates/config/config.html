@@ -1,4 +1,4 @@
-{% extends 'config/base_config.html' %}
+{% extends "config/base_config.html" %}
 {% load crispy_forms_tags %}
 
 {% block config_title %}Configurações do Sistema{% endblock %}
@@ -88,29 +88,41 @@
                     </h2>
                     <div id="collapseEmail" class="accordion-collapse collapse show" aria-labelledby="headingEmail" data-bs-parent="#accordionAdvancedSettings">
                         <div class="accordion-body">
-                            {% if email_config %}
-                                <dl class="row">
-                                    <dt class="col-sm-3">Servidor SMTP</dt>
-                                    <dd class="col-sm-9">{{ email_config.email_host }}:{{ email_config.email_port }}</dd>
-
-                                    <dt class="col-sm-3">Usuário</dt>
-                                    <dd class="col-sm-9">{{ email_config.email_host_user }}</dd>
-
-                                    <dt class="col-sm-3">TLS</dt>
-                                    <dd class="col-sm-9">{{ email_config.email_use_tls|yesno:"Ativado,Desativado" }}</dd>
-
-                                    <dt class="col-sm-3">Email Padrão</dt>
-                                    <dd class="col-sm-9">{{ email_config.default_from_email }}</dd>
-
-                                    <dt class="col-sm-3">Status</dt>
-                                    <dd class="col-sm-9">{{ email_config.is_active|yesno:"Ativo,Inativo" }}</dd>
-                                </dl>
-                                <button class="btn btn-primary" onclick="alert('Funcionalidade Email em desenvolvimento')">
-                                    <i class="fas fa-edit"></i> Editar Configurações
-                                </button>
-                            {% else %}
-                                <p>Nenhuma configuração de email encontrada.</p>
-                            {% endif %}
+                            <p class="text-muted mb-3">Configure servidores SMTP para envio de emails do sistema.</p>
+                            <div class="row mb-3">
+                                <div class="col-md-4">
+                                    <div class="card bg-light">
+                                        <div class="card-body text-center">
+                                            <h6 class="card-title">Total de Configurações</h6>
+                                            <p class="display-6">{{ email_config_count|default:0 }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="card bg-light">
+                                        <div class="card-body text-center">
+                                            <h6 class="card-title">Configurações Ativas</h6>
+                                            <p class="display-6">{{ active_email_config_count|default:0 }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="card bg-light">
+                                        <div class="card-body text-center">
+                                            <h6 class="card-title">Servidores Suportados</h6>
+                                            <p class="display-6">∞</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="d-flex gap-2">
+                                <a href="{% url 'config:email-list' %}" class="btn btn-primary">
+                                    <i class="fas fa-list"></i> Gerenciar Emails
+                                </a>
+                                <a href="{% url 'config:email-create' %}" class="btn btn-success">
+                                    <i class="fas fa-plus"></i> Criar Configuração
+                                </a>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -124,26 +136,41 @@
                     </h2>
                     <div id="collapseLDAP" class="accordion-collapse collapse" aria-labelledby="headingLDAP" data-bs-parent="#accordionAdvancedSettings">
                         <div class="accordion-body">
-                            {% if ldap_config %}
-                                <dl class="row">
-                                    <dt class="col-sm-3">Servidor</dt>
-                                    <dd class="col-sm-9">{{ ldap_config.server }}:{{ ldap_config.port }}</dd>
-
-                                    <dt class="col-sm-3">Base DN</dt>
-                                    <dd class="col-sm-9">{{ ldap_config.base_dn }}</dd>
-
-                                    <dt class="col-sm-3">Domínio</dt>
-                                    <dd class="col-sm-9">{{ ldap_config.domain }}</dd>
-
-                                    <dt class="col-sm-3">Status</dt>
-                                    <dd class="col-sm-9">{{ ldap_config.is_active|yesno:"Ativo,Inativo" }}</dd>
-                                </dl>
-                                <button class="btn btn-primary" onclick="alert('Funcionalidade LDAP em desenvolvimento')">
-                                    <i class="fas fa-edit"></i> Editar Configurações LDAP
-                                </button>
-                            {% else %}
-                                <p>Nenhuma configuração LDAP encontrada.</p>
-                            {% endif %}
+                            <p class="text-muted mb-3">Configure servidores LDAP para autenticação corporativa.</p>
+                            <div class="row mb-3">
+                                <div class="col-md-4">
+                                    <div class="card bg-light">
+                                        <div class="card-body text-center">
+                                            <h6 class="card-title">Total de Servidores</h6>
+                                            <p class="display-6">{{ ldap_config_count|default:0 }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="card bg-light">
+                                        <div class="card-body text-center">
+                                            <h6 class="card-title">Servidores Ativos</h6>
+                                            <p class="display-6">{{ active_ldap_config_count|default:0 }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="card bg-light">
+                                        <div class="card-body text-center">
+                                            <h6 class="card-title">Protocolos Suportados</h6>
+                                            <p class="display-6">3</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="d-flex gap-2">
+                                <a href="{% url 'config:ldap-list' %}" class="btn btn-primary">
+                                    <i class="fas fa-list"></i> Gerenciar LDAP
+                                </a>
+                                <a href="{% url 'config:ldap-create' %}" class="btn btn-success">
+                                    <i class="fas fa-plus"></i> Criar Configuração
+                                </a>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -157,38 +184,332 @@
                     </h2>
                     <div id="collapseSocial" class="accordion-collapse collapse" aria-labelledby="headingSocial" data-bs-parent="#accordionAdvancedSettings">
                         <div class="accordion-body">
-                            {% if social_providers %}
-                                <div class="table-responsive">
-                                    <table class="table table-striped">
-                                        <thead>
-                                            <tr>
-                                                <th>Provedor</th>
-                                                <th>Status</th>
-                                                <th>Ações</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {% for provider in social_providers %}
-                                                <tr>
-                                                    <td>{{ provider.provider }}</td>
-                                                    <td>
-                                                        <span class="badge {% if provider.is_active %}bg-success{% else %}bg-danger{% endif %}">
-                                                            {{ provider.is_active|yesno:"Ativo,Inativo" }}
-                                                        </span>
-                                                    </td>
-                                                    <td>
-                                                        <a href="{% url 'config:social-provider-update' provider.slug %}" class="btn btn-sm btn-primary">
-                                                            <i class="fas fa-edit"></i> Editar
-                                                        </a>
-                                                    </td>
-                                                </tr>
-                                            {% endfor %}
-                                        </tbody>
-                                    </table>
+                            <p class="text-muted mb-3">Configure provedores de autenticação social como Google, Facebook, GitHub, etc.</p>
+                            <div class="row mb-3">
+                                <div class="col-md-4">
+                                    <div class="card bg-light">
+                                        <div class="card-body text-center">
+                                            <h6 class="card-title">Total de Provedores</h6>
+                                            <p class="display-6">{{ social_provider_count|default:0 }}</p>
+                                        </div>
+                                    </div>
                                 </div>
-                            {% else %}
-                                <p>Nenhum provedor social configurado.</p>
-                            {% endif %}
+                                <div class="col-md-4">
+                                    <div class="card bg-light">
+                                        <div class="card-body text-center">
+                                            <h6 class="card-title">Provedores Ativos</h6>
+                                            <p class="display-6">{{ active_social_provider_count|default:0 }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="card bg-light">
+                                        <div class="card-body text-center">
+                                            <h6 class="card-title">Tipos Disponíveis</h6>
+                                            <p class="display-6">4</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="d-flex gap-2">
+                                <a href="{% url 'config:social-provider-list' %}" class="btn btn-primary">
+                                    <i class="fas fa-list"></i> Gerenciar Provedores
+                                </a>
+                                <a href="{% url 'config:social-provider-create' %}" class="btn btn-success">
+                                    <i class="fas fa-plus"></i> Criar Provedor
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Variáveis de Ambiente -->
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="headingEnvironment">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseEnvironment" aria-expanded="false" aria-controls="collapseEnvironment">
+                            <i class="fas fa-cog me-2"></i> Variáveis de Ambiente
+                        </button>
+                    </h2>
+                    <div id="collapseEnvironment" class="accordion-collapse collapse" aria-labelledby="headingEnvironment" data-bs-parent="#accordionAdvancedSettings">
+                        <div class="accordion-body">
+                            <p class="text-muted mb-3">Gerencie variáveis de ambiente do sistema para configurações dinâmicas.</p>
+                            <div class="row mb-3">
+                                <div class="col-md-4">
+                                    <div class="card bg-light">
+                                        <div class="card-body text-center">
+                                            <h6 class="card-title">Total de Variáveis</h6>
+                                            <p class="display-6">{{ env_variable_count|default:0 }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="card bg-light">
+                                        <div class="card-body text-center">
+                                            <h6 class="card-title">Variáveis Ativas</h6>
+                                            <p class="display-6">{{ active_env_variable_count|default:0 }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="card bg-light">
+                                        <div class="card-body text-center">
+                                            <h6 class="card-title">Variáveis Sensíveis</h6>
+                                            <p class="display-6">{{ sensitive_env_variable_count|default:0 }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="d-flex gap-2">
+                                <a href="{% url 'config:env-variables' %}" class="btn btn-primary">
+                                    <i class="fas fa-list"></i> Gerenciar Variáveis
+                                </a>
+                                <a href="{% url 'config:env-variable-create' %}" class="btn btn-success">
+                                    <i class="fas fa-plus"></i> Criar Variável
+                                </a>
+                                <a href="{% url 'config:env-variables-export' %}" class="btn btn-outline-primary">
+                                    <i class="fas fa-download"></i> Exportar
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Configurações de Banco de Dados -->
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="headingDatabase">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseDatabase" aria-expanded="false" aria-controls="collapseDatabase">
+                            <i class="fas fa-database me-2"></i> Configurações de Banco de Dados
+                        </button>
+                    </h2>
+                    <div id="collapseDatabase" class="accordion-collapse collapse" aria-labelledby="headingDatabase" data-bs-parent="#accordionAdvancedSettings">
+                        <div class="accordion-body">
+                            <p class="text-muted mb-3">Configure conexões com múltiplos bancos de dados para o sistema.</p>
+                            <div class="row mb-3">
+                                <div class="col-md-4">
+                                    <div class="card bg-light">
+                                        <div class="card-body text-center">
+                                            <h6 class="card-title">Total de Bancos</h6>
+                                            <p class="display-6">{{ database_config_count|default:0 }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="card bg-light">
+                                        <div class="card-body text-center">
+                                            <h6 class="card-title">Bancos Ativos</h6>
+                                            <p class="display-6">{{ active_database_config_count|default:0 }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="card bg-light">
+                                        <div class="card-body text-center">
+                                            <h6 class="card-title">Tipos Suportados</h6>
+                                            <p class="display-6">5</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="d-flex gap-2">
+                                <a href="{% url 'config:database-list' %}" class="btn btn-primary">
+                                    <i class="fas fa-list"></i> Gerenciar Bancos
+                                </a>
+                                <a href="{% url 'config:database-create' %}" class="btn btn-success">
+                                    <i class="fas fa-plus"></i> Criar Configuração
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Gerenciamento de Widgets -->
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="headingWidgets">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseWidgets" aria-expanded="false" aria-controls="collapseWidgets">
+                            <i class="fas fa-th-large me-2"></i> Widgets do Dashboard
+                        </button>
+                    </h2>
+                    <div id="collapseWidgets" class="accordion-collapse collapse" aria-labelledby="headingWidgets" data-bs-parent="#accordionAdvancedSettings">
+                        <div class="accordion-body">
+                            <p class="text-muted mb-3">Configure widgets modulares para personalizar o dashboard do sistema.</p>
+                            <div class="row mb-3">
+                                <div class="col-md-4">
+                                    <div class="card bg-light">
+                                        <div class="card-body text-center">
+                                            <h6 class="card-title">Total de Widgets</h6>
+                                            <p class="display-6">{{ widget_count|default:0 }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="card bg-light">
+                                        <div class="card-body text-center">
+                                            <h6 class="card-title">Widgets Ativos</h6>
+                                            <p class="display-6">{{ active_widget_count|default:0 }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="card bg-light">
+                                        <div class="card-body text-center">
+                                            <h6 class="card-title">Tipos Disponíveis</h6>
+                                            <p class="display-6">9</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="d-flex gap-2">
+                                <a href="{% url 'config:widget-list' %}" class="btn btn-primary">
+                                    <i class="fas fa-list"></i> Gerenciar Widgets
+                                </a>
+                                <a href="{% url 'config:widget-create' %}" class="btn btn-success">
+                                    <i class="fas fa-plus"></i> Criar Widget
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Configuração de Menus -->
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="headingMenus">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseMenus" aria-expanded="false" aria-controls="collapseMenus">
+                            <i class="fas fa-bars me-2"></i> Menus Dinâmicos
+                        </button>
+                    </h2>
+                    <div id="collapseMenus" class="accordion-collapse collapse" aria-labelledby="headingMenus" data-bs-parent="#accordionAdvancedSettings">
+                        <div class="accordion-body">
+                            <p class="text-muted mb-3">Configure menus dinâmicos com hierarquia e permissões personalizadas.</p>
+                            <div class="row mb-3">
+                                <div class="col-md-4">
+                                    <div class="card bg-light">
+                                        <div class="card-body text-center">
+                                            <h6 class="card-title">Total de Menus</h6>
+                                            <p class="display-6">{{ menu_count|default:0 }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="card bg-light">
+                                        <div class="card-body text-center">
+                                            <h6 class="card-title">Menus Ativos</h6>
+                                            <p class="display-6">{{ active_menu_count|default:0 }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="card bg-light">
+                                        <div class="card-body text-center">
+                                            <h6 class="card-title">Tipos de Menu</h6>
+                                            <p class="display-6">5</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="d-flex gap-2">
+                                <a href="{% url 'config:menu-list' %}" class="btn btn-primary">
+                                    <i class="fas fa-list"></i> Gerenciar Menus
+                                </a>
+                                <a href="{% url 'config:menu-create' %}" class="btn btn-success">
+                                    <i class="fas fa-plus"></i> Criar Menu
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sistema de Plugins -->
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="headingPlugins">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapsePlugins" aria-expanded="false" aria-controls="collapsePlugins">
+                            <i class="fas fa-plug me-2"></i> Sistema de Plugins
+                        </button>
+                    </h2>
+                    <div id="collapsePlugins" class="accordion-collapse collapse" aria-labelledby="headingPlugins" data-bs-parent="#accordionAdvancedSettings">
+                        <div class="accordion-body">
+                            <p class="text-muted mb-3">Gerencie plugins para estender as funcionalidades do sistema.</p>
+                            <div class="row mb-3">
+                                <div class="col-md-4">
+                                    <div class="card bg-light">
+                                        <div class="card-body text-center">
+                                            <h6 class="card-title">Total de Plugins</h6>
+                                            <p class="display-6">{{ plugin_count|default:0 }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="card bg-light">
+                                        <div class="card-body text-center">
+                                            <h6 class="card-title">Plugins Ativos</h6>
+                                            <p class="display-6">{{ active_plugin_count|default:0 }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="card bg-light">
+                                        <div class="card-body text-center">
+                                            <h6 class="card-title">Tipos Disponíveis</h6>
+                                            <p class="display-6">8</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="d-flex gap-2">
+                                <a href="{% url 'config:plugin-list' %}" class="btn btn-primary">
+                                    <i class="fas fa-list"></i> Gerenciar Plugins
+                                </a>
+                                <a href="{% url 'config:plugin-create' %}" class="btn btn-success">
+                                    <i class="fas fa-plus"></i> Instalar Plugin
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Backup e Restauração -->
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="headingBackup">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseBackup" aria-expanded="false" aria-controls="collapseBackup">
+                            <i class="fas fa-download me-2"></i> Backup e Restauração
+                        </button>
+                    </h2>
+                    <div id="collapseBackup" class="accordion-collapse collapse" aria-labelledby="headingBackup" data-bs-parent="#accordionAdvancedSettings">
+                        <div class="accordion-body">
+                            <p class="text-muted mb-3">Faça backup e restaure configurações do sistema para proteção de dados.</p>
+                            <div class="row mb-3">
+                                <div class="col-md-4">
+                                    <div class="card bg-light">
+                                        <div class="card-body text-center">
+                                            <h6 class="card-title">Total de Backups</h6>
+                                            <p class="display-6">{{ backup_count|default:0 }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="card bg-light">
+                                        <div class="card-body text-center">
+                                            <h6 class="card-title">Backups Protegidos</h6>
+                                            <p class="display-6">{{ protected_backup_count|default:0 }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="card bg-light">
+                                        <div class="card-body text-center">
+                                            <h6 class="card-title">Último Backup</h6>
+                                            <p class="small">{{ last_backup_date|default:"Nunca"|date:"d/m/Y H:i" }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="d-flex gap-2">
+                                <a href="{% url 'config:backup-list' %}" class="btn btn-primary">
+                                    <i class="fas fa-list"></i> Gerenciar Backups
+                                </a>
+                                <a href="{% url 'config:backup-create' %}" class="btn btn-success">
+                                    <i class="fas fa-plus"></i> Criar Backup
+                                </a>
+                            </div>
                         </div>
                     </div>
                 </div>

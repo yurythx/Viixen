@@ -25,6 +25,10 @@ class AppControlMiddleware:
             if app_name and '.' in app_name:
                 app_name = app_name.split('.')[-1]
 
+            # Se não conseguir extrair o nome do app, pular verificação
+            if not app_name:
+                return self.get_response(request)
+
             # Verificar se o app está ativo
             try:
                 app_config = AppConfig.objects.get(label=app_name)

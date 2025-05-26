@@ -86,13 +86,24 @@ AUTH_USER_MODEL = 'accounts.CustomUser'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'templates')],
+        'DIRS': [
+            # Templates modulares do app pages (prioridade máxima)
+            os.path.join(BASE_DIR, 'apps', 'pages', 'templates'),
+            # Fallback para templates na raiz (se existir)
+            os.path.join(BASE_DIR, 'templates'),
+        ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                # Context processors personalizados para layout modular
+                'apps.pages.context_processors.layout_context',
+                'apps.pages.context_processors.app_context',
+                'apps.pages.context_processors.navigation_context',
+                # Context processor para configurações do sistema
+                'apps.config.context_processors.system_config',
             ],
         },
     },

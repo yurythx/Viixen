@@ -1,0 +1,54 @@
+{% extends 'layouts/universal.html' %}
+
+{% block body_class %}auth-layout{% endblock %}
+
+{# Layout de autenticação - sem navegação, sidebar e footer #}
+{% block navigation %}{% endblock %}
+{% block sidebar %}{% endblock %}
+{% block footer %}{% endblock %}
+
+{% block container_class %}auth-container-fluid{% endblock %}
+
+{% block layout_structure %}
+    <!-- Auth Layout Background -->
+    <div class="auth-background">
+        <div class="lava-lamp lava-1"></div>
+        <div class="lava-lamp lava-2"></div>
+        <div class="lava-lamp lava-3"></div>
+    </div>
+
+    <!-- Auth Container -->
+    <div class="auth-container">
+        <div class="auth-content">
+            <div class="auth-card">
+                <!-- Auth Header -->
+                {% block auth_header %}
+                    <div class="auth-header">
+                        <div class="auth-logo">
+                            <h1>Viixen</h1>
+                        </div>
+                        {% block auth_title %}{% endblock %}
+                    </div>
+                {% endblock %}
+
+                <!-- Auth Body -->
+                <div class="auth-body">
+                    <!-- Messages/Alerts -->
+                    {% include 'partials/_form_errors.html' %}
+
+                    <!-- Auth Content -->
+                    {% block content %}{% endblock %}
+                </div>
+
+                <!-- Auth Footer -->
+                {% block auth_footer %}
+                    <div class="auth-footer">
+                        <p>&copy; 2025 Viixen. Todos os direitos reservados.</p>
+                    </div>
+                {% endblock %}
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{# CSS movido para arquivos modulares #}

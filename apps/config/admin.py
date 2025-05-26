@@ -1,5 +1,8 @@
 from django.contrib import admin
-from .models import SocialProviderConfig, EmailConfig, SystemConfig, AppConfig, EnvironmentVariable, DatabaseConfig, LDAPConfig
+from .models import (
+    SocialProviderConfig, EmailConfig, SystemConfig, AppConfig, EnvironmentVariable,
+    DatabaseConfig, LDAPConfig, Widget, MenuConfig, Plugin, ConfigBackup
+)
 
 @admin.register(SocialProviderConfig)
 class SocialProviderConfigAdmin(admin.ModelAdmin):
@@ -136,6 +139,128 @@ class DatabaseConfigAdmin(admin.ModelAdmin):
         }),
         ('Informações do Sistema', {
             'fields': ('created_at', 'updated_at')
+        }),
+    )
+
+
+@admin.register(Widget)
+class WidgetAdmin(admin.ModelAdmin):
+    list_display = ('name', 'widget_type', 'size', 'is_active', 'is_public', 'order', 'created_at')
+    list_filter = ('widget_type', 'size', 'is_active', 'is_public')
+    search_fields = ('name', 'description')
+    readonly_fields = ('slug', 'created_at', 'updated_at')
+    ordering = ('order', 'name')
+
+    fieldsets = (
+        ('Informações Básicas', {
+            'fields': ('name', 'slug', 'description', 'widget_type', 'size')
+        }),
+        ('Posicionamento', {
+            'fields': ('position_x', 'position_y', 'order')
+        }),
+        ('Configurações de Acesso', {
+            'fields': ('is_active', 'is_public', 'required_permission')
+        }),
+        ('Configurações Avançadas', {
+            'fields': ('config_json', 'template_path', 'custom_css', 'custom_js'),
+            'classes': ('collapse',)
+        }),
+        ('Informações do Sistema', {
+            'fields': ('created_at', 'updated_at'),
+            'classes': ('collapse',)
+        }),
+    )
+
+
+@admin.register(MenuConfig)
+class MenuConfigAdmin(admin.ModelAdmin):
+    list_display = ('title', 'menu_type', 'parent', 'order', 'is_active', 'staff_only', 'created_at')
+    list_filter = ('menu_type', 'is_active', 'staff_only', 'authenticated_only', 'icon_type')
+    search_fields = ('name', 'title', 'url')
+    readonly_fields = ('slug', 'created_at', 'updated_at')
+    ordering = ('menu_type', 'order', 'title')
+
+    fieldsets = (
+        ('Informações Básicas', {
+            'fields': ('name', 'slug', 'menu_type', 'parent')
+        }),
+        ('Configurações de Exibição', {
+            'fields': ('title', 'url', 'icon_type', 'icon', 'order')
+        }),
+        ('Configurações de Acesso', {
+            'fields': ('is_active', 'is_external', 'open_in_new_tab')
+        }),
+        ('Permissões', {
+            'fields': ('required_permission', 'required_group', 'staff_only', 'authenticated_only')
+        }),
+        ('Configurações Avançadas', {
+            'fields': ('css_class', 'badge_text', 'badge_color'),
+            'classes': ('collapse',)
+        }),
+        ('Informações do Sistema', {
+            'fields': ('created_at', 'updated_at'),
+            'classes': ('collapse',)
+        }),
+    )
+
+
+@admin.register(Plugin)
+class PluginAdmin(admin.ModelAdmin):
+    list_display = ('name', 'plugin_type', 'version', 'status', 'is_core', 'auto_load', 'install_date')
+    list_filter = ('plugin_type', 'status', 'is_core', 'auto_load')
+    search_fields = ('name', 'description', 'author', 'module_path')
+    readonly_fields = ('slug', 'install_date', 'last_update', 'last_error')
+    ordering = ('name',)
+
+    fieldsets = (
+        ('Informações Básicas', {
+            'fields': ('name', 'slug', 'description', 'plugin_type')
+        }),
+        ('Informações do Plugin', {
+            'fields': ('version', 'author', 'author_email', 'homepage')
+        }),
+        ('Configurações Técnicas', {
+            'fields': ('module_path', 'entry_point', 'dependencies')
+        }),
+        ('Configurações', {
+            'fields': ('config_schema', 'config_data')
+        }),
+        ('Status e Controle', {
+            'fields': ('status', 'is_core', 'auto_load', 'required_permissions')
+        }),
+        ('Informações do Sistema', {
+            'fields': ('install_date', 'last_update', 'last_error'),
+            'classes': ('collapse',)
+        }),
+    )
+
+
+@admin.register(ConfigBackup)
+class ConfigBackupAdmin(admin.ModelAdmin):
+    list_display = ('name', 'backup_type', 'created_by', 'created_at', 'get_size_display', 'is_protected')
+    list_filter = ('backup_type', 'is_protected', 'created_at')
+    search_fields = ('name', 'description')
+    readonly_fields = ('created_at', 'file_size', 'system_config', 'app_configs',
+                      'environment_variables', 'database_configs', 'ldap_configs',
+                      'email_configs', 'social_configs', 'widgets', 'menus', 'plugins')
+    ordering = ('-created_at',)
+
+    fieldsets = (
+        ('Informações Básicas', {
+            'fields': ('name', 'description', 'backup_type', 'created_by')
+        }),
+        ('Configurações de Retenção', {
+            'fields': ('expires_at', 'is_protected')
+        }),
+        ('Metadados', {
+            'fields': ('created_at', 'file_size'),
+            'classes': ('collapse',)
+        }),
+        ('Dados do Backup', {
+            'fields': ('system_config', 'app_configs', 'environment_variables',
+                      'database_configs', 'ldap_configs', 'email_configs',
+                      'social_configs', 'widgets', 'menus', 'plugins'),
+            'classes': ('collapse',)
         }),
     )
 
