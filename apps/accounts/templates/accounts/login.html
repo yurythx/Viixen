@@ -1,4 +1,5 @@
-{% extends "layouts/auth/base_auth.html" %}
+
+{% extends "base.html" %}
 {% load crispy_forms_tags %}
 {% load socialaccount %}
 
@@ -18,7 +19,7 @@
 
     <div class="login-body">
         <!-- Login Local -->
-        <form method="post" class="login-form" id="login-form" novalidate>
+        <form method="post" class="login-form" novalidate>
             {% csrf_token %}
 
             <div class="form-group">
@@ -101,7 +102,7 @@
 {% block extra_js %}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        const loginForm = document.getElementById('login-form');
+        const loginForm = document.querySelector('.login-form');
         const usernameInput = document.getElementById('{{ form.username.id_for_label }}');
         const passwordInput = document.getElementById('{{ form.password.id_for_label }}');
         const passwordToggle = document.querySelector('.password-toggle');
@@ -150,23 +151,31 @@
         }
 
         // Adicionar evento de submit ao formulário
-        loginForm.addEventListener('submit', validateForm);
+        if (loginForm) {
+            loginForm.addEventListener('submit', validateForm);
+        }
 
         // Alternar visibilidade da senha - removido, usando script genérico
 
         // Limpar mensagens de erro ao digitar
-        usernameInput.addEventListener('input', function() {
-            usernameError.style.display = 'none';
-            usernameInput.classList.remove('input-error');
-        });
+        if (usernameInput && usernameError) {
+            usernameInput.addEventListener('input', function() {
+                usernameError.style.display = 'none';
+                usernameInput.classList.remove('input-error');
+            });
+        }
 
-        passwordInput.addEventListener('input', function() {
-            passwordError.style.display = 'none';
-            passwordInput.classList.remove('input-error');
-        });
+        if (passwordInput && passwordError) {
+            passwordInput.addEventListener('input', function() {
+                passwordError.style.display = 'none';
+                passwordInput.classList.remove('input-error');
+            });
+        }
 
         // Focar no primeiro campo
-        usernameInput.focus();
+        if (usernameInput) {
+            usernameInput.focus();
+        }
     });
 </script>
 {% endblock %}

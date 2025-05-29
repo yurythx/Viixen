@@ -1,28 +1,37 @@
 from django.contrib.auth import login, get_user_model, logout, authenticate
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.contrib.auth.models import Group
 from django.urls import reverse_lazy, reverse
-from django.views.generic import CreateView, TemplateView, UpdateView, View
+from django.views.generic import CreateView, TemplateView, UpdateView, View, ListView, DeleteView
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str
 from django.contrib.auth.tokens import default_token_generator
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.core.mail import send_mail, EmailMessage
 from django.template.loader import render_to_string
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
+from django.utils.decorators import method_decorator
+from .decorators import (
+    account_activation_required, inactive_user_only, email_verified_required,
+    admin_or_superuser_required, anonymous_required
+)
 from django.core.cache import cache
 from django.core.exceptions import ValidationError
-from django.contrib.auth.views import LoginView, LogoutView
+from django.contrib.auth.views import LoginView, LogoutView, PasswordChangeView
 from django.contrib.auth.forms import AuthenticationForm
 from django.views.decorators.debug import sensitive_variables
 from django.contrib.auth.password_validation import validate_password
+from django.db.models import Q
+from django.http import JsonResponse
 from apps.config.models import LDAPConfig, EmailConfig
 from ldap3 import Server, Connection, ALL, Tls
 from django.contrib.auth.backends import ModelBackend
 from apps.accounts.forms import (
     EditProfileForm, UserProfileForm, EmailSettingsForm,
-    SocialAuthSettingsForm, LDAPSettingsForm, CustomUserCreationForm
+    SocialAuthSettingsForm, LDAPSettingsForm, CustomUserCreationForm,
+    UserManagementForm, CodigoAtivacaoForm, SolicitarCodigoForm
 )
 from apps.accounts.models import SocialAuthSettings, Cargo, Departamento
 import logging
@@ -148,6 +157,7 @@ def ldap_login(request):
     return render(request, 'accounts/ldap_login.html')
 
 # --- Registro ---
+@method_decorator(anonymous_required, name='dispatch')
 class RegisterView(CreateView):
     template_name = 'accounts/register.html'
     form_class = CustomUserCreationForm
@@ -166,57 +176,218 @@ class RegisterView(CreateView):
         try:
             user = form.save(commit=False)
             user.is_active = False
+            # Garantir que usuários registrados publicamente não tenham privilégios administrativos
+            user.is_staff = False
+            user.is_superuser = False
             user.save()
 
-            uid = urlsafe_base64_encode(force_bytes(user.pk))
-            token = default_token_generator.make_token(user)
-            activation_link = self.request.build_absolute_uri(
-                reverse('accounts:activate', kwargs={'uidb64': uid, 'token': token})
-            )
+            # Adicionar usuário ao grupo "Usuario" por padrão
+            usuario_group, created = Group.objects.get_or_create(name='Usuario')
+            user.groups.add(usuario_group)
 
-            subject = "Ative sua conta"
-            message = render_to_string('accounts/email_activation.html', {
+            # Gerar código de ativação
+            codigo = user.gerar_codigo_ativacao()
+
+            # Enviar email com código
+            subject = "Código de Ativação da Conta"
+            message = render_to_string('accounts/email_codigo_ativacao.html', {
                 'user': user,
-                'activation_link': activation_link,
+                'codigo': codigo,
+                'request': self.request,
             })
 
-            # Manter EmailMessage para compatibilidade com o código existente
             email = EmailMessage(subject, message, settings.DEFAULT_FROM_EMAIL, [user.email])
             email.content_subtype = "html"
             email.send()
 
-            messages.info(self.request, "Verifique seu e-mail para ativar sua conta.")
-            return redirect('accounts:login')
+            messages.info(
+                self.request,
+                f"Conta criada com sucesso! Enviamos um código de ativação para {user.email}. "
+                f"Verifique seu email e digite o código para ativar sua conta."
+            )
+            # Redirecionar com email como parâmetro
+            return redirect(f"{reverse('accounts:ativar_conta')}?email={user.email}")
 
         except Exception as e:
             logger.error(f"Erro ao enviar e-mail de ativação: {e}")
             messages.error(self.request, "Erro ao enviar e-mail. Tente novamente.")
             return self.form_invalid(form)
 
-# --- Ativação por e-mail ---
-class ActivateAccountView(View):
-    def get(self, request, uidb64, token):
-        try:
-            uid = force_str(urlsafe_base64_decode(uidb64))
-            user = User.objects.get(pk=uid)
-        except (TypeError, ValueError, OverflowError, User.DoesNotExist):
-            user = None
+# --- Ativação por código ---
+@method_decorator(inactive_user_only, name='dispatch')
+class AtivarContaView(TemplateView):
+    """View para inserir código de ativação"""
+    template_name = 'accounts/ativar_conta.html'
 
-        if user and default_token_generator.check_token(user, token):
-            # Ativar a conta
-            user.is_active = True
-            user.email_verificado = True  # Atualizar o campo email_verificado
-            user.save()
+    def dispatch(self, request, *args, **kwargs):
+        # Verificar se usuário já está logado e ativo
+        if request.user.is_authenticated and request.user.is_active:
+            messages.info(
+                request,
+                "🎉 Sua conta já está ativa! Você já está logado no sistema."
+            )
+            return redirect('accounts:profile')
 
-            # Fazer login automático após a ativação
-            login(request, user, backend='django.contrib.auth.backends.ModelBackend')
+        return super().dispatch(request, *args, **kwargs)
 
-            messages.success(request, "Conta ativada com sucesso! Você foi logado automaticamente.")
-            return redirect('accounts:profile')  # Redirecionar para o perfil em vez da página de login
-        return render(request, 'accounts/activation_invalid.html')
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        # Pegar email da URL se fornecido
+        email_param = self.request.GET.get('email', '')
+
+        # Verificar status do usuário se email foi fornecido
+        user_status = None
+        if email_param:
+            try:
+                user = User.objects.get(email=email_param)
+                if user.is_active:
+                    user_status = 'active'
+                else:
+                    user_status = 'inactive'
+            except User.DoesNotExist:
+                user_status = 'not_found'
+
+        # Criar formulários com email pré-preenchido se fornecido
+        initial_data = {'email': email_param} if email_param else {}
+        context['form'] = CodigoAtivacaoForm(initial=initial_data)
+        context['solicitar_form'] = SolicitarCodigoForm(initial=initial_data)
+        context['email_param'] = email_param
+        context['user_status'] = user_status
+
+        return context
+
+    def post(self, request, *args, **kwargs):
+        form = CodigoAtivacaoForm(request.POST)
+        solicitar_form = SolicitarCodigoForm()
+
+        if form.is_valid():
+            email = form.cleaned_data['email']
+            codigo = form.cleaned_data['codigo']
+
+            try:
+                user = User.objects.get(email=email, is_active=False)
+
+                # Verificar se o usuário tem código de ativação
+                if not user.codigo_ativacao:
+                    messages.error(
+                        request,
+                        "❌ Esta conta não possui um código de ativação válido. "
+                        "Solicite um novo código abaixo."
+                    )
+                else:
+                    valido, mensagem = user.verificar_codigo_ativacao(codigo)
+
+                    if valido:
+                        # Ativar a conta
+                        user.is_active = True
+                        user.email_verificado = True
+                        user.limpar_codigo_ativacao()
+                        user.save()
+
+                        # Fazer login automático
+                        login(request, user, backend='django.contrib.auth.backends.ModelBackend')
+
+                        messages.success(
+                            request,
+                            "🎉 Conta ativada com sucesso! Você foi logado automaticamente. "
+                            "Bem-vindo ao sistema!"
+                        )
+                        return redirect('accounts:profile')
+                    else:
+                        # Fornecer feedback específico baseado no tipo de erro
+                        if "expirado" in mensagem.lower():
+                            messages.error(
+                                request,
+                                f"⏰ {mensagem} Use o formulário abaixo para solicitar um novo código."
+                            )
+                        elif "muitas tentativas" in mensagem.lower():
+                            messages.error(
+                                request,
+                                f"🚫 {mensagem} Use o formulário abaixo para solicitar um novo código."
+                            )
+                        else:
+                            messages.error(request, f"❌ {mensagem}")
+
+            except User.DoesNotExist:
+                messages.error(
+                    request,
+                    "❌ Email não encontrado ou conta já ativada. "
+                    "Verifique se o email está correto."
+                )
+        else:
+            # Mostrar erros de validação do formulário
+            for field, errors in form.errors.items():
+                for error in errors:
+                    if field == '__all__':
+                        messages.error(request, f"❌ {error}")
+                    else:
+                        field_name = form.fields[field].label or field
+                        messages.error(request, f"❌ {field_name}: {error}")
+
+        context = self.get_context_data()
+        context['form'] = form
+        context['solicitar_form'] = solicitar_form
+        return render(request, self.template_name, context)
+
+
+class SolicitarCodigoView(View):
+    """View para solicitar novo código de ativação"""
+
+    def post(self, request, *args, **kwargs):
+        form = SolicitarCodigoForm(request.POST)
+
+        if form.is_valid():
+            email = form.cleaned_data['email']
+
+            try:
+                user = User.objects.get(email=email, is_active=False)
+
+                # Verificar se pode gerar novo código (limite de tempo)
+                if user.codigo_ativacao_criado_em:
+                    from django.utils import timezone
+                    from datetime import timedelta
+
+                    tempo_limite = user.codigo_ativacao_criado_em + timedelta(minutes=5)
+                    if timezone.now() < tempo_limite:
+                        tempo_restante = (tempo_limite - timezone.now()).seconds // 60 + 1
+                        messages.warning(
+                            request,
+                            f"⏰ Aguarde {tempo_restante} minutos antes de solicitar um novo código."
+                        )
+                        return redirect('accounts:ativar_conta')
+
+                # Gerar novo código
+                codigo = user.gerar_codigo_ativacao()
+
+                # Enviar email
+                subject = "Novo Código de Ativação"
+                message = render_to_string('accounts/email_codigo_ativacao.html', {
+                    'user': user,
+                    'codigo': codigo,
+                    'novo_codigo': True,
+                })
+
+                email_obj = EmailMessage(subject, message, settings.DEFAULT_FROM_EMAIL, [user.email])
+                email_obj.content_subtype = "html"
+                email_obj.send()
+
+                messages.success(
+                    request,
+                    f"📧 Novo código enviado para {user.email}. Verifique sua caixa de entrada."
+                )
+
+            except User.DoesNotExist:
+                messages.error(request, "❌ Email não encontrado ou conta já ativada.")
+            except Exception as e:
+                logger.error(f"Erro ao enviar novo código: {e}")
+                messages.error(request, "❌ Erro ao enviar código. Tente novamente.")
+
+        return redirect('accounts:ativar_conta')
 
 
 # --- Perfil ---
+@method_decorator(account_activation_required, name='dispatch')
 class ProfileView(LoginRequiredMixin, TemplateView):
     template_name = 'accounts/profile.html'
 
@@ -234,6 +405,7 @@ class ProfileView(LoginRequiredMixin, TemplateView):
         return context
 
 # --- Editar Perfil ---
+@method_decorator(account_activation_required, name='dispatch')
 class EditProfileView(LoginRequiredMixin, UpdateView):
     form_class = EditProfileForm
     template_name = 'accounts/edit_profile.html'
@@ -256,6 +428,7 @@ class EditProfileView(LoginRequiredMixin, UpdateView):
 
 
 # --- Configurações administrativas ---
+@method_decorator(admin_or_superuser_required, name='dispatch')
 class AdminSettingsView(LoginRequiredMixin, UserPassesTestMixin, View):
     template_name = 'accounts/admin_settings.html'
 
@@ -481,6 +654,7 @@ class AdminSettingsView(LoginRequiredMixin, UserPassesTestMixin, View):
 
 
 # --- Login personalizado ---
+@method_decorator(anonymous_required, name='dispatch')
 class CustomLoginView(LoginView):
     form_class = AuthenticationForm
     template_name = 'accounts/login.html'
@@ -525,7 +699,15 @@ class CustomLoginView(LoginView):
 
         # Registrar o login bem-sucedido
         logger.info(f"Login bem-sucedido para o usuário: {user.username}")
-        messages.success(self.request, f"Bem-vindo de volta, {user.get_full_name() or user.username}! Login realizado com sucesso.")
+
+        # Mensagem de boas-vindas com aviso sobre múltiplas contas
+        messages.success(
+            self.request,
+            f'🎉 Bem-vindo de volta, {user.get_full_name() or user.username}! '
+            f'Você está logado no sistema. ⚠️ Para usar uma conta diferente, '
+            f'faça logout primeiro.'
+        )
+
         return super().form_valid(form)
 
 
@@ -545,7 +727,14 @@ class CustomLogoutView(View):
         """Executa o logout do usuário"""
         if request.user.is_authenticated:
             username = request.user.get_full_name() or request.user.username
-            messages.success(request, f'Até logo, {username}! Você saiu do sistema com sucesso.')
+
+            # Mensagem de despedida com aviso sobre múltiplas contas
+            messages.warning(
+                request,
+                f'👋 Até logo, {username}! Você saiu do sistema com sucesso. '
+                f'⚠️ Agora você pode fazer login com uma conta diferente se necessário.'
+            )
+
             logout(request)
 
         # Redirecionar para a página inicial
@@ -557,3 +746,461 @@ class CustomLogoutView(View):
         response['Expires'] = '0'
 
         return response
+
+
+# =============================================================================
+# GESTÃO DE USUÁRIOS
+# =============================================================================
+
+class UserListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
+    """Lista todos os usuários do sistema"""
+    model = User
+    template_name = 'accounts/user_list.html'
+    context_object_name = 'users'
+    paginate_by = 20
+
+    def test_func(self):
+        return self.request.user.is_staff or self.request.user.groups.filter(name='Administrador').exists()
+
+    def get_queryset(self):
+        queryset = User.objects.select_related('cargo', 'departamento').prefetch_related('groups')
+
+        # Filtros de busca
+        search = self.request.GET.get('search')
+        if search:
+            queryset = queryset.filter(
+                Q(username__icontains=search) |
+                Q(email__icontains=search) |
+                Q(first_name__icontains=search) |
+                Q(last_name__icontains=search)
+            )
+
+        # Filtro por grupo
+        group_filter = self.request.GET.get('group')
+        if group_filter:
+            queryset = queryset.filter(groups__name=group_filter)
+
+        # Filtro por status
+        status_filter = self.request.GET.get('status')
+        if status_filter == 'active':
+            queryset = queryset.filter(is_active=True)
+        elif status_filter == 'inactive':
+            queryset = queryset.filter(is_active=False)
+
+        return queryset.order_by('-date_joined')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['groups'] = Group.objects.all()
+        context['search'] = self.request.GET.get('search', '')
+        context['group_filter'] = self.request.GET.get('group', '')
+        context['status_filter'] = self.request.GET.get('status', '')
+        return context
+
+
+class UserCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
+    """Criar novo usuário"""
+    model = User
+    form_class = UserManagementForm
+    template_name = 'accounts/user_form.html'
+    success_url = reverse_lazy('accounts:user_list')
+
+    def test_func(self):
+        return self.request.user.is_staff or self.request.user.groups.filter(name='Administrador').exists()
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['current_user'] = self.request.user
+        return kwargs
+
+    def form_valid(self, form):
+        user = form.save(commit=False)
+
+        # Verificar se é usuário LDAP (não tem senha utilizável)
+        is_ldap_user = not user.has_usable_password() if hasattr(user, 'has_usable_password') else False
+
+        if is_ldap_user:
+            # Usuários LDAP são ativados automaticamente
+            user.is_active = True
+        else:
+            # Usuários normais precisam confirmar email
+            user.is_active = False
+
+        # Salvar o usuário primeiro
+        user.save()
+
+        # Gerenciar grupos - SEMPRE garantir que novos usuários tenham pelo menos "Usuario"
+        groups = form.cleaned_data.get('groups')
+        usuario_group, created = Group.objects.get_or_create(name='Usuario')
+
+        if groups:
+            # Garantir que o grupo "Usuario" sempre esteja incluído
+            if usuario_group not in groups:
+                groups = list(groups) + [usuario_group]
+            user.groups.set(groups)
+        else:
+            # Se nenhum grupo foi selecionado, adicionar ao grupo "Usuario" por padrão
+            user.groups.add(usuario_group)
+
+        # Salvar relações many-to-many
+        form.save_m2m()
+
+        if is_ldap_user:
+            # Usuário LDAP - ativação automática
+            messages.success(
+                self.request,
+                f'✅ Usuário LDAP {user.username} criado com sucesso! '
+                f'O usuário foi ativado automaticamente e pode fazer login via LDAP.'
+            )
+        else:
+            # Usuário normal - enviar email com código de ativação
+            try:
+                codigo = user.gerar_codigo_ativacao()
+
+                subject = "Código de Ativação da Conta"
+                message = render_to_string('accounts/email_admin_created_user_codigo.html', {
+                    'user': user,
+                    'codigo': codigo,
+                    'admin_user': self.request.user,
+                })
+
+                email = EmailMessage(subject, message, settings.DEFAULT_FROM_EMAIL, [user.email])
+                email.content_subtype = "html"
+                email.send()
+
+                messages.success(
+                    self.request,
+                    f'✅ Usuário {user.username} criado com sucesso! '
+                    f'Um código de ativação foi enviado para {user.email}. '
+                    f'O usuário deve acessar: {self.request.build_absolute_uri(reverse("accounts:ativar_conta"))}?email={user.email}'
+                )
+            except Exception as e:
+                logger.error(f"Erro ao enviar email de confirmação: {e}")
+                messages.warning(
+                    self.request,
+                    f'⚠️ Usuário {user.username} criado, mas houve erro ao enviar email de confirmação. '
+                    f'Você pode reenviar o email de confirmação posteriormente.'
+                )
+
+        return super().form_valid(form)
+
+    def send_confirmation_email(self, user):
+        """Enviar email de confirmação para o usuário"""
+        from django.contrib.auth.tokens import default_token_generator
+        from django.utils.http import urlsafe_base64_encode
+        from django.utils.encoding import force_bytes
+        from django.template.loader import render_to_string
+        from django.core.mail import EmailMessage
+        from django.conf import settings
+        from django.urls import reverse
+
+        uid = urlsafe_base64_encode(force_bytes(user.pk))
+        token = default_token_generator.make_token(user)
+        activation_link = self.request.build_absolute_uri(
+            reverse('accounts:activate', kwargs={'uidb64': uid, 'token': token})
+        )
+
+        subject = "Confirme sua conta - Criada por Administrador"
+        message = render_to_string('accounts/email_admin_created_user.html', {
+            'user': user,
+            'activation_link': activation_link,
+            'admin_user': self.request.user,
+        })
+
+        email = EmailMessage(subject, message, settings.DEFAULT_FROM_EMAIL, [user.email])
+        email.content_subtype = "html"
+        email.send()
+
+
+class UserUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+    """Editar usuário existente"""
+    model = User
+    form_class = UserManagementForm
+    template_name = 'accounts/user_form.html'
+    success_url = reverse_lazy('accounts:user_list')
+
+    def test_func(self):
+        return self.request.user.is_staff or self.request.user.groups.filter(name='Administrador').exists()
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['instance'] = self.get_object()
+        kwargs['current_user'] = self.request.user
+        return kwargs
+
+    def form_valid(self, form):
+        user = form.save()
+        old_username = self.get_object().username
+
+        # Atualizar grupos
+        groups = form.cleaned_data.get('groups')
+        if groups:
+            user.groups.set(groups)
+        else:
+            # Se nenhum grupo foi selecionado, manter pelo menos "Usuario"
+            usuario_group, created = Group.objects.get_or_create(name='Usuario')
+            user.groups.set([usuario_group])
+
+        # Verificar se a senha foi alterada
+        password_changed = form.cleaned_data.get('password1')
+
+        success_message = f'✅ Usuário {user.username} atualizado com sucesso!'
+        if password_changed:
+            success_message += ' A senha foi alterada.'
+        if old_username != user.username:
+            success_message += f' Nome de usuário alterado de "{old_username}" para "{user.username}".'
+
+        messages.success(self.request, success_message)
+        return super().form_valid(form)
+
+
+class UserDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
+    """Deletar usuário"""
+    model = User
+    template_name = 'accounts/user_confirm_delete.html'
+    success_url = reverse_lazy('accounts:user_list')
+
+    def test_func(self):
+        return self.request.user.is_staff or self.request.user.groups.filter(name='Administrador').exists()
+
+    def delete(self, request, *args, **kwargs):
+        user = self.get_object()
+
+        # Validações de segurança
+        if user == request.user:
+            messages.error(
+                request,
+                '🚫 Você não pode deletar sua própria conta! '
+                'Solicite a outro administrador para realizar esta ação.'
+            )
+            return redirect('accounts:user_list')
+
+        if user.is_superuser:
+            messages.error(
+                request,
+                '🛡️ Não é possível deletar superusuários por questões de segurança! '
+                'Remova os privilégios de superusuário antes de tentar deletar.'
+            )
+            return redirect('accounts:user_list')
+
+        # Verificar se é o último administrador
+        admin_count = User.objects.filter(
+            Q(is_staff=True) | Q(groups__name='Administrador')
+        ).exclude(pk=user.pk).count()
+
+        if (user.is_staff or user.groups.filter(name='Administrador').exists()) and admin_count == 0:
+            messages.error(
+                request,
+                '⚠️ Não é possível deletar o último administrador do sistema! '
+                'Crie outro administrador antes de deletar este usuário.'
+            )
+            return redirect('accounts:user_list')
+
+        username = user.username
+        user_groups = list(user.groups.values_list('name', flat=True))
+
+        response = super().delete(request, *args, **kwargs)
+
+        messages.success(
+            request,
+            f'🗑️ Usuário {username} deletado com sucesso! '
+            f'Grupos que o usuário pertencia: {", ".join(user_groups) if user_groups else "Nenhum"}'
+        )
+        return response
+
+
+class UserDetailView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
+    """Visualizar detalhes do usuário"""
+    template_name = 'accounts/user_detail.html'
+
+    def test_func(self):
+        return self.request.user.is_staff or self.request.user.groups.filter(name='Administrador').exists()
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user_id = kwargs.get('pk')
+        context['user_obj'] = get_object_or_404(User, pk=user_id)
+        return context
+
+
+class UserToggleStatusView(LoginRequiredMixin, UserPassesTestMixin, View):
+    """Ativar/Desativar usuário via AJAX"""
+
+    def test_func(self):
+        return self.request.user.is_staff or self.request.user.groups.filter(name='Administrador').exists()
+
+    def post(self, request, pk):
+        user = get_object_or_404(User, pk=pk)
+
+        # Validações de segurança
+        if user == request.user:
+            return JsonResponse({
+                'success': False,
+                'message': '🚫 Você não pode desativar sua própria conta!'
+            })
+
+        if user.is_superuser:
+            return JsonResponse({
+                'success': False,
+                'message': '🛡️ Não é possível desativar superusuários por questões de segurança!'
+            })
+
+        # Verificar se é o último administrador ativo
+        if user.is_active and (user.is_staff or user.groups.filter(name='Administrador').exists()):
+            admin_count = User.objects.filter(
+                Q(is_staff=True) | Q(groups__name='Administrador'),
+                is_active=True
+            ).exclude(pk=user.pk).count()
+
+            if admin_count == 0:
+                return JsonResponse({
+                    'success': False,
+                    'message': '⚠️ Não é possível desativar o último administrador ativo do sistema!'
+                })
+
+        # Alterar status
+        old_status = user.is_active
+        user.is_active = not user.is_active
+        user.save()
+
+        status = 'ativado' if user.is_active else 'desativado'
+        icon = '✅' if user.is_active else '⏸️'
+
+        return JsonResponse({
+            'success': True,
+            'message': f'{icon} Usuário {user.username} {status} com sucesso!',
+            'is_active': user.is_active,
+            'old_status': old_status
+        })
+
+
+# =============================================================================
+# ALTERAÇÃO DE SENHA COM CONFIRMAÇÃO POR EMAIL
+# =============================================================================
+
+class PasswordChangeRequestView(LoginRequiredMixin, TemplateView):
+    """Solicitar alteração de senha via email"""
+    template_name = 'accounts/password_change_request.html'
+
+    def post(self, request):
+        """Enviar email de confirmação para alteração de senha"""
+        user = request.user
+
+        # Verificar se é usuário LDAP
+        if not user.has_usable_password():
+            messages.error(
+                request,
+                '🏢 Usuários LDAP não podem alterar senha através do sistema. '
+                'Entre em contato com o administrador de rede para alterar sua senha corporativa.'
+            )
+            return redirect('accounts:profile')
+
+        try:
+            # Gerar token para alteração de senha
+            uid = urlsafe_base64_encode(force_bytes(user.pk))
+            token = default_token_generator.make_token(user)
+
+            # Criar link de confirmação
+            confirmation_link = request.build_absolute_uri(
+                reverse('accounts:password_change_confirm', kwargs={'uidb64': uid, 'token': token})
+            )
+
+            # Enviar email
+            subject = "Confirmação para Alteração de Senha"
+            message = render_to_string('accounts/email_password_change_request.html', {
+                'user': user,
+                'confirmation_link': confirmation_link,
+            })
+
+            email = EmailMessage(subject, message, settings.DEFAULT_FROM_EMAIL, [user.email])
+            email.content_subtype = "html"
+            email.send()
+
+            messages.success(
+                request,
+                f'📧 Email de confirmação enviado para {user.email}. '
+                f'Clique no link recebido para confirmar a alteração de senha.'
+            )
+
+        except Exception as e:
+            logger.error(f"Erro ao enviar email de confirmação de senha: {e}")
+            messages.error(
+                request,
+                '❌ Erro ao enviar email de confirmação. Tente novamente mais tarde.'
+            )
+
+        return redirect('accounts:profile')
+
+
+class PasswordChangeConfirmView(TemplateView):
+    """Confirmar alteração de senha via token do email"""
+    template_name = 'accounts/password_change_form.html'
+
+    def get(self, request, uidb64, token):
+        """Verificar token e exibir formulário de alteração"""
+        try:
+            uid = force_str(urlsafe_base64_decode(uidb64))
+            user = User.objects.get(pk=uid)
+        except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+            user = None
+
+        if user and default_token_generator.check_token(user, token):
+            # Token válido - exibir formulário
+            context = {
+                'validlink': True,
+                'user': user,
+                'uidb64': uidb64,
+                'token': token
+            }
+            return render(request, self.template_name, context)
+        else:
+            # Token inválido
+            context = {'validlink': False}
+            return render(request, self.template_name, context)
+
+    def post(self, request, uidb64, token):
+        """Processar alteração de senha"""
+        try:
+            uid = force_str(urlsafe_base64_decode(uidb64))
+            user = User.objects.get(pk=uid)
+        except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+            user = None
+
+        if user and default_token_generator.check_token(user, token):
+            password1 = request.POST.get('password1')
+            password2 = request.POST.get('password2')
+
+            # Validações
+            if not password1 or not password2:
+                messages.error(request, 'Por favor, preencha todos os campos.')
+                return self.get(request, uidb64, token)
+
+            if password1 != password2:
+                messages.error(request, 'As senhas não coincidem.')
+                return self.get(request, uidb64, token)
+
+            # Validar força da senha
+            try:
+                validate_password(password1, user)
+            except ValidationError as e:
+                for error in e.messages:
+                    messages.error(request, error)
+                return self.get(request, uidb64, token)
+
+            # Alterar senha
+            user.set_password(password1)
+            user.save()
+
+            # Fazer login automático
+            login(request, user, backend='django.contrib.auth.backends.ModelBackend')
+
+            messages.success(
+                request,
+                '✅ Senha alterada com sucesso! Você foi logado automaticamente.'
+            )
+            return redirect('accounts:profile')
+        else:
+            messages.error(request, 'Link inválido ou expirado.')
+            return redirect('accounts:login')
+
+

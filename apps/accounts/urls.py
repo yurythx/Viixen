@@ -3,7 +3,10 @@ from . import views
 from django.urls import path, reverse_lazy
 from .views import (
     RegisterView, ProfileView, EditProfileView, AdminSettingsView,
-    ActivateAccountView, TestPageView, CustomLoginView, CustomLogoutView
+    AtivarContaView, SolicitarCodigoView, TestPageView, CustomLoginView, CustomLogoutView,
+    UserListView, UserCreateView, UserUpdateView, UserDeleteView,
+    UserDetailView, UserToggleStatusView, PasswordChangeRequestView,
+    PasswordChangeConfirmView
 )
 from django.contrib.auth import views as auth_views
 
@@ -14,7 +17,9 @@ urlpatterns = [
 
     path('test/', TestPageView.as_view(), name='test_page'),
 
-    path('activate/<uidb64>/<token>/', ActivateAccountView.as_view(), name='activate'),
+    # Ativação de conta por código
+    path('ativar/', AtivarContaView.as_view(), name='ativar_conta'),
+    path('solicitar-codigo/', SolicitarCodigoView.as_view(), name='solicitar_codigo'),
 
     # Registro
     path('register/', RegisterView.as_view(), name='register'),
@@ -27,14 +32,9 @@ urlpatterns = [
     path('profile/', ProfileView.as_view(), name='profile'),
     path('profile/edit/', EditProfileView.as_view(), name='edit_profile'),
 
-    # Troca de senha
-    path('password_change/', auth_views.PasswordChangeView.as_view(
-        template_name='accounts/password_change_form.html',
-        success_url=reverse_lazy('accounts:password_change_done')),
-        name='password_change'),
-    path('password_change/done/', auth_views.PasswordChangeDoneView.as_view(
-        template_name='accounts/password_change_done.html'),
-        name='password_change_done'),
+    # Troca de senha com confirmação por email
+    path('password_change/', PasswordChangeRequestView.as_view(), name='password_change'),
+    path('password_change/confirm/<uidb64>/<token>/', PasswordChangeConfirmView.as_view(), name='password_change_confirm'),
 
     # Redefinição de senha
     path('password_reset/', auth_views.PasswordResetView.as_view(
@@ -57,5 +57,12 @@ urlpatterns = [
     # Configurações de Administrador
     path('admin/settings/', AdminSettingsView.as_view(), name='admin_settings'),
 
+    # Gestão de Usuários
+    path('users/', UserListView.as_view(), name='user_list'),
+    path('users/create/', UserCreateView.as_view(), name='user_create'),
+    path('users/<int:pk>/', UserDetailView.as_view(), name='user_detail'),
+    path('users/<int:pk>/edit/', UserUpdateView.as_view(), name='user_edit'),
+    path('users/<int:pk>/delete/', UserDeleteView.as_view(), name='user_delete'),
+    path('users/<int:pk>/toggle-status/', UserToggleStatusView.as_view(), name='user_toggle_status'),
 
 ]

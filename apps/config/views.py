@@ -1,17 +1,24 @@
-from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
-from django.views.generic import TemplateView, UpdateView, ListView, View
+from django.views.generic import TemplateView, UpdateView, ListView, View, CreateView, DeleteView
 from django.urls import reverse_lazy
-from django.shortcuts import redirect, render
+from django.shortcuts import redirect, render, get_object_or_404
 from django.contrib import messages
-from django.http import HttpResponse
+from django.contrib.auth import get_user_model
+from django.contrib.auth.models import Group
+from django.http import HttpResponse, JsonResponse
+from django.views.decorators.http import require_POST
+from django.views.decorators.csrf import csrf_exempt
 from django.db import models
+from django.db.models import Q
 from django.core.exceptions import PermissionDenied
 from .models import (
     SocialProviderConfig, EmailConfig, SystemConfig, AppConfig, LDAPConfig,
     EnvironmentVariable, DatabaseConfig, Widget, MenuConfig, Plugin, ConfigBackup
 )
 from .forms import SocialProviderConfigForm, EmailConfigForm, SystemConfigForm, AppConfigForm, EnvironmentVariableForm, EnvironmentVariableFilterForm, DatabaseConfigForm, LDAPConfigForm
+from apps.accounts.forms import UserManagementForm
+
+User = get_user_model()
 
 def staff_required(view_func):
     """Decorator personalizado que verifica se o usuário é staff e redireciona para o login correto."""
@@ -84,6 +91,16 @@ class ConfigView(TemplateView):
             # Último backup
             last_backup = ConfigBackup.objects.order_by('-created_at').first()
             context['last_backup_date'] = last_backup.created_at if last_backup else None
+
+            # Estatísticas de usuários
+            all_users = User.objects.all()
+            context['stats'] = {
+                'total': all_users.count(),
+                'active': all_users.filter(is_active=True).count(),
+                'inactive': all_users.filter(is_active=False).count(),
+                'staff': all_users.filter(is_staff=True).count(),
+                'superuser': all_users.filter(is_superuser=True).count(),
+            }
         else:
             context['is_admin'] = False
 
@@ -724,3 +741,342 @@ class LDAPConfigTestView(View):
             messages.error(request, 'Configuração LDAP não encontrada.')
 
         return redirect('config:ldap-list')
+
+
+# =============================================================================
+# GESTÃO DE USUÁRIOS NO CONFIG
+# =============================================================================
+
+@method_decorator(staff_required, name='dispatch')
+class ConfigUserListView(ListView):
+    """Lista de usuários na área de configurações"""
+    model = User
+    template_name = 'config/user_list.html'
+    context_object_name = 'users'
+    paginate_by = 20
+
+    def get_queryset(self):
+        queryset = User.objects.select_related('cargo', 'departamento').prefetch_related('groups')
+
+        # Filtros de busca
+        search = self.request.GET.get('search')
+        if search:
+            queryset = queryset.filter(
+                Q(username__icontains=search) |
+                Q(email__icontains=search) |
+                Q(first_name__icontains=search) |
+                Q(last_name__icontains=search)
+            )
+
+        # Filtro por grupo
+        group_filter = self.request.GET.get('group')
+        if group_filter:
+            queryset = queryset.filter(groups__name=group_filter)
+
+        # Filtro por status
+        status_filter = self.request.GET.get('status')
+        if status_filter == 'active':
+            queryset = queryset.filter(is_active=True)
+        elif status_filter == 'inactive':
+            queryset = queryset.filter(is_active=False)
+
+        return queryset.order_by('-date_joined')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['groups'] = Group.objects.all()
+        context['search'] = self.request.GET.get('search', '')
+        context['group_filter'] = self.request.GET.get('group', '')
+        context['status_filter'] = self.request.GET.get('status', '')
+
+        # Estatísticas
+        all_users = User.objects.all()
+        context['stats'] = {
+            'total': all_users.count(),
+            'active': all_users.filter(is_active=True).count(),
+            'inactive': all_users.filter(is_active=False).count(),
+            'staff': all_users.filter(is_staff=True).count(),
+            'superuser': all_users.filter(is_superuser=True).count(),
+        }
+
+        return context
+
+
+@method_decorator(staff_required, name='dispatch')
+class ConfigUserCreateView(CreateView):
+    """Criar novo usuário na área de configurações"""
+    model = User
+    form_class = UserManagementForm
+    template_name = 'config/user_form.html'
+    success_url = reverse_lazy('config:user-list')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['action'] = 'Criar'
+        return context
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['current_user'] = self.request.user
+        return kwargs
+
+    def form_valid(self, form):
+        user = form.save(commit=False)
+
+        # Verificar se é usuário LDAP (não tem senha utilizável)
+        is_ldap_user = not user.has_usable_password() if hasattr(user, 'has_usable_password') else False
+
+        if is_ldap_user:
+            # Usuários LDAP são ativados automaticamente
+            user.is_active = True
+        else:
+            # Usuários normais precisam confirmar email
+            user.is_active = False
+
+        # Salvar o usuário primeiro
+        user.save()
+
+        # Gerenciar grupos - SEMPRE garantir que novos usuários tenham pelo menos "Usuario"
+        groups = form.cleaned_data.get('groups')
+        usuario_group, created = Group.objects.get_or_create(name='Usuario')
+
+        if groups:
+            # Garantir que o grupo "Usuario" sempre esteja incluído
+            if usuario_group not in groups:
+                groups = list(groups) + [usuario_group]
+            user.groups.set(groups)
+        else:
+            # Se nenhum grupo foi selecionado, adicionar ao grupo "Usuario" por padrão
+            user.groups.add(usuario_group)
+
+        # Salvar relações many-to-many
+        form.save_m2m()
+
+        if is_ldap_user:
+            # Usuário LDAP - ativação automática
+            messages.success(
+                self.request,
+                f'✅ Usuário LDAP {user.username} criado com sucesso! '
+                f'O usuário foi ativado automaticamente e pode fazer login via LDAP.'
+            )
+        else:
+            # Usuário normal - enviar email com código de ativação
+            try:
+                codigo = user.gerar_codigo_ativacao()
+
+                subject = "Código de Ativação da Conta"
+                message = render_to_string('accounts/email_admin_created_user_codigo.html', {
+                    'user': user,
+                    'codigo': codigo,
+                    'admin_user': self.request.user,
+                })
+
+                email = EmailMessage(subject, message, settings.DEFAULT_FROM_EMAIL, [user.email])
+                email.content_subtype = "html"
+                email.send()
+
+                messages.success(
+                    self.request,
+                    f'✅ Usuário {user.username} criado com sucesso! '
+                    f'Um código de ativação foi enviado para {user.email}. '
+                    f'O usuário deve inserir o código para ativar sua conta.'
+                )
+            except Exception as e:
+                from django.utils.log import getLogger
+                logger = getLogger(__name__)
+                logger.error(f"Erro ao enviar email de confirmação: {e}")
+                messages.warning(
+                    self.request,
+                    f'⚠️ Usuário {user.username} criado, mas houve erro ao enviar email de confirmação. '
+                    f'Você pode reenviar o email de confirmação posteriormente.'
+                )
+
+        return super().form_valid(form)
+
+    def send_confirmation_email(self, user):
+        """Enviar email de confirmação para o usuário"""
+        from django.contrib.auth.tokens import default_token_generator
+        from django.utils.http import urlsafe_base64_encode
+        from django.utils.encoding import force_bytes
+        from django.template.loader import render_to_string
+        from django.core.mail import EmailMessage
+        from django.conf import settings
+        from django.urls import reverse
+
+        uid = urlsafe_base64_encode(force_bytes(user.pk))
+        token = default_token_generator.make_token(user)
+        activation_link = self.request.build_absolute_uri(
+            reverse('accounts:activate', kwargs={'uidb64': uid, 'token': token})
+        )
+
+        subject = "Confirme sua conta - Criada por Administrador"
+        message = render_to_string('accounts/email_admin_created_user.html', {
+            'user': user,
+            'activation_link': activation_link,
+            'admin_user': self.request.user,
+        })
+
+        email = EmailMessage(subject, message, settings.DEFAULT_FROM_EMAIL, [user.email])
+        email.content_subtype = "html"
+        email.send()
+
+
+@method_decorator(staff_required, name='dispatch')
+class ConfigUserUpdateView(UpdateView):
+    """Editar usuário na área de configurações"""
+    model = User
+    form_class = UserManagementForm
+    template_name = 'config/user_form.html'
+    success_url = reverse_lazy('config:user-list')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['action'] = 'Editar'
+        return context
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['instance'] = self.get_object()
+        kwargs['current_user'] = self.request.user
+        return kwargs
+
+    def form_valid(self, form):
+        user = form.save()
+        old_username = self.get_object().username
+
+        # Atualizar grupos
+        groups = form.cleaned_data.get('groups')
+        if groups:
+            user.groups.set(groups)
+        else:
+            # Se nenhum grupo foi selecionado, manter pelo menos "Usuario"
+            usuario_group, created = Group.objects.get_or_create(name='Usuario')
+            user.groups.set([usuario_group])
+
+        # Verificar se a senha foi alterada
+        password_changed = form.cleaned_data.get('password1')
+
+        success_message = f'✅ Usuário {user.username} atualizado com sucesso!'
+        if password_changed:
+            success_message += ' A senha foi alterada.'
+        if old_username != user.username:
+            success_message += f' Nome de usuário alterado de "{old_username}" para "{user.username}".'
+
+        messages.success(self.request, success_message)
+        return super().form_valid(form)
+
+
+@method_decorator(staff_required, name='dispatch')
+class ConfigUserDeleteView(DeleteView):
+    """Deletar usuário na área de configurações"""
+    model = User
+    template_name = 'config/user_confirm_delete.html'
+    success_url = reverse_lazy('config:user-list')
+
+    def delete(self, request, *args, **kwargs):
+        user = self.get_object()
+
+        # Validações de segurança
+        if user == request.user:
+            messages.error(
+                request,
+                '🚫 Você não pode deletar sua própria conta! '
+                'Solicite a outro administrador para realizar esta ação.'
+            )
+            return redirect('config:user-list')
+
+        if user.is_superuser:
+            messages.error(
+                request,
+                '🛡️ Não é possível deletar superusuários por questões de segurança! '
+                'Remova os privilégios de superusuário antes de tentar deletar.'
+            )
+            return redirect('config:user-list')
+
+        # Verificar se é o último administrador
+        admin_count = User.objects.filter(
+            Q(is_staff=True) | Q(groups__name='Administrador')
+        ).exclude(pk=user.pk).count()
+
+        if (user.is_staff or user.groups.filter(name='Administrador').exists()) and admin_count == 0:
+            messages.error(
+                request,
+                '⚠️ Não é possível deletar o último administrador do sistema! '
+                'Crie outro administrador antes de deletar este usuário.'
+            )
+            return redirect('config:user-list')
+
+        username = user.username
+        user_groups = list(user.groups.values_list('name', flat=True))
+
+        response = super().delete(request, *args, **kwargs)
+
+        messages.success(
+            request,
+            f'🗑️ Usuário {username} deletado com sucesso! '
+            f'Grupos que o usuário pertencia: {", ".join(user_groups) if user_groups else "Nenhum"}'
+        )
+        return response
+
+
+@method_decorator(staff_required, name='dispatch')
+class ConfigUserDetailView(TemplateView):
+    """Visualizar detalhes do usuário na área de configurações"""
+    template_name = 'config/user_detail.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user_id = kwargs.get('pk')
+        context['user_obj'] = get_object_or_404(User, pk=user_id)
+        return context
+
+
+@method_decorator(staff_required, name='dispatch')
+class ConfigUserToggleStatusView(View):
+    """Ativar/Desativar usuário via AJAX na área de configurações"""
+
+    def post(self, request, pk):
+        user = get_object_or_404(User, pk=pk)
+
+        # Validações de segurança
+        if user == request.user:
+            return JsonResponse({
+                'success': False,
+                'message': '🚫 Você não pode desativar sua própria conta!'
+            })
+
+        if user.is_superuser:
+            return JsonResponse({
+                'success': False,
+                'message': '🛡️ Não é possível desativar superusuários por questões de segurança!'
+            })
+
+        # Verificar se é o último administrador ativo
+        if user.is_active and (user.is_staff or user.groups.filter(name='Administrador').exists()):
+            admin_count = User.objects.filter(
+                Q(is_staff=True) | Q(groups__name='Administrador'),
+                is_active=True
+            ).exclude(pk=user.pk).count()
+
+            if admin_count == 0:
+                return JsonResponse({
+                    'success': False,
+                    'message': '⚠️ Não é possível desativar o último administrador ativo do sistema!'
+                })
+
+        # Alterar status
+        old_status = user.is_active
+        user.is_active = not user.is_active
+        user.save()
+
+        status = 'ativado' if user.is_active else 'desativado'
+        icon = '✅' if user.is_active else '⏸️'
+
+        return JsonResponse({
+            'success': True,
+            'message': f'{icon} Usuário {user.username} {status} com sucesso!',
+            'is_active': user.is_active,
+            'old_status': old_status
+        })
+
+

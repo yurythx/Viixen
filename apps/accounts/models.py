@@ -46,6 +46,11 @@ class CustomUser(AbstractUser):
     provedor_social = models.CharField(max_length=30, blank=True)
     uid_social = models.CharField(max_length=255, blank=True)
 
+    # Campos para ativação por código
+    codigo_ativacao = models.CharField(max_length=6, blank=True, null=True)
+    codigo_ativacao_criado_em = models.DateTimeField(null=True, blank=True)
+    tentativas_codigo = models.IntegerField(default=0)
+
     class Meta:
         verbose_name = 'Usuário'
         verbose_name_plural = 'Usuários'
@@ -71,6 +76,51 @@ class CustomUser(AbstractUser):
         # Chamar clean() antes de salvar para garantir validação
         self.clean()
         super().save(*args, **kwargs)
+
+    def gerar_codigo_ativacao(self):
+        """Gerar um código de ativação de 6 dígitos"""
+        import random
+        from django.utils import timezone
+
+        self.codigo_ativacao = ''.join([str(random.randint(0, 9)) for _ in range(6)])
+        self.codigo_ativacao_criado_em = timezone.now()
+        self.tentativas_codigo = 0
+        self.save()
+        return self.codigo_ativacao
+
+    def codigo_ativacao_valido(self):
+        """Verificar se o código de ativação ainda é válido (30 minutos)"""
+        if not self.codigo_ativacao or not self.codigo_ativacao_criado_em:
+            return False
+
+        from django.utils import timezone
+        from datetime import timedelta
+
+        tempo_limite = self.codigo_ativacao_criado_em + timedelta(minutes=30)
+        return timezone.now() <= tempo_limite
+
+    def verificar_codigo_ativacao(self, codigo):
+        """Verificar se o código fornecido está correto"""
+        if not self.codigo_ativacao_valido():
+            return False, "Código expirado. Solicite um novo código."
+
+        if self.tentativas_codigo >= 5:
+            return False, "Muitas tentativas incorretas. Solicite um novo código."
+
+        if self.codigo_ativacao == codigo:
+            return True, "Código válido."
+        else:
+            self.tentativas_codigo += 1
+            self.save()
+            tentativas_restantes = 5 - self.tentativas_codigo
+            return False, f"Código incorreto. Você tem {tentativas_restantes} tentativas restantes."
+
+    def limpar_codigo_ativacao(self):
+        """Limpar dados do código de ativação após uso"""
+        self.codigo_ativacao = None
+        self.codigo_ativacao_criado_em = None
+        self.tentativas_codigo = 0
+        self.save()
 
 
 class SocialAuthSettings(models.Model):

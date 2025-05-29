@@ -335,19 +335,193 @@ a:hover {
         margin: 0.5rem;
         padding: 1rem;
     }
-    
+
     .col-6,
     .col-4,
     .col-3 {
         width: 100%;
         margin-bottom: 1rem;
     }
-    
+
     .sidebar {
         min-height: auto;
     }
-    
+
     h1 { font-size: 2rem; }
     h2 { font-size: 1.75rem; }
     h3 { font-size: 1.5rem; }
+}
+
+/* ========================================
+   AVATARES GLOBAIS
+   ======================================== */
+
+/* Avatar padrão para listagens */
+.user-avatar {
+    width: 40px !important;
+    height: 40px !important;
+    object-fit: cover;
+    min-width: 40px !important;
+    max-width: 40px !important;
+    min-height: 40px !important;
+    max-height: 40px !important;
+    border: 2px solid #e9ecef;
+    flex-shrink: 0;
+    overflow: hidden;
+    position: relative;
+}
+
+.user-avatar img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+/* Avatar médio para detalhes */
+.user-avatar-md {
+    width: 80px !important;
+    height: 80px !important;
+    object-fit: cover;
+    min-width: 80px !important;
+    max-width: 80px !important;
+    min-height: 80px !important;
+    max-height: 80px !important;
+    border: 3px solid #e9ecef;
+    flex-shrink: 0;
+    overflow: hidden;
+    position: relative;
+}
+
+.user-avatar-md img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+/* Avatar grande para perfis */
+.user-avatar-lg {
+    width: 120px !important;
+    height: 120px !important;
+    object-fit: cover;
+    min-width: 120px !important;
+    max-width: 120px !important;
+    min-height: 120px !important;
+    max-height: 120px !important;
+    border: 4px solid #e9ecef;
+    flex-shrink: 0;
+    overflow: hidden;
+    position: relative;
+}
+
+.user-avatar-lg img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+/* Avatar extra pequeno para badges */
+.user-avatar-xs {
+    width: 24px !important;
+    height: 24px !important;
+    object-fit: cover;
+    min-width: 24px !important;
+    max-width: 24px !important;
+    min-height: 24px !important;
+    max-height: 24px !important;
+    border: 1px solid #e9ecef;
+    flex-shrink: 0;
+    overflow: hidden;
+    position: relative;
+}
+
+.user-avatar-xs img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+/* Ícones de fallback para avatares */
+.user-avatar .fas,
+.user-avatar-md .fas,
+.user-avatar-lg .fas,
+.user-avatar-xs .fas {
+    font-size: 50%;
+    color: white;
+}
+
+.user-avatar-md .fas {
+    font-size: 60%;
+}
+
+.user-avatar-lg .fas {
+    font-size: 70%;
+}
+
+.user-avatar-xs .fas {
+    font-size: 40%;
+}
+
+/* ========================================
+   AVATAR PARA EDIÇÃO DE PERFIL
+   ======================================== */
+
+/* Avatar preview para edição de perfil */
+.avatar-preview {
+    width: 120px !important;
+    height: 120px !important;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 4px solid #e9ecef;
+    position: relative;
+    margin: 0 auto;
+    overflow: hidden;
+}
+
+.avatar-preview img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+}
+
+.avatar-edit-icon {
+    position: absolute;
+    bottom: 5px;
+    right: 5px;
+    background: #4361ee;
+    color: white;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.avatar-edit-icon:hover {
+    background: #3730a3;
+    transform: scale(1.1);
+}
+
+.file-info {
+    margin-top: 0.5rem;
+    padding: 0.5rem;
+    background: #f8f9fa;
+    border-radius: 0.25rem;
+    font-size: 0.875rem;
+    color: #495057;
 }

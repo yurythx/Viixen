@@ -1,4 +1,4 @@
-{% extends "layouts/auth/base_auth.html" %}
+{% extends "base.html" %}
 
 {% block title %}Confirmar Logout{% endblock %}
 
@@ -7,10 +7,10 @@
     <div class="logout-icon">
         <i class="fas fa-sign-out-alt"></i>
     </div>
-    
+
     <h2>Confirmar Saída</h2>
     <p class="logout-message">Tem certeza que deseja sair do sistema?</p>
-    
+
     <div class="logout-actions">
         <form method="post" action="{% url 'accounts:logout' %}">
             {% csrf_token %}
@@ -18,7 +18,7 @@
                 <i class="fas fa-sign-out-alt"></i> Sim, sair agora
             </button>
         </form>
-        
+
         <a href="{% url 'accounts:profile' %}" class="btn btn-secondary">
             <i class="fas fa-times"></i> Cancelar
         </a>

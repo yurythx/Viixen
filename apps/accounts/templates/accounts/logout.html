@@ -1,4 +1,4 @@
-{% extends "layouts/auth/base_auth.html" %}
+{% extends "base.html" %}
 
 {% block title %}{% if user.is_authenticated %}Confirmar Logout{% else %}Desconectado{% endif %}{% endblock %}
 
@@ -14,7 +14,7 @@
 
             <div class="logout-actions">
 
-                
+
                 <form method="post" action="{% url 'accounts:logout' %}">
                     {% csrf_token %}
                     <button type="submit" class="btn btn-danger">

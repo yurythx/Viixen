@@ -466,6 +466,54 @@
                     </div>
                 </div>
 
+                <!-- Gestão de Usuários -->
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="headingUsers">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseUsers" aria-expanded="false" aria-controls="collapseUsers">
+                            <i class="fas fa-users me-2"></i> Gestão de Usuários
+                        </button>
+                    </h2>
+                    <div id="collapseUsers" class="accordion-collapse collapse" aria-labelledby="headingUsers" data-bs-parent="#accordionAdvancedSettings">
+                        <div class="accordion-body">
+                            <p class="text-muted mb-3">Gerencie usuários, grupos e permissões do sistema de forma centralizada.</p>
+                            <div class="row mb-3">
+                                <div class="col-md-4">
+                                    <div class="card bg-light">
+                                        <div class="card-body text-center">
+                                            <h6 class="card-title">Total de Usuários</h6>
+                                            <p class="display-6">{{ stats.total|default:0 }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="card bg-light">
+                                        <div class="card-body text-center">
+                                            <h6 class="card-title">Usuários Ativos</h6>
+                                            <p class="display-6">{{ stats.active|default:0 }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="card bg-light">
+                                        <div class="card-body text-center">
+                                            <h6 class="card-title">Administradores</h6>
+                                            <p class="display-6">{{ stats.staff|default:0 }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="d-flex gap-2">
+                                <a href="{% url 'config:user-list' %}" class="btn btn-primary">
+                                    <i class="fas fa-list"></i> Gerenciar Usuários
+                                </a>
+                                <a href="{% url 'config:user-create' %}" class="btn btn-success">
+                                    <i class="fas fa-plus"></i> Criar Usuário
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Backup e Restauração -->
                 <div class="accordion-item">
                     <h2 class="accordion-header" id="headingBackup">

@@ -1,4 +1,4 @@
-{% extends "layouts/auth/base_auth.html" %}
+{% extends "base.html" %}
 {% load i18n %}
 {% load allauth %}
 
@@ -11,7 +11,7 @@
         </div>
         <h2>Login Cancelado</h2>
         <p class="info-message">Você decidiu cancelar o login em nosso site usando uma de suas contas existentes.</p>
-        
+
         <div class="info-actions">
             <a href="{% url 'accounts:login' %}" class="btn">
                 <i class="fas fa-sign-in-alt"></i> Fazer Login

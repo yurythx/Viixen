@@ -95,8 +95,23 @@
                             <li><a class="dropdown-item" href="{% url 'accounts:edit_profile' %}">
                                 <i class="fas fa-edit me-2"></i>Editar Perfil
                             </a></li>
+                            {% if user.is_staff or user.groups.all|length > 0 and 'Administrador' in user.groups.all|join:',' %}
                             <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item text-danger" href="{% url 'accounts:logout' %}">
+                            <li><h6 class="dropdown-header">Administração</h6></li>
+                            <li><a class="dropdown-item" href="{% url 'accounts:user_list' %}">
+                                <i class="fas fa-users me-2"></i>Gestão de Usuários
+                            </a></li>
+                            <li><a class="dropdown-item" href="{% url 'config:config' %}">
+                                <i class="fas fa-cogs me-2"></i>Configurações
+                            </a></li>
+                            {% if user.is_superuser %}
+                            <li><a class="dropdown-item" href="/admin/">
+                                <i class="fas fa-shield-alt me-2"></i>Admin Django
+                            </a></li>
+                            {% endif %}
+                            {% endif %}
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item text-danger" href="#" onclick="confirmLogout(); return false;">
                                 <i class="fas fa-sign-out-alt me-2"></i>Sair
                             </a></li>
                         </ul>

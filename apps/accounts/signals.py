@@ -11,18 +11,19 @@ from django.utils.encoding import force_bytes
 
 from .models import CustomUser
 
-@receiver(post_save, sender=CustomUser)
-def send_activation_email(sender, instance, created, **kwargs):
-    if created and not instance.is_active:
-        token = default_token_generator.make_token(instance)
-        uid = urlsafe_base64_encode(force_bytes(instance.pk))
+# Signal desabilitado - agora usamos sistema de códigos
+# @receiver(post_save, sender=CustomUser)
+# def send_activation_email(sender, instance, created, **kwargs):
+#     if created and not instance.is_active:
+#         token = default_token_generator.make_token(instance)
+#         uid = urlsafe_base64_encode(force_bytes(instance.pk))
 
-        activation_link = f"{settings.SITE_DOMAIN}/accounts/activate/{uid}/{token}/"
+#         activation_link = f"{settings.SITE_DOMAIN}/accounts/activate/{uid}/{token}/"
 
-        subject = "Ative sua conta"
-        message = render_to_string("accounts/emails/activation_email.html", {
-            'user': instance,
-            'activation_link': activation_link
-        })
+#         subject = "Ative sua conta"
+#         message = render_to_string("accounts/emails/activation_email.html", {
+#             'user': instance,
+#             'activation_link': activation_link
+#         })
 
-        send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [instance.email])
+#         send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [instance.email])

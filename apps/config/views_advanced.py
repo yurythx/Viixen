@@ -2,11 +2,10 @@
 Views avançadas para funcionalidades modulares do app config.
 """
 
-from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
-from django.views.generic import TemplateView, ListView, CreateView, UpdateView, DeleteView
+from django.views.generic import ListView, CreateView, UpdateView, DeleteView
 from django.urls import reverse_lazy
-from django.shortcuts import redirect, render, get_object_or_404
+from django.shortcuts import redirect, get_object_or_404
 from django.contrib import messages
 from django.http import JsonResponse, HttpResponse
 from django.core.exceptions import PermissionDenied
@@ -14,8 +13,7 @@ from django.db import transaction
 from django.utils import timezone
 import json
 
-from .models import Widget, MenuConfig, Plugin, ConfigBackup, SystemConfig
-from .forms import SystemConfigForm
+from .models import Widget, MenuConfig, Plugin, ConfigBackup
 
 def staff_required(view_func):
     """Decorator personalizado que verifica se o usuário é staff e redireciona para o login correto."""

@@ -1,4 +1,4 @@
-{% extends "layouts/auth/base_auth.html" %}
+{% extends "base.html" %}
 {% load i18n %}
 {% load allauth %}
 
@@ -11,7 +11,7 @@
         </div>
         <h2>Erro de Login</h2>
         <p class="error-message">Ocorreu um erro ao tentar fazer login com sua conta de terceiros.</p>
-        
+
         <div class="error-actions">
             <a href="{% url 'accounts:login' %}" class="btn">
                 <i class="fas fa-arrow-left"></i> Voltar para Login

@@ -117,15 +117,8 @@ AUTHENTICATION_BACKENDS = [
     # AllAuth
     'allauth.account.auth_backends.AuthenticationBackend',
 
-    # Backends personalizados
-    # Remova ou implemente os backends personalizados conforme necessário
-    # 'apps.accounts.backends.LDAPBackend',
-    # 'guardian.backends.ObjectPermissionBackend',
 ]
 
-# Configurações do Django-guardian (remover se não usar)
-# GUARDIAN_RAISE_403 = True
-# GUARDIAN_RENDER_403 = False
 
 # Configurações do Allauth
 ACCOUNT_LOGIN_METHODS = {'email'}

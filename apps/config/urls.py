@@ -28,6 +28,12 @@ from .views import (
     LDAPConfigUpdateView,
     LDAPConfigDeleteView,
     LDAPConfigTestView,
+    ConfigUserListView,
+    ConfigUserCreateView,
+    ConfigUserUpdateView,
+    ConfigUserDeleteView,
+    ConfigUserDetailView,
+    ConfigUserToggleStatusView,
 )
 
 # Importar views avançadas
@@ -104,4 +110,12 @@ urlpatterns = [
     path('backups/', ConfigBackupListView.as_view(), name='backup-list'),
     path('backups/create/', create_backup, name='backup-create'),
     path('backups/<int:pk>/download/', download_backup, name='backup-download'),
+
+    # User Management URLs
+    path('users/', ConfigUserListView.as_view(), name='user-list'),
+    path('users/create/', ConfigUserCreateView.as_view(), name='user-create'),
+    path('users/<int:pk>/', ConfigUserDetailView.as_view(), name='user-detail'),
+    path('users/<int:pk>/edit/', ConfigUserUpdateView.as_view(), name='user-edit'),
+    path('users/<int:pk>/delete/', ConfigUserDeleteView.as_view(), name='user-delete'),
+    path('users/<int:pk>/toggle-status/', ConfigUserToggleStatusView.as_view(), name='user-toggle-status'),
 ]
