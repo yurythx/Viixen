@@ -8,43 +8,66 @@
 
     <!-- Configurações do Sistema -->
     <div class="card mb-4">
-        <div class="card-header">
-            <h2 class="h5 mb-0">Configurações Gerais</h2>
+        <div class="card-header d-flex align-items-center justify-content-between">
+            <h2 class="h5 mb-0">
+                <i class="fas fa-cog me-2"></i>
+                Configurações Gerais
+            </h2>
+            {% if system_config %}
+            <a href="{% url 'config:system-update' system_config.slug %}" class="btn btn-sm btn-primary">
+                <i class="fas fa-edit me-1"></i>Editar
+            </a>
+            {% endif %}
         </div>
         <div class="card-body">
             {% if system_config %}
                 <dl class="row">
-                    <dt class="col-sm-3">Nome do Site</dt>
+                    <dt class="col-sm-3">
+                        <i class="fas fa-globe text-primary me-2"></i>Nome do Site
+                    </dt>
                     <dd class="col-sm-9">{{ system_config.site_name }}</dd>
 
-                    <dt class="col-sm-3">Descrição</dt>
+                    <dt class="col-sm-3">
+                        <i class="fas fa-info-circle text-primary me-2"></i>Descrição
+                    </dt>
                     <dd class="col-sm-9">{{ system_config.site_description }}</dd>
 
-                    <dt class="col-sm-3">Modo Manutenção</dt>
+                    <dt class="col-sm-3">
+                        <i class="fas fa-tools text-primary me-2"></i>Modo Manutenção
+                    </dt>
                     <dd class="col-sm-9">{{ system_config.maintenance_mode|yesno:"Ativo,Inativo" }}</dd>
 
-                    <dt class="col-sm-3">Registro de Usuários</dt>
+                    <dt class="col-sm-3">
+                        <i class="fas fa-user-plus text-primary me-2"></i>Registro de Usuários
+                    </dt>
                     <dd class="col-sm-9">{{ system_config.allow_registration|yesno:"Permitido,Bloqueado" }}</dd>
 
-                    <dt class="col-sm-3">Gerenciamento de Módulos</dt>
+                    <dt class="col-sm-3">
+                        <i class="fas fa-puzzle-piece text-primary me-2"></i>Gerenciamento de Módulos
+                    </dt>
                     <dd class="col-sm-9">{{ system_config.enable_app_management|yesno:"Ativado,Desativado" }}</dd>
                 </dl>
-                <a href="{% url 'config:system-update' system_config.slug %}" class="btn btn-primary">Editar Configurações</a>
             {% else %}
-                <p>Nenhuma configuração do sistema encontrada.</p>
+                <p class="text-muted">Nenhuma configuração do sistema encontrada.</p>
             {% endif %}
         </div>
     </div>
 
     <!-- Gerenciamento de Módulos -->
     <div class="card mb-4">
-        <div class="card-header">
-            <h2 class="h5 mb-0">Gerenciamento de Módulos</h2>
+        <div class="card-header d-flex align-items-center justify-content-between">
+            <h2 class="h5 mb-0">
+                <i class="fas fa-puzzle-piece me-2"></i>
+                Gerenciamento de Módulos
+            </h2>
+            <a href="{% url 'config:app-list' %}" class="btn btn-sm btn-primary">
+                <i class="fas fa-list me-1"></i>Gerenciar
+            </a>
         </div>
         <div class="card-body">
-            <p>Gerencie os módulos instalados no sistema, ativando ou desativando conforme necessário.</p>
+            <p class="mb-3">Gerencie os módulos instalados no sistema, ativando ou desativando conforme necessário.</p>
 
-            <div class="row mb-3">
+            <div class="row">
                 <div class="col-md-6">
                     <div class="card bg-light">
                         <div class="card-body text-center">
@@ -62,18 +85,20 @@
                     </div>
                 </div>
             </div>
-
-            <a href="{% url 'config:app-list' %}" class="btn btn-primary">
-                <i class="fas fa-puzzle-piece"></i> Gerenciar Módulos
-            </a>
         </div>
     </div>
 
     {% if is_admin %}
     <!-- Seção de Configurações Avançadas (apenas para administradores) -->
     <div class="card mb-4">
-        <div class="card-header bg-primary text-white">
-            <h2 class="h5 mb-0">Configurações Avançadas</h2>
+        <div class="card-header d-flex align-items-center justify-content-between">
+            <h2 class="h5 mb-0">
+                <i class="fas fa-shield-alt me-2"></i>
+                Configurações Avançadas
+            </h2>
+            <div class="text-muted">
+                <small><i class="fas fa-lock me-1"></i>Apenas Administradores</small>
+            </div>
         </div>
         <div class="card-body">
             <p class="text-muted mb-4">Estas configurações avançadas estão disponíveis apenas para administradores e superusuários.</p>

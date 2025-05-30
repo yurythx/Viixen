@@ -42,7 +42,10 @@ class SessionSecurityMiddleware(MiddlewareMixin):
             # Verificar se estamos tentando acessar uma página protegida
             for protected_url in protected_urls:
                 if request.path.startswith(protected_url):
-                    messages.warning(request, 'Sua sessão expirou. Por favor, faça login novamente.')
+                    messages.warning(
+                        request,
+                        '🔒 Sua sessão expirou por segurança. Por favor, faça login novamente para acessar esta página.'
+                    )
                     return redirect('accounts:login')
 
         return None

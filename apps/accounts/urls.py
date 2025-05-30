@@ -6,7 +6,7 @@ from .views import (
     AtivarContaView, SolicitarCodigoView, TestPageView, CustomLoginView, CustomLogoutView,
     UserListView, UserCreateView, UserUpdateView, UserDeleteView,
     UserDetailView, UserToggleStatusView, PasswordChangeRequestView,
-    PasswordChangeConfirmView
+    PasswordChangeConfirmView, AlreadyLoggedInRegisterView, AlreadyLoggedInLoginView
 )
 from django.contrib.auth import views as auth_views
 
@@ -27,6 +27,10 @@ urlpatterns = [
     # Login e logout personalizados com mensagens
     path('login/', CustomLoginView.as_view(), name='login'),
     path('logout/', CustomLogoutView.as_view(), name='logout'),
+
+    # Páginas de aviso para usuários já logados
+    path('already-logged-in/register/', AlreadyLoggedInRegisterView.as_view(), name='already_logged_in_register'),
+    path('already-logged-in/login/', AlreadyLoggedInLoginView.as_view(), name='already_logged_in_login'),
 
     # Perfil
     path('profile/', ProfileView.as_view(), name='profile'),

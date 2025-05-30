@@ -2,108 +2,31 @@
 
 {% block title %}Configurações - {{ block.super }}{% endblock %}
 
-{# CSS movido para arquivos modulares #}
-
-{% block breadcrumb %}
-<div class="config-header p-4">
-    <div class="d-flex justify-content-between align-items-center">
-        <div>
-            <h1 class="h3 mb-1">
-                <i class="fas fa-cogs me-2"></i>
-                {% block config_title %}Configurações do Sistema{% endblock %}
-            </h1>
-            <p class="mb-0 opacity-75">
-                {% block config_description %}Gerencie as configurações e módulos do sistema{% endblock %}
-            </p>
-        </div>
-        <div class="text-end">
-            <div class="badge bg-white text-dark">
-                <i class="fas fa-user me-1"></i>{{ user.username }}
-            </div>
-        </div>
-    </div>
-
-    <!-- Breadcrumb -->
-    <nav aria-label="breadcrumb" class="mt-3">
-        <ol class="breadcrumb breadcrumb-config mb-0">
-            <li class="breadcrumb-item">
-                <a href="{% url 'pages:home' %}">
-                    <i class="fas fa-home me-1"></i>Dashboard
-                </a>
-            </li>
-            <li class="breadcrumb-item">
-                <a href="{% url 'config:config' %}">Configurações</a>
-            </li>
-            {% block config_breadcrumb %}{% endblock %}
-        </ol>
-    </nav>
-</div>
-{% endblock %}
-
 {% block content %}
-<div class="row">
-    <div class="col-12">
-        {% block config_content %}
-        <div class="config-card card">
-            <div class="card-body">
-                <h5 class="config-section-title">
-                    <i class="fas fa-info-circle me-2"></i>
-                    Bem-vindo ao Painel de Configurações
-                </h5>
-                <p>Use o menu lateral para navegar pelas diferentes seções de configuração.</p>
+<div class="container py-4">
+    <h1 class="mb-4">
+        <i class="fas fa-cogs me-2"></i>
+        {% block config_title %}Configurações do Sistema{% endblock %}
+    </h1>
+
+    {% block config_content %}
+    <!-- Bem-vindo ao Painel de Configurações -->
+    <div class="card mb-4">
+        <div class="card-header d-flex align-items-center justify-content-between">
+            <h2 class="h5 mb-0">
+                <i class="fas fa-info-circle me-2"></i>
+                Bem-vindo ao Painel de Configurações
+            </h2>
+            <div class="text-muted">
+                <small><i class="fas fa-user me-1"></i>{{ user.username }}</small>
             </div>
         </div>
-        {% endblock %}
+        <div class="card-body">
+            <p class="mb-0">{% block config_description %}Gerencie as configurações e módulos do sistema{% endblock %}</p>
+        </div>
     </div>
+    {% endblock %}
 </div>
 {% endblock %}
 
-{% block extra_js %}
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Adicionar efeitos visuais aos cards de configuração
-    const configCards = document.querySelectorAll('.config-card');
 
-    configCards.forEach(card => {
-        card.addEventListener('mouseenter', function() {
-            this.style.transform = 'translateY(-2px)';
-        });
-
-        card.addEventListener('mouseleave', function() {
-            this.style.transform = 'translateY(0)';
-        });
-    });
-
-    // Auto-save para formulários de configuração
-    const configForms = document.querySelectorAll('form[data-auto-save]');
-
-    configForms.forEach(form => {
-        const inputs = form.querySelectorAll('input, select, textarea');
-
-        inputs.forEach(input => {
-            input.addEventListener('change', function() {
-                // Mostrar indicador de salvamento
-                const saveIndicator = document.createElement('small');
-                saveIndicator.className = 'text-success ms-2';
-                saveIndicator.innerHTML = '<i class="fas fa-check me-1"></i>Salvo automaticamente';
-
-                // Remover indicador anterior se existir
-                const existingIndicator = this.parentNode.querySelector('.text-success');
-                if (existingIndicator) {
-                    existingIndicator.remove();
-                }
-
-                this.parentNode.appendChild(saveIndicator);
-
-                // Remover indicador após 3 segundos
-                setTimeout(() => {
-                    if (saveIndicator.parentNode) {
-                        saveIndicator.remove();
-                    }
-                }, 3000);
-            });
-        });
-    });
-});
-</script>
-{% endblock %}

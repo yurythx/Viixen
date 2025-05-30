@@ -653,6 +653,33 @@ class AdminSettingsView(LoginRequiredMixin, UserPassesTestMixin, View):
         return redirect('accounts:admin_settings')
 
 
+# --- Páginas de aviso para usuários já logados ---
+@method_decorator(login_required, name='dispatch')
+class AlreadyLoggedInRegisterView(TemplateView):
+    """
+    Página de aviso quando usuário logado tenta acessar o registro
+    """
+    template_name = 'accounts/already_logged_in_register.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['user'] = self.request.user
+        return context
+
+
+@method_decorator(login_required, name='dispatch')
+class AlreadyLoggedInLoginView(TemplateView):
+    """
+    Página de aviso quando usuário logado tenta acessar o login
+    """
+    template_name = 'accounts/already_logged_in_login.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['user'] = self.request.user
+        return context
+
+
 # --- Login personalizado ---
 @method_decorator(anonymous_required, name='dispatch')
 class CustomLoginView(LoginView):

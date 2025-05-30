@@ -22,22 +22,15 @@
         height: 100% !important;
         object-fit: cover !important;
     }
+
     .status-badge {
         font-size: 0.8rem;
     }
+
     .user-actions {
         white-space: nowrap;
     }
-    .search-filters {
-        background: #f8f9fa;
-        border-radius: 0.375rem;
-        padding: 1.5rem;
-        margin-bottom: 2rem;
-    }
-    .table-responsive {
-        border-radius: 0.375rem;
-        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
-    }
+
     .btn-sm {
         padding: 0.25rem 0.5rem;
         font-size: 0.875rem;
@@ -46,70 +39,70 @@
 {% endblock %}
 
 {% block content %}
-<div class="container-fluid">
-    <!-- Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h1 class="h3 mb-0">
-                <i class="fas fa-users text-primary me-2"></i>
-                Gestão de Usuários
-            </h1>
-            <p class="text-muted mb-0">Gerencie usuários, grupos e permissões do sistema</p>
-        </div>
-        <a href="{% url 'accounts:user_create' %}" class="btn btn-primary">
-            <i class="fas fa-plus me-1"></i>Novo Usuário
-        </a>
-    </div>
+<div class="container py-4">
+    <h1 class="mb-4">Gestão de Usuários</h1>
 
     <!-- Filtros de Busca -->
-    <div class="search-filters">
-        <form method="get" class="row g-3">
-            <div class="col-md-4">
-                <label for="search" class="form-label">Buscar</label>
-                <input type="text" class="form-control" id="search" name="search"
-                       value="{{ search }}" placeholder="Nome, email ou usuário...">
-            </div>
-            <div class="col-md-3">
-                <label for="group" class="form-label">Grupo</label>
-                <select class="form-control" id="group" name="group">
-                    <option value="">Todos os grupos</option>
-                    {% for group in groups %}
-                    <option value="{{ group.name }}" {% if group_filter == group.name %}selected{% endif %}>
-                        {{ group.name }}
-                    </option>
-                    {% endfor %}
-                </select>
-            </div>
-            <div class="col-md-3">
-                <label for="status" class="form-label">Status</label>
-                <select class="form-control" id="status" name="status">
-                    <option value="">Todos</option>
-                    <option value="active" {% if status_filter == 'active' %}selected{% endif %}>Ativos</option>
-                    <option value="inactive" {% if status_filter == 'inactive' %}selected{% endif %}>Inativos</option>
-                </select>
-            </div>
-            <div class="col-md-2 d-flex align-items-end">
-                <button type="submit" class="btn btn-outline-primary me-2">
-                    <i class="fas fa-search"></i> Filtrar
-                </button>
-                <a href="{% url 'accounts:user_list' %}" class="btn btn-outline-secondary">
-                    <i class="fas fa-times"></i>
-                </a>
-            </div>
-        </form>
+    <div class="card mb-4">
+        <div class="card-header d-flex align-items-center justify-content-between">
+            <h2 class="h5 mb-0"><i class="fas fa-search me-2"></i> Filtros de Busca</h2>
+            <a href="{% url 'accounts:user_create' %}" class="btn btn-sm btn-primary">
+                <i class="fas fa-plus me-1"></i>Novo Usuário
+            </a>
+        </div>
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-4">
+                    <label for="search" class="form-label">
+                        <i class="fas fa-search text-primary me-2"></i>Buscar
+                    </label>
+                    <input type="text" class="form-control" id="search" name="search"
+                           value="{{ search }}" placeholder="Nome, email ou usuário...">
+                </div>
+                <div class="col-md-3">
+                    <label for="group" class="form-label">
+                        <i class="fas fa-users text-primary me-2"></i>Grupo
+                    </label>
+                    <select class="form-control" id="group" name="group">
+                        <option value="">Todos os grupos</option>
+                        {% for group in groups %}
+                        <option value="{{ group.name }}" {% if group_filter == group.name %}selected{% endif %}>
+                            {{ group.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="status" class="form-label">
+                        <i class="fas fa-toggle-on text-primary me-2"></i>Status
+                    </label>
+                    <select class="form-control" id="status" name="status">
+                        <option value="">Todos</option>
+                        <option value="active" {% if status_filter == 'active' %}selected{% endif %}>Ativos</option>
+                        <option value="inactive" {% if status_filter == 'inactive' %}selected{% endif %}>Inativos</option>
+                    </select>
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="submit" class="btn btn-outline-primary me-2">
+                        <i class="fas fa-search"></i> Filtrar
+                    </button>
+                    <a href="{% url 'accounts:user_list' %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-times"></i>
+                    </a>
+                </div>
+            </form>
+        </div>
     </div>
 
-    <!-- Tabela de Usuários -->
-    <div class="card">
-        <div class="card-header bg-white">
-            <div class="d-flex justify-content-between align-items-center">
-                <h5 class="mb-0">
-                    <i class="fas fa-list me-2"></i>
-                    Lista de Usuários ({{ users|length }} de {{ paginator.count|default:users|length }})
-                </h5>
-                <div class="text-muted">
-                    <small>Total: {{ paginator.count|default:users|length }} usuários</small>
-                </div>
+    <!-- Lista de Usuários -->
+    <div class="card mb-4">
+        <div class="card-header d-flex align-items-center justify-content-between">
+            <h2 class="h5 mb-0">
+                <i class="fas fa-list me-2"></i>
+                Lista de Usuários
+            </h2>
+            <div class="text-muted">
+                <small>Total: {{ paginator.count|default:users|length }} usuários</small>
             </div>
         </div>
         <div class="card-body p-0">

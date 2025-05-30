@@ -13,23 +13,26 @@
 
 {% block config_content %}
 
-<div class="config-card card">
-    <div class="card-header">
-        <h5 class="mb-0">
+<!-- Informações Básicas -->
+<div class="card mb-4">
+    <div class="card-header d-flex align-items-center justify-content-between">
+        <h2 class="h5 mb-0">
             <i class="fas fa-{% if action == 'Criar' %}plus{% else %}edit{% endif %} me-2"></i>
             {{ action }} Configuração de Banco de Dados
-        </h5>
+        </h2>
+        <a href="{% url 'config:database-list' %}" class="btn btn-sm btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> Voltar
+        </a>
     </div>
     <div class="card-body">
-        <form method="post" data-auto-save="true">
+        <form method="post" id="database-config-form">
             {% csrf_token %}
-            
-            <!-- Informações Básicas -->
+
             <div class="row">
                 <div class="col-md-6">
                     <div class="mb-3">
                         <label for="{{ form.name.id_for_label }}" class="form-label">
-                            <i class="fas fa-tag me-1"></i>Nome da Configuração *
+                            <i class="fas fa-tag text-primary me-2"></i>Nome da Configuração *
                         </label>
                         {{ form.name }}
                         {% if form.name.errors %}
@@ -37,11 +40,11 @@
                         {% endif %}
                     </div>
                 </div>
-                
+
                 <div class="col-md-6">
                     <div class="mb-3">
                         <label for="{{ form.engine.id_for_label }}" class="form-label">
-                            <i class="fas fa-database me-1"></i>Tipo de Banco *
+                            <i class="fas fa-database text-primary me-2"></i>Tipo de Banco *
                         </label>
                         {{ form.engine }}
                         {% if form.engine.errors %}
@@ -50,17 +53,27 @@
                     </div>
                 </div>
             </div>
-            
-            <!-- Configurações de Conexão -->
-            <h6 class="config-section-title mt-4">
-                <i class="fas fa-plug me-2"></i>Configurações de Conexão
-            </h6>
-            
+        </form>
+    </div>
+</div>
+
+<!-- Configurações de Conexão -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h2 class="h5 mb-0">
+            <i class="fas fa-plug me-2"></i>
+            Configurações de Conexão
+        </h2>
+    </div>
+    <div class="card-body">
+        <form method="post" id="database-config-form-2">
+            {% csrf_token %}
+
             <div class="row">
                 <div class="col-md-6">
                     <div class="mb-3">
                         <label for="{{ form.database_name.id_for_label }}" class="form-label">
-                            <i class="fas fa-file me-1"></i>Nome do Banco/Arquivo *
+                            <i class="fas fa-file text-primary me-2"></i>Nome do Banco/Arquivo *
                         </label>
                         {{ form.database_name }}
                         <div class="form-text">Para SQLite: caminho do arquivo. Para outros: nome do banco.</div>
@@ -69,11 +82,11 @@
                         {% endif %}
                     </div>
                 </div>
-                
+
                 <div class="col-md-3">
                     <div class="mb-3">
                         <label for="{{ form.host.id_for_label }}" class="form-label">
-                            <i class="fas fa-server me-1"></i>Host
+                            <i class="fas fa-server text-primary me-2"></i>Host
                         </label>
                         {{ form.host }}
                         {% if form.host.errors %}
@@ -81,11 +94,11 @@
                         {% endif %}
                     </div>
                 </div>
-                
+
                 <div class="col-md-3">
                     <div class="mb-3">
                         <label for="{{ form.port.id_for_label }}" class="form-label">
-                            <i class="fas fa-network-wired me-1"></i>Porta
+                            <i class="fas fa-network-wired text-primary me-2"></i>Porta
                         </label>
                         {{ form.port }}
                         {% if form.port.errors %}
@@ -94,12 +107,12 @@
                     </div>
                 </div>
             </div>
-            
+
             <div class="row">
                 <div class="col-md-4">
                     <div class="mb-3">
                         <label for="{{ form.user.id_for_label }}" class="form-label">
-                            <i class="fas fa-user me-1"></i>Usuário
+                            <i class="fas fa-user text-primary me-2"></i>Usuário
                         </label>
                         {{ form.user }}
                         {% if form.user.errors %}
@@ -107,11 +120,11 @@
                         {% endif %}
                     </div>
                 </div>
-                
+
                 <div class="col-md-4">
                     <div class="mb-3">
                         <label for="{{ form.password.id_for_label }}" class="form-label">
-                            <i class="fas fa-lock me-1"></i>Senha
+                            <i class="fas fa-lock text-primary me-2"></i>Senha
                         </label>
                         {{ form.password }}
                         {% if form.password.errors %}
@@ -119,11 +132,11 @@
                         {% endif %}
                     </div>
                 </div>
-                
+
                 <div class="col-md-4">
                     <div class="mb-3">
                         <label for="{{ form.password_confirm.id_for_label }}" class="form-label">
-                            <i class="fas fa-lock me-1"></i>Confirmar Senha
+                            <i class="fas fa-lock text-primary me-2"></i>Confirmar Senha
                         </label>
                         {{ form.password_confirm }}
                         {% if form.password_confirm.errors %}
@@ -132,176 +145,189 @@
                     </div>
                 </div>
             </div>
-            
-            <!-- Configurações Avançadas -->
-            <div class="accordion mt-4" id="advancedConfig">
-                <div class="accordion-item">
-                    <h2 class="accordion-header">
-                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseAdvanced">
-                            <i class="fas fa-cogs me-2"></i>Configurações Avançadas
-                        </button>
-                    </h2>
-                    <div id="collapseAdvanced" class="accordion-collapse collapse" data-bs-parent="#advancedConfig">
-                        <div class="accordion-body">
-                            <div class="row">
-                                <div class="col-md-4">
-                                    <div class="mb-3">
-                                        <label for="{{ form.conn_max_age.id_for_label }}" class="form-label">
-                                            Tempo Máximo de Conexão (s)
-                                        </label>
-                                        {{ form.conn_max_age }}
-                                    </div>
-                                </div>
-                                
-                                <div class="col-md-4">
-                                    <div class="mb-3">
-                                        <label for="{{ form.charset.id_for_label }}" class="form-label">
-                                            Charset (MySQL)
-                                        </label>
-                                        {{ form.charset }}
-                                    </div>
-                                </div>
-                                
-                                <div class="col-md-4">
-                                    <div class="mb-3">
-                                        <label for="{{ form.test_database_name.id_for_label }}" class="form-label">
-                                            Banco de Teste
-                                        </label>
-                                        {{ form.test_database_name }}
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="row">
-                                <div class="col-md-12">
-                                    <div class="mb-3">
-                                        <div class="form-check">
-                                            {{ form.conn_health_checks }}
-                                            <label class="form-check-label" for="{{ form.conn_health_checks.id_for_label }}">
-                                                Verificações de saúde da conexão
-                                            </label>
-                                        </div>
-                                        <div class="form-check">
-                                            {{ form.atomic_requests }}
-                                            <label class="form-check-label" for="{{ form.atomic_requests.id_for_label }}">
-                                                Transações atômicas
-                                            </label>
-                                        </div>
-                                        <div class="form-check">
-                                            {{ form.autocommit }}
-                                            <label class="form-check-label" for="{{ form.autocommit.id_for_label }}">
-                                                Auto-commit
-                                            </label>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+        </form>
+    </div>
+</div>
+
+<!-- Configurações Avançadas -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h2 class="h5 mb-0">
+            <i class="fas fa-cogs me-2"></i>
+            Configurações Avançadas
+        </h2>
+    </div>
+    <div class="card-body">
+        <form method="post" id="database-config-form-3">
+            {% csrf_token %}
+
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label for="{{ form.conn_max_age.id_for_label }}" class="form-label">
+                            <i class="fas fa-clock text-primary me-2"></i>Tempo Máximo de Conexão (s)
+                        </label>
+                        {{ form.conn_max_age }}
                     </div>
                 </div>
-                
-                <!-- SSL Configuration -->
-                <div class="accordion-item">
-                    <h2 class="accordion-header">
-                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSSL">
-                            <i class="fas fa-shield-alt me-2"></i>Configurações SSL
-                        </button>
-                    </h2>
-                    <div id="collapseSSL" class="accordion-collapse collapse" data-bs-parent="#advancedConfig">
-                        <div class="accordion-body">
-                            <div class="mb-3">
-                                <div class="form-check">
-                                    {{ form.ssl_require }}
-                                    <label class="form-check-label" for="{{ form.ssl_require.id_for_label }}">
-                                        <i class="fas fa-lock text-warning me-1"></i>
-                                        Exigir conexão SSL
-                                    </label>
-                                </div>
-                            </div>
-                            
-                            <div class="row">
-                                <div class="col-md-4">
-                                    <div class="mb-3">
-                                        <label for="{{ form.ssl_ca.id_for_label }}" class="form-label">
-                                            Certificado CA
-                                        </label>
-                                        {{ form.ssl_ca }}
-                                    </div>
-                                </div>
-                                
-                                <div class="col-md-4">
-                                    <div class="mb-3">
-                                        <label for="{{ form.ssl_cert.id_for_label }}" class="form-label">
-                                            Certificado Cliente
-                                        </label>
-                                        {{ form.ssl_cert }}
-                                    </div>
-                                </div>
-                                
-                                <div class="col-md-4">
-                                    <div class="mb-3">
-                                        <label for="{{ form.ssl_key.id_for_label }}" class="form-label">
-                                            Chave Privada
-                                        </label>
-                                        {{ form.ssl_key }}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label for="{{ form.charset.id_for_label }}" class="form-label">
+                            <i class="fas fa-font text-primary me-2"></i>Charset (MySQL)
+                        </label>
+                        {{ form.charset }}
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label for="{{ form.test_database_name.id_for_label }}" class="form-label">
+                            <i class="fas fa-vial text-primary me-2"></i>Banco de Teste
+                        </label>
+                        {{ form.test_database_name }}
                     </div>
                 </div>
             </div>
-            
-            <!-- Status -->
-            <h6 class="config-section-title mt-4">
-                <i class="fas fa-toggle-on me-2"></i>Status
-            </h6>
-            
+
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="form-check mb-3">
+                        {{ form.conn_health_checks }}
+                        <label class="form-check-label" for="{{ form.conn_health_checks.id_for_label }}">
+                            <i class="fas fa-heartbeat text-primary me-2"></i>Verificações de saúde da conexão
+                        </label>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-check mb-3">
+                        {{ form.atomic_requests }}
+                        <label class="form-check-label" for="{{ form.atomic_requests.id_for_label }}">
+                            <i class="fas fa-atom text-primary me-2"></i>Transações atômicas
+                        </label>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-check mb-3">
+                        {{ form.autocommit }}
+                        <label class="form-check-label" for="{{ form.autocommit.id_for_label }}">
+                            <i class="fas fa-sync text-primary me-2"></i>Auto-commit
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Configurações SSL -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h2 class="h5 mb-0">
+            <i class="fas fa-shield-alt me-2"></i>
+            Configurações SSL
+        </h2>
+    </div>
+    <div class="card-body">
+        <form method="post" id="database-config-form-4">
+            {% csrf_token %}
+
+            <div class="mb-3">
+                <div class="form-check">
+                    {{ form.ssl_require }}
+                    <label class="form-check-label" for="{{ form.ssl_require.id_for_label }}">
+                        <i class="fas fa-lock text-primary me-2"></i>
+                        Exigir conexão SSL
+                    </label>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label for="{{ form.ssl_ca.id_for_label }}" class="form-label">
+                            <i class="fas fa-certificate text-primary me-2"></i>Certificado CA
+                        </label>
+                        {{ form.ssl_ca }}
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label for="{{ form.ssl_cert.id_for_label }}" class="form-label">
+                            <i class="fas fa-id-card text-primary me-2"></i>Certificado Cliente
+                        </label>
+                        {{ form.ssl_cert }}
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label for="{{ form.ssl_key.id_for_label }}" class="form-label">
+                            <i class="fas fa-key text-primary me-2"></i>Chave Privada
+                        </label>
+                        {{ form.ssl_key }}
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Status da Configuração -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h2 class="h5 mb-0">
+            <i class="fas fa-toggle-on me-2"></i>
+            Status da Configuração
+        </h2>
+    </div>
+    <div class="card-body">
+        <form method="post" id="database-config-form-5">
+            {% csrf_token %}
+
             <div class="row">
                 <div class="col-md-6">
-                    <div class="form-check">
+                    <div class="form-check mb-3">
                         {{ form.is_active }}
                         <label class="form-check-label" for="{{ form.is_active.id_for_label }}">
-                            <i class="fas fa-power-off text-success me-1"></i>
+                            <i class="fas fa-power-off text-success me-2"></i>
                             Configuração ativa
                         </label>
                     </div>
                 </div>
-                
+
                 <div class="col-md-6">
-                    <div class="form-check">
+                    <div class="form-check mb-3">
                         {{ form.is_default }}
                         <label class="form-check-label" for="{{ form.is_default.id_for_label }}">
-                            <i class="fas fa-star text-warning me-1"></i>
+                            <i class="fas fa-star text-warning me-2"></i>
                             Configuração padrão do sistema
                         </label>
                     </div>
                 </div>
             </div>
-            
-            <hr class="mt-4">
-            
-            <div class="d-flex justify-content-between">
-                <a href="{% url 'config:database-list' %}" class="btn btn-secondary">
-                    <i class="fas fa-arrow-left me-1"></i>Voltar
-                </a>
-                
-                <div>
-                    {% if action == 'Editar' %}
-                        <button type="button" class="btn btn-outline-danger me-2" 
-                                data-bs-toggle="modal" 
-                                data-bs-target="#deleteModal">
-                            <i class="fas fa-trash me-1"></i>Excluir
-                        </button>
-                    {% endif %}
-                    
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-save me-1"></i>{{ action }}
-                    </button>
-                </div>
-            </div>
         </form>
     </div>
+</div>
+
+<!-- Botões de Ação -->
+<div class="d-flex justify-content-end gap-2 mb-4">
+    <a href="{% url 'config:database-list' %}" class="btn btn-outline-secondary">
+        <i class="fas fa-times me-2"></i>Cancelar
+    </a>
+
+    {% if action == 'Editar' %}
+        <button type="button" class="btn btn-outline-danger"
+                data-bs-toggle="modal"
+                data-bs-target="#deleteModal">
+            <i class="fas fa-trash me-2"></i>Excluir
+        </button>
+    {% endif %}
+
+    <button type="submit" form="database-config-form" class="btn btn-primary">
+        <i class="fas fa-save me-2"></i>{{ action }}
+    </button>
 </div>
 
 {% endblock %}
