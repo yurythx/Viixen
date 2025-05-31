@@ -17,6 +17,7 @@ from .models import (
 )
 from .forms import SocialProviderConfigForm, EmailConfigForm, SystemConfigForm, AppConfigForm, EnvironmentVariableForm, EnvironmentVariableFilterForm, DatabaseConfigForm, LDAPConfigForm
 from apps.accounts.forms import UserManagementForm
+from .email_utils import test_email_connection, send_test_email, apply_email_settings_to_django
 
 User = get_user_model()
 
@@ -211,6 +212,136 @@ class EmailConfigUpdateView(UpdateView):
     def form_valid(self, form):
         messages.success(self.request, 'Configurações de email atualizadas com sucesso!')
         return super().form_valid(form)
+
+@method_decorator(staff_required, name='dispatch')
+class EmailConfigTestView(View):
+    """View para testar configuração de email"""
+
+    def post(self, request, slug):
+        try:
+            email_config = EmailConfig.objects.get(slug=slug)
+
+            # Testar conexão
+            success, message = test_email_connection(email_config)
+
+            if success:
+                messages.success(request, f'✅ Conexão testada com sucesso: {message}')
+            else:
+                messages.error(request, f'❌ Erro na conexão: {message}')
+
+        except EmailConfig.DoesNotExist:
+            messages.error(request, 'Configuração de email não encontrada.')
+
+        return redirect('config:email-list')
+
+@method_decorator(staff_required, name='dispatch')
+class EmailConfigSendTestView(View):
+    """View para enviar email de teste"""
+
+    def post(self, request, slug):
+        try:
+            email_config = EmailConfig.objects.get(slug=slug)
+
+            # Obter email de destino do POST ou usar um padrão
+            recipient_email = request.POST.get('recipient_email', 'yurymenezes@hotmail.com')
+
+            if not recipient_email:
+                messages.error(request, 'Email de destino não fornecido.')
+                return redirect('config:email-list')
+
+            # Enviar email de teste
+            success, message = send_test_email(recipient_email, email_config)
+
+            if success:
+                messages.success(request, f'✅ {message}')
+            else:
+                messages.error(request, f'❌ {message}')
+
+        except EmailConfig.DoesNotExist:
+            messages.error(request, 'Configuração de email não encontrada.')
+
+        return redirect('config:email-list')
+
+@method_decorator(staff_required, name='dispatch')
+class EmailConfigApplyView(View):
+    """View para aplicar configuração de email ao Django"""
+
+    def post(self, request, slug):
+        try:
+            email_config = EmailConfig.objects.get(slug=slug)
+
+            # Aplicar configurações ao Django
+            success = apply_email_settings_to_django(email_config)
+
+            if success:
+                messages.success(request, f'✅ Configurações de email aplicadas ao sistema!')
+            else:
+                messages.error(request, f'❌ Erro ao aplicar configurações de email.')
+
+        except EmailConfig.DoesNotExist:
+            messages.error(request, 'Configuração de email não encontrada.')
+
+        return redirect('config:email-list')
+
+@method_decorator(staff_required, name='dispatch')
+class EmailConfigToggleModeView(View):
+    """View para alternar entre modo console e SMTP"""
+
+    def post(self, request, slug):
+        try:
+            config = EmailConfig.objects.get(slug=slug)
+
+            # Alternar o modo
+            config.use_console_backend = not config.use_console_backend
+            config.save()
+
+            # Aplicar as configurações ao Django
+            from .email_utils import apply_email_settings_to_django
+            apply_email_settings_to_django(config)
+
+            mode_name = "Console (Desenvolvimento)" if config.use_console_backend else "SMTP (Produção)"
+            messages.success(
+                request,
+                f'Modo alterado para {mode_name}. '
+                f'{"Emails aparecerão no terminal." if config.use_console_backend else "Emails serão enviados via SMTP."}'
+            )
+
+        except EmailConfig.DoesNotExist:
+            messages.error(request, 'Configuração de email não encontrada.')
+        except Exception as e:
+            messages.error(request, f'Erro ao alterar modo: {str(e)}')
+
+        return redirect('config:email-list')
+
+@method_decorator(staff_required, name='dispatch')
+class EmailConfigSetDefaultView(View):
+    """View para definir uma configuração como padrão"""
+
+    def post(self, request, slug):
+        try:
+            config = EmailConfig.objects.get(slug=slug)
+
+            # Definir como padrão (o método save já cuida de desmarcar outras)
+            config.is_default = True
+            config.save()
+
+            messages.success(
+                request,
+                f'✅ Configuração "{config.email_host_user}" definida como padrão! '
+                f'As configurações foram aplicadas automaticamente ao sistema.'
+            )
+
+        except EmailConfig.DoesNotExist:
+            messages.error(request, 'Configuração de email não encontrada.')
+        except Exception as e:
+            messages.error(request, f'Erro ao definir como padrão: {str(e)}')
+
+        return redirect('config:email-list')
+
+@method_decorator(staff_required, name='dispatch')
+class EmailConfigGuideView(TemplateView):
+    """View para exibir o guia de configuração de email"""
+    template_name = 'config/email_config_guide.html'
 
 @method_decorator(staff_required, name='dispatch')
 class SystemConfigUpdateView(UpdateView):

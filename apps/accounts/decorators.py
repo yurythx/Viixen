@@ -166,6 +166,10 @@ def anonymous_required(view_func):
             # Determinar o tipo de página que estava tentando acessar
             view_name = request.resolver_match.url_name if request.resolver_match else 'unknown'
 
+            # Evitar loop de redirecionamento - não redirecionar se já estamos nas páginas de aviso
+            if view_name in ['already_logged_in_register', 'already_logged_in_login']:
+                return view_func(request, *args, **kwargs)
+
             if view_name == 'register':
                 # Para registro, mostrar página específica explicando o motivo
                 return redirect('accounts:already_logged_in_register')

@@ -7,6 +7,12 @@ from .views import (
     EmailConfigUpdateView,
     EmailConfigListView,
     EmailConfigCreateView,
+    EmailConfigTestView,
+    EmailConfigSendTestView,
+    EmailConfigApplyView,
+    EmailConfigToggleModeView,
+    EmailConfigSetDefaultView,
+    EmailConfigGuideView,
     SystemConfigUpdateView,
     AppConfigListView,
     AppConfigCreateView,
@@ -56,8 +62,14 @@ urlpatterns = [
 
     # Email Configuration URLs
     path('email/', EmailConfigListView.as_view(), name='email-list'),
+    path('email/guide/', EmailConfigGuideView.as_view(), name='email-guide'),
     path('email/create/', EmailConfigCreateView.as_view(), name='email-create'),
     path('email/<slug:slug>/', EmailConfigUpdateView.as_view(), name='email-update'),
+    path('email/<slug:slug>/test/', EmailConfigTestView.as_view(), name='email-test'),
+    path('email/<slug:slug>/send-test/', EmailConfigSendTestView.as_view(), name='email-send-test'),
+    path('email/<slug:slug>/apply/', EmailConfigApplyView.as_view(), name='email-apply'),
+    path('email/<slug:slug>/toggle-mode/', EmailConfigToggleModeView.as_view(), name='email-toggle-mode'),
+    path('email/<slug:slug>/set-default/', EmailConfigSetDefaultView.as_view(), name='email-set-default'),
 
     # Social Provider URLs
     path('social-providers/', SocialProviderConfigListView.as_view(), name='social-provider-list'),

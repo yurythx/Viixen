@@ -17,10 +17,24 @@ class EmailConfigForm(forms.ModelForm):
     class Meta:
         model = EmailConfig
         fields = ['email_host', 'email_port', 'email_host_user', 'email_host_password',
-                 'email_use_tls', 'default_from_email', 'is_active']
+                 'email_use_tls', 'default_from_email', 'is_active', 'is_default', 'use_console_backend']
         widgets = {
             'email_host_password': forms.PasswordInput(),
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Adicionar classes CSS e ajustar labels
+        self.fields['is_default'].label = "Configuração Padrão"
+        self.fields['is_default'].help_text = (
+            "Marcar como configuração padrão do sistema. "
+            "Aplicará automaticamente as configurações ao Django e às variáveis de ambiente."
+        )
+        self.fields['use_console_backend'].label = "Modo Desenvolvimento"
+        self.fields['use_console_backend'].help_text = (
+            "Ativar para ver emails no terminal (desenvolvimento). "
+            "Desativar para enviar emails reais via SMTP (produção)."
+        )
 
 class SystemConfigForm(forms.ModelForm):
     class Meta:

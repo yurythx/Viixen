@@ -164,6 +164,14 @@ class EmailConfig(models.Model):
     email_use_tls = models.BooleanField(default=True)
     default_from_email = models.EmailField()
     is_active = models.BooleanField(default=True)
+    is_default = models.BooleanField(
+        default=False,
+        help_text="Marcar como configuração padrão do sistema - aplicará automaticamente as configurações ao Django"
+    )
+    use_console_backend = models.BooleanField(
+        default=False,
+        help_text="Usar backend de console (desenvolvimento) - emails aparecerão no terminal em vez de serem enviados"
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -179,7 +187,17 @@ class EmailConfig(models.Model):
             self.email_host_password = PasswordEncryptor.encrypt_password(self._password_plain)
             self._password_plain = None
 
-        super().save(*args, **kwargs)
+        # Garantir que apenas uma configuração seja padrão
+        if self.is_default:
+            # Desmarcar outras configurações como padrão
+            EmailConfig.objects.filter(is_default=True).exclude(pk=self.pk).update(is_default=False)
+
+            # Aplicar automaticamente as configurações ao Django
+            super().save(*args, **kwargs)  # Salvar primeiro
+            from .email_utils import apply_email_settings_to_django
+            apply_email_settings_to_django(self)
+        else:
+            super().save(*args, **kwargs)
 
     def set_password(self, password):
         """Define a senha em texto simples para ser criptografada no save()"""

@@ -24,6 +24,9 @@ urlpatterns = [
     # Registro
     path('register/', RegisterView.as_view(), name='register'),
 
+    # Redirecionamento de signup para register (compatibilidade)
+    path('signup/', views.signup_redirect, name='signup_redirect'),
+
     # Login e logout personalizados com mensagens
     path('login/', CustomLoginView.as_view(), name='login'),
     path('logout/', CustomLogoutView.as_view(), name='logout'),

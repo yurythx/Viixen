@@ -179,7 +179,7 @@
                     <div>
                         <strong>Acesse a página de ativação</strong><br>
                         <small>
-                            <a href="{{ request.build_absolute_uri }}{% url 'accounts:ativar_conta' %}?email={{ user.email }}"
+                            <a href="{{ activation_link }}"
                                style="color: #28a745; text-decoration: none;">
                                 🔗 Clique aqui para ativar sua conta
                             </a>

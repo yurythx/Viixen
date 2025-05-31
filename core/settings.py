@@ -127,6 +127,12 @@ ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
 ACCOUNT_UNIQUE_EMAIL = True
 ACCOUNT_LOGIN_ON_EMAIL_CONFIRMATION = True
 
+# Desabilitar signup padrão do allauth (usamos nossa própria view)
+ACCOUNT_SIGNUP_ENABLED = False
+
+# Redirecionamentos personalizados
+ACCOUNT_SIGNUP_REDIRECT_URL = '/accounts/register/'
+
 # Configurações de Login/Logout
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
@@ -185,9 +191,8 @@ EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
 EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
 EMAIL_USE_TLS = config('EMAIL_USE_TLS', default=False, cast=bool)
 
-# Usar backend de console em desenvolvimento
-if DEBUG:
-    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+# Configuração dinâmica de email será aplicada pelo sistema de configurações
+# O backend será definido dinamicamente baseado nas configurações de EmailConfig
 
 
 

@@ -13,6 +13,8 @@ from django.template.loader import render_to_string
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
+from django.http import HttpResponseRedirect
+from urllib.parse import urlencode
 from .decorators import (
     account_activation_required, inactive_user_only, email_verified_required,
     admin_or_superuser_required, anonymous_required
@@ -56,12 +58,58 @@ class TestPageView(TemplateView):
         return context
 
 # --- Limitação de tentativas ---
-def limit_attempts(request, key_prefix, limit=5, timeout=300):
+def limit_attempts(request, key_prefix, limit=5, timeout=300, increment=True):
+    """
+    Controla tentativas por IP com opção de não incrementar (apenas verificar)
+
+    Args:
+        request: Request object
+        key_prefix: Prefixo para a chave do cache
+        limit: Limite de tentativas (padrão: 5)
+        timeout: Timeout em segundos (padrão: 300 = 5 minutos)
+        increment: Se deve incrementar o contador (padrão: True)
+
+    Returns:
+        int: Número atual de tentativas
+    """
     ip = request.META.get('REMOTE_ADDR')
     cache_key = f'{key_prefix}:{ip}'
-    attempts = cache.get(cache_key, 0) + 1
-    cache.set(cache_key, attempts, timeout=timeout)
-    return attempts
+    current_attempts = cache.get(cache_key, 0)
+
+    if increment:
+        current_attempts += 1
+        cache.set(cache_key, current_attempts, timeout=timeout)
+
+    return current_attempts
+
+
+def should_check_attempts(request, action_type):
+    """
+    Determina se devemos verificar limite de tentativas baseado no contexto
+
+    Args:
+        request: Request object
+        action_type: Tipo de ação ('login', 'register', etc.)
+
+    Returns:
+        bool: True se deve verificar tentativas
+    """
+    # Não verificar se usuário está logado
+    if request.user.is_authenticated:
+        return False
+
+    # Verificar apenas em POST (tentativas reais)
+    if request.method != 'POST':
+        return False
+
+    # Verificar se não estamos em uma página de aviso
+    if hasattr(request, 'resolver_match') and request.resolver_match:
+        view_name = request.resolver_match.url_name
+        if view_name and 'already_logged_in' in view_name:
+            return False
+
+    return True
+
 
 # --- Login LDAP ---
 def ldap_login(request):
@@ -163,14 +211,18 @@ class RegisterView(CreateView):
     form_class = CustomUserCreationForm
 
     def dispatch(self, request, *args, **kwargs):
-        if limit_attempts(request, 'register_attempts') > 5:
-            messages.error(request, 'Muitas tentativas. Tente novamente mais tarde.')
-            return redirect('accounts:register')
+        # Verificar limite de tentativas apenas quando apropriado
+        if should_check_attempts(request, 'register'):
+            if limit_attempts(request, 'register_attempts', increment=False) >= 5:
+                messages.error(request, 'Muitas tentativas. Tente novamente mais tarde.')
+                return redirect('accounts:register')
         return super().dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
         if User.objects.filter(email=form.cleaned_data['email']).exists():
             form.add_error('email', 'Este email já está cadastrado')
+            # Incrementar tentativas apenas em erro real
+            limit_attempts(self.request, 'register_attempts', increment=True)
             return self.form_invalid(form)
 
         try:
@@ -190,10 +242,16 @@ class RegisterView(CreateView):
 
             # Enviar email com código
             subject = "Código de Ativação da Conta"
+
+            # Criar URL absoluta para ativação
+            ativar_url = reverse('accounts:ativar_conta')
+            activation_link = self.request.build_absolute_uri(ativar_url) + f'?email={user.email}'
+
             message = render_to_string('accounts/email_codigo_ativacao.html', {
                 'user': user,
                 'codigo': codigo,
                 'request': self.request,
+                'activation_link': activation_link,
             })
 
             email = EmailMessage(subject, message, settings.DEFAULT_FROM_EMAIL, [user.email])
@@ -206,7 +264,9 @@ class RegisterView(CreateView):
                 f"Verifique seu email e digite o código para ativar sua conta."
             )
             # Redirecionar com email como parâmetro
-            return redirect(f"{reverse('accounts:ativar_conta')}?email={user.email}")
+            url = reverse('accounts:ativar_conta')
+            params = urlencode({'email': user.email})
+            return HttpResponseRedirect(f'{url}?{params}')
 
         except Exception as e:
             logger.error(f"Erro ao enviar e-mail de ativação: {e}")
@@ -362,10 +422,16 @@ class SolicitarCodigoView(View):
 
                 # Enviar email
                 subject = "Novo Código de Ativação"
+
+                # Criar URL absoluta para ativação
+                ativar_url = reverse('accounts:ativar_conta')
+                activation_link = request.build_absolute_uri(ativar_url) + f'?email={user.email}'
+
                 message = render_to_string('accounts/email_codigo_ativacao.html', {
                     'user': user,
                     'codigo': codigo,
                     'novo_codigo': True,
+                    'activation_link': activation_link,
                 })
 
                 email_obj = EmailMessage(subject, message, settings.DEFAULT_FROM_EMAIL, [user.email])
@@ -654,12 +720,17 @@ class AdminSettingsView(LoginRequiredMixin, UserPassesTestMixin, View):
 
 
 # --- Páginas de aviso para usuários já logados ---
-@method_decorator(login_required, name='dispatch')
 class AlreadyLoggedInRegisterView(TemplateView):
     """
     Página de aviso quando usuário logado tenta acessar o registro
     """
     template_name = 'accounts/already_logged_in_register.html'
+
+    def dispatch(self, request, *args, **kwargs):
+        # Verificar se o usuário está logado, senão redirecionar para login
+        if not request.user.is_authenticated:
+            return redirect('accounts:login')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -667,12 +738,17 @@ class AlreadyLoggedInRegisterView(TemplateView):
         return context
 
 
-@method_decorator(login_required, name='dispatch')
 class AlreadyLoggedInLoginView(TemplateView):
     """
     Página de aviso quando usuário logado tenta acessar o login
     """
     template_name = 'accounts/already_logged_in_login.html'
+
+    def dispatch(self, request, *args, **kwargs):
+        # Verificar se o usuário está logado, senão redirecionar para login
+        if not request.user.is_authenticated:
+            return redirect('accounts:login')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -695,9 +771,12 @@ class CustomLoginView(LoginView):
         return response
 
     def form_invalid(self, form):
-        if limit_attempts(self.request, 'login_attempts') > 5:
-            messages.error(self.request, 'Muitas tentativas. Tente novamente em 5 minutos.')
-            return redirect('accounts:login')
+        # Incrementar tentativas apenas em tentativas reais de login falhadas
+        if should_check_attempts(self.request, 'login'):
+            current_attempts = limit_attempts(self.request, 'login_attempts', increment=True)
+            if current_attempts > 5:
+                messages.error(self.request, 'Muitas tentativas. Tente novamente em 5 minutos.')
+                return redirect('accounts:login')
 
         # Verificar se há erros específicos para fornecer mensagens mais claras
         if form.errors:
@@ -1229,5 +1308,18 @@ class PasswordChangeConfirmView(TemplateView):
         else:
             messages.error(request, 'Link inválido ou expirado.')
             return redirect('accounts:login')
+
+
+# =============================================================================
+# REDIRECIONAMENTO DE SIGNUP PARA REGISTER
+# =============================================================================
+
+def signup_redirect(request):
+    """
+    Redireciona qualquer tentativa de acesso a /accounts/signup/ para /accounts/register/
+    Mantém compatibilidade com links antigos ou externos
+    """
+    messages.info(request, 'Redirecionando para a página de registro...')
+    return redirect('accounts:register')
 
 
