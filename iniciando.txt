@@ -2,17 +2,17 @@ Ambiente Virtual
 
         Criando ambiente virtual
 
-            -- python -m venv meu_ambiente_virtual
+            -- python -m venv env
 
         ativando ambiente virtual
 
         No Windows:
 
-            -- meu_ambiente_virtual\Scripts\activate
+            -- env\Scripts\activate
 			
 			-- pip install -r requirements.txt
 
-            pip freeze > requirements.txt
+            -- pip freeze > requirements.txt
 
 
         caso de erro no windows
@@ -21,20 +21,18 @@ Ambiente Virtual
             
         No macOS e Linux:
 
-            -- source meu_ambiente_virtual/bin/activate
+            -- source env/bin/activate
 
         Como Desativar um Ambiente Virtual
 
             -- deactivate
 
 
-pip install djangorestframework-simplejwt
-
         
 
 -- django-admin startproject core .
 
--- python manage.py startapp base 
+-- python manage.py startapp blog 
 
 -- python manage.py makemigrations
 
@@ -47,8 +45,3 @@ pip install djangorestframework-simplejwt
 
 
 
-npm install
-
-npm run dev
-
-npm install next react react-dom

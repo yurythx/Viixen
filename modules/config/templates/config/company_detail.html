@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+
+{% block title %}Empresa - {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h4 class="mb-0">Informações da Empresa</h4>
+                <a href="{% url 'config:company_edit' %}" class="btn btn-primary">
+                    <i class="fas fa-edit"></i> Editar
+                </a>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>Nome:</strong> {{ company.name }}</p>
+                        <p><strong>Email:</strong> {{ company.email }}</p>
+                        <p><strong>Telefone:</strong> {{ company.phone }}</p>
+                        <p><strong>Endereço:</strong> {{ company.address }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Domínio:</strong> {{ company.domain }}</p>
+                        <p><strong>Status:</strong> 
+                            {% if company.is_active %}
+                                <span class="badge bg-success">Ativo</span>
+                            {% else %}
+                                <span class="badge bg-danger">Inativo</span>
+                            {% endif %}
+                        </p>
+                        <p><strong>Criado em:</strong> {{ company.created_at|date:"d/m/Y H:i" }}</p>
+                        {% if company.logo %}
+                        <p><strong>Logo:</strong></p>
+                        <img src="{{ company.logo.url }}" alt="{{ company.name }}" class="img-thumbnail" style="max-width: 200px;">
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5>Estatísticas</h5>
+            </div>
+            <div class="card-body">
+                <p><strong>Total de Módulos:</strong> {{ company.total_modules }}</p>
+                <p><strong>Módulos Ativos:</strong> {{ company.active_modules }}</p>
+                <p><strong>Usuários:</strong> {{ company.users.count }}</p>
+            </div>
+        </div>
+        
+        <div class="card mt-3">
+            <div class="card-header">
+                <h5>Módulos Disponíveis</h5>
+            </div>
+            <div class="card-body">
+                {% for module in available_modules %}
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span>{{ module.name }}</span>
+                    {% if module in active_modules %}
+                        <span class="badge bg-success">Ativo</span>
+                    {% else %}
+                        <span class="badge bg-secondary">Inativo</span>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

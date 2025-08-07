@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+
+{% block title %}Home - {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8">
+        <div class="jumbotron bg-primary text-white p-5 rounded mb-4">
+            <h1 class="display-4">Bem-vindo ao {{ company.name }}</h1>
+            <p class="lead">Sua plataforma completa para gerenciamento de conteúdo e blog.</p>
+            <a class="btn btn-light btn-lg" href="{% url 'blog:post_list' %}" role="button">Ver Blog</a>
+        </div>
+
+        {% if recent_posts %}
+        <h2>Posts Recentes</h2>
+        <div class="row">
+            {% for post in recent_posts %}
+            <div class="col-md-6 mb-4">
+                <div class="card">
+                    {% if post.featured_image %}
+                        <img src="{{ post.featured_image.url }}" class="card-img-top" alt="{{ post.title }}">
+                    {% endif %}
+                    <div class="card-body">
+                        <h5 class="card-title">{{ post.title }}</h5>
+                        <p class="card-text">{{ post.excerpt|truncatewords:20 }}</p>
+                        <a href="{% url 'blog:post_detail' post.slug %}" class="btn btn-primary">Ler mais</a>
+                    </div>
+                    <div class="card-footer text-muted">
+                        <small>{{ post.published_at|date:"d/m/Y" }} por {{ post.author.get_full_name }}</small>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <h5>Sobre a Empresa</h5>
+            </div>
+            <div class="card-body">
+                <p>{{ company.name }} é uma empresa focada em inovação e qualidade.</p>
+                <a href="{% url 'pages:about' %}" class="btn btn-outline-primary">Saiba mais</a>
+            </div>
+        </div>
+
+        {% if featured_posts %}
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5>Posts em Destaque</h5>
+            </div>
+            <div class="card-body">
+                {% for post in featured_posts %}
+                <div class="mb-3">
+                    <h6><a href="{% url 'blog:post_detail' post.slug %}">{{ post.title }}</a></h6>
+                    <small class="text-muted">{{ post.published_at|date:"d/m/Y" }}</small>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

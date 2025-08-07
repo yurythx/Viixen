@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ page.title }} - {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8">
+        <article>
+            <header class="mb-4">
+                <h1>{{ page.title }}</h1>
+                {% if page.excerpt %}
+                <p class="lead">{{ page.excerpt }}</p>
+                {% endif %}
+                <div class="text-muted">
+                    <small>
+                        Publicado em {{ page.created_at|date:"d/m/Y" }} por {{ page.author.get_full_name }}
+                        {% if page.updated_at != page.created_at %}
+                        | Atualizado em {{ page.updated_at|date:"d/m/Y" }}
+                        {% endif %}
+                    </small>
+                </div>
+            </header>
+
+            {% if page.featured_image %}
+            <div class="mb-4">
+                <img src="{{ page.featured_image.url }}" class="img-fluid rounded" alt="{{ page.title }}">
+            </div>
+            {% endif %}
+
+            <div class="content">
+                {{ page.content|safe }}
+            </div>
+        </article>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <h5>Navegação</h5>
+            </div>
+            <div class="card-body">
+                <a href="{% url 'pages:home' %}" class="btn btn-outline-primary btn-sm">← Voltar ao início</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

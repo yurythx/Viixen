@@ -1,0 +1,180 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-tachometer-alt"></i> Dashboard</h2>
+    <div class="text-muted">
+        Bem-vindo, {{ user.get_full_name|default:user.username }}!
+    </div>
+</div>
+
+<!-- Cards de Estatísticas -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4>{{ stats.total_users }}</h4>
+                        <p class="mb-0">Usuários</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-users fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4>{{ stats.total_posts }}</h4>
+                        <p class="mb-0">Posts</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-blog fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card bg-info text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4>{{ stats.total_pages }}</h4>
+                        <p class="mb-0">Páginas</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-file-alt fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card bg-warning text-dark">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4>{{ company.active_modules_count }}</h4>
+                        <p class="mb-0">Módulos Ativos</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-puzzle-piece fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Posts Recentes -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-blog"></i> Posts Recentes</h5>
+                <a href="{% url 'blog:post_list' %}" class="btn btn-sm btn-outline-primary">Ver Todos</a>
+            </div>
+            <div class="card-body">
+                {% for post in recent_posts %}
+                <div class="d-flex justify-content-between align-items-center py-2 {% if not forloop.last %}border-bottom{% endif %}">
+                    <div>
+                        <h6 class="mb-1">
+                            <a href="{% url 'blog:post_detail' post.slug %}" class="text-decoration-none">
+                                {{ post.title|truncatechars:40 }}
+                            </a>
+                        </h6>
+                        <small class="text-muted">
+                            {{ post.author.get_full_name|default:post.author.username }} • {{ post.published_at|date:"d/m/Y" }}
+                        </small>
+                    </div>
+                    <div class="text-muted small">
+                        <i class="fas fa-eye"></i> {{ post.views_count }}
+                    </div>
+                </div>
+                {% empty %}
+                <p class="text-muted text-center">Nenhum post encontrado.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Usuários Recentes -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-users"></i> Usuários Recentes</h5>
+                <a href="{% url 'accounts:user_list' %}" class="btn btn-sm btn-outline-primary">Ver Todos</a>
+            </div>
+            <div class="card-body">
+                {% for user_item in recent_users %}
+                <div class="d-flex justify-content-between align-items-center py-2 {% if not forloop.last %}border-bottom{% endif %}">
+                    <div>
+                        <h6 class="mb-1">
+                            <a href="{% url 'accounts:user_detail' user_item.pk %}" class="text-decoration-none">
+                                {{ user_item.get_full_name|default:user_item.username }}
+                            </a>
+                        </h6>
+                        <small class="text-muted">{{ user_item.email }}</small>
+                    </div>
+                    <div>
+                        {% if user_item.is_company_admin %}
+                            <span class="badge bg-success">Admin</span>
+                        {% else %}
+                            <span class="badge bg-secondary">Usuário</span>
+                        {% endif %}
+                    </div>
+                </div>
+                {% empty %}
+                <p class="text-muted text-center">Nenhum usuário encontrado.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Módulos da Empresa -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-puzzle-piece"></i> Módulos da Empresa</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    {% for module in company_modules %}
+                    <div class="col-md-4 mb-3">
+                        <div class="card {% if module.is_active %}border-success{% else %}border-secondary{% endif %}">
+                            <div class="card-body text-center">
+                                <i class="{{ module.module.icon }} fa-2x mb-2 {% if module.is_active %}text-success{% else %}text-muted{% endif %}"></i>
+                                <h6>{{ module.module.name }}</h6>
+                                <p class="small text-muted">{{ module.module.description }}</p>
+                                {% if module.is_active %}
+                                    <span class="badge bg-success">Ativo</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">Inativo</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="col-12">
+                        <p class="text-muted text-center">Nenhum módulo configurado.</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

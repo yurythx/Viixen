@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+
+{% block title %}Sobre - {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8">
+        <h1>Sobre {{ company.name }}</h1>
+        
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Nossa História</h5>
+                <p class="card-text">
+                    {{ company.name }} foi fundada com o objetivo de fornecer soluções inovadoras 
+                    e de alta qualidade para nossos clientes. Nossa missão é transformar ideias 
+                    em realidade através da tecnologia.
+                </p>
+            </div>
+        </div>
+
+        <div class="card mt-4">
+            <div class="card-body">
+                <h5 class="card-title">Nossa Missão</h5>
+                <p class="card-text">
+                    Desenvolver soluções tecnológicas que impactem positivamente a vida das pessoas 
+                    e o crescimento dos negócios, sempre priorizando a inovação, qualidade e 
+                    satisfação do cliente.
+                </p>
+            </div>
+        </div>
+
+        <div class="card mt-4">
+            <div class="card-body">
+                <h5 class="card-title">Nossos Valores</h5>
+                <ul>
+                    <li><strong>Inovação:</strong> Buscamos constantemente novas formas de resolver problemas</li>
+                    <li><strong>Qualidade:</strong> Comprometimento com a excelência em tudo que fazemos</li>
+                    <li><strong>Transparência:</strong> Comunicação clara e honesta com nossos clientes</li>
+                    <li><strong>Colaboração:</strong> Trabalho em equipe para alcançar os melhores resultados</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <h5>Informações de Contato</h5>
+            </div>
+            <div class="card-body">
+                {% if company.email %}
+                <p><i class="fas fa-envelope"></i> {{ company.email }}</p>
+                {% endif %}
+                {% if company.phone %}
+                <p><i class="fas fa-phone"></i> {{ company.phone }}</p>
+                {% endif %}
+                {% if company.address %}
+                <p><i class="fas fa-map-marker-alt"></i> {{ company.address }}</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

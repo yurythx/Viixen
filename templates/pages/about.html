@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+
+{% block title %}Sobre - {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <h1 class="text-center mb-5">Sobre o {{ company.name }}</h1>
+        
+        <div class="card">
+            <div class="card-body">
+                <h4>Nossa Missão</h4>
+                <p class="lead">Fornecer soluções tecnológicas inovadoras que impulsionam o crescimento e a eficiência das empresas.</p>
+                
+                <hr>
+                
+                <h4>O que Oferecemos</h4>
+                <div class="row">
+                    <div class="col-md-6">
+                        <ul class="list-unstyled">
+                            <li class="mb-2"><i class="fas fa-check text-success"></i> Gestão completa de usuários</li>
+                            <li class="mb-2"><i class="fas fa-check text-success"></i> Blog corporativo integrado</li>
+                            <li class="mb-2"><i class="fas fa-check text-success"></i> Dashboard analítico</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <ul class="list-unstyled">
+                            <li class="mb-2"><i class="fas fa-check text-success"></i> Sistema modular flexível</li>
+                            <li class="mb-2"><i class="fas fa-check text-success"></i> Interface responsiva</li>
+                            <li class="mb-2"><i class="fas fa-check text-success"></i> Segurança avançada</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <hr>
+                
+                <h4>Contato</h4>
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>Email:</strong> {{ company.email }}</p>
+                        {% if company.phone %}
+                        <p><strong>Telefone:</strong> {{ company.phone }}</p>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        {% if company.address %}
+                        <p><strong>Endereço:</strong></p>
+                        <p>{{ company.address|linebreaks }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="text-center mt-4">
+            <a href="{% url 'pages:home' %}" class="btn btn-primary">
+                <i class="fas fa-home"></i> Voltar ao Início
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
