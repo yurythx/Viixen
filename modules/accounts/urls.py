@@ -2,7 +2,7 @@ from django.urls import path
 from django.contrib.auth import views as auth_views
 from .views.user_management import (
     UserListView, UserDetailView, UserCreateView, 
-    UserUpdateView, UserDeleteView
+    UserUpdateView, UserDeleteView, UserProfileView
 )
 
 app_name = 'accounts'
@@ -20,5 +20,5 @@ urlpatterns = [
     path('users/<int:pk>/delete/', UserDeleteView.as_view(), name='user_delete'),
     
     # Perfil
-    path('profile/', UserDetailView.as_view(), name='profile'),
+    path('profile/', UserProfileView.as_view(), name='profile'),
 ]

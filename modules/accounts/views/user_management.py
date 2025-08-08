@@ -51,3 +51,11 @@ class UserDeleteView(LoginRequiredMixin, CompanyAdminRequiredMixin, CompanyFilte
     def delete(self, request, *args, **kwargs):
         messages.success(request, 'Usuário removido com sucesso!')
         return super().delete(request, *args, **kwargs)
+
+class UserProfileView(LoginRequiredMixin, DetailView):
+    model = CustomUser
+    template_name = 'accounts/user_detail.html'
+    context_object_name = 'user_obj'
+    
+    def get_object(self, queryset=None):
+        return self.request.user
