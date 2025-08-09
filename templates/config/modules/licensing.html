@@ -1,0 +1,192 @@
+{% extends 'base.html' %}
+
+{% block title %}Gerenciamento de Licenças de Módulos - {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2>
+                    <i class="fas fa-certificate text-warning"></i>
+                    Gerenciamento de Licenças de Módulos
+                </h2>
+                <div class="d-flex gap-2">
+                    <div class="badge badge-warning">
+                        <i class="fas fa-shield-alt"></i> Administrador Global
+                    </div>
+                    <a href="{% url 'config:module_global_list' %}" class="btn btn-outline-primary btn-sm">
+                        <i class="fas fa-cubes"></i> Gerenciar Módulos
+                    </a>
+                </div>
+            </div>
+
+            <!-- Estatísticas -->
+            <div class="row mb-4">
+                <div class="col-md-4">
+                    <div class="card bg-warning text-dark">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <div class="flex-grow-1">
+                                    <h6 class="card-title mb-0">Total de Empresas</h6>
+                                    <h3 class="mb-0">{{ total_companies }}</h3>
+                                </div>
+                                <i class="fas fa-building fa-2x opacity-75"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card bg-info text-white">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <div class="flex-grow-1">
+                                    <h6 class="card-title mb-0">Módulos Opcionais</h6>
+                                    <h3 class="mb-0">{{ total_optional_modules }}</h3>
+                                </div>
+                                <i class="fas fa-puzzle-piece fa-2x opacity-75"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card bg-success text-white">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <div class="flex-grow-1">
+                                    <h6 class="card-title mb-0">Licenças Ativas</h6>
+                                    <h3 class="mb-0">{{ total_licenses|default:"0" }}</h3>
+                                </div>
+                                <i class="fas fa-certificate fa-2x opacity-75"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Módulos Opcionais -->
+            {% if modules_data %}
+                {% for module_data in modules_data %}
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0">
+                                    <i class="{{ module_data.module.icon }} text-info"></i>
+                                    {{ module_data.module.name }}
+                                    {% if module_data.module.is_active %}
+                                        <span class="badge bg-success ms-2">Ativo Globalmente</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary ms-2">Inativo Globalmente</span>
+                                    {% endif %}
+                                </h5>
+                                <div class="d-flex gap-2">
+                                    <span class="badge bg-primary">
+                                        {{ module_data.licensed_count }}/{{ total_companies }} Licenciadas
+                                    </span>
+                                    <a href="{% url 'config:module_license_detail' module_data.module.id %}" 
+                                       class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-cog"></i> Gerenciar Licenças
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            {% if module_data.module.description %}
+                                <p class="text-muted mb-3">{{ module_data.module.description }}</p>
+                            {% endif %}
+                            
+                            <div class="row">
+                                <!-- Empresas Licenciadas -->
+                                <div class="col-md-6">
+                                    <h6 class="text-success">
+                                        <i class="fas fa-check-circle"></i>
+                                        Empresas Licenciadas ({{ module_data.licensed_count }})
+                                    </h6>
+                                    {% if module_data.licensed_companies %}
+                                        <div class="list-group list-group-flush">
+                                            {% for company in module_data.licensed_companies|slice:":5" %}
+                                                <div class="list-group-item d-flex justify-content-between align-items-center py-2">
+                                                    <div>
+                                                        <strong>{{ company.name }}</strong>
+                                                        <br><small class="text-muted">{{ company.cnpj }}</small>
+                                                    </div>
+                                                    <span class="badge bg-success">Licenciada</span>
+                                                </div>
+                                            {% endfor %}
+                                            {% if module_data.licensed_count > 5 %}
+                                                <div class="list-group-item text-center">
+                                                    <small class="text-muted">
+                                                        + {{ module_data.licensed_count|add:"-5" }} empresa(s) adicional(is)
+                                                    </small>
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    {% else %}
+                                        <div class="alert alert-info">
+                                            <i class="fas fa-info-circle"></i>
+                                            Nenhuma empresa licenciada
+                                        </div>
+                                    {% endif %}
+                                </div>
+
+                                <!-- Empresas Não Licenciadas -->
+                                <div class="col-md-6">
+                                    <h6 class="text-warning">
+                                        <i class="fas fa-exclamation-circle"></i>
+                                        Empresas Não Licenciadas ({{ module_data.unlicensed_count }})
+                                    </h6>
+                                    {% if module_data.unlicensed_companies %}
+                                        <div class="list-group list-group-flush">
+                                            {% for company in module_data.unlicensed_companies|slice:":5" %}
+                                                <div class="list-group-item d-flex justify-content-between align-items-center py-2">
+                                                    <div>
+                                                        <strong>{{ company.name }}</strong>
+                                                        <br><small class="text-muted">{{ company.cnpj }}</small>
+                                                    </div>
+                                                    <span class="badge bg-warning text-dark">Não Licenciada</span>
+                                                </div>
+                                            {% endfor %}
+                                            {% if module_data.unlicensed_count > 5 %}
+                                                <div class="list-group-item text-center">
+                                                    <small class="text-muted">
+                                                        + {{ module_data.unlicensed_count|add:"-5" }} empresa(s) adicional(is)
+                                                    </small>
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    {% else %}
+                                        <div class="alert alert-success">
+                                            <i class="fas fa-check-circle"></i>
+                                            Todas as empresas estão licenciadas
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div class="card">
+                    <div class="card-body text-center">
+                        <i class="fas fa-puzzle-piece fa-3x text-muted mb-3"></i>
+                        <h5>Nenhum módulo opcional encontrado</h5>
+                        <p class="text-muted">Não há módulos opcionais disponíveis para licenciamento.</p>
+                    </div>
+                </div>
+            {% endif %}
+
+            <!-- Informações sobre Licenciamento -->
+            <div class="alert alert-info mt-4">
+                <h6><i class="fas fa-info-circle"></i> Sistema de Licenças de Módulos</h6>
+                <ul class="mb-0">
+                    <li><strong>Módulos Core:</strong> São sempre licenciados para todas as empresas (pages, accounts, config)</li>
+                    <li><strong>Módulos Opcionais:</strong> Requerem licenciamento específico por empresa</li>
+                    <li><strong>Ativação Global:</strong> Módulo deve estar ativo globalmente para poder ser licenciado</li>
+                    <li><strong>Licenciamento:</strong> Empresa deve ter licença para poder ativar o módulo</li>
+                    <li><strong>Controle Granular:</strong> Você pode escolher exatamente quais empresas têm acesso a cada módulo</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -33,7 +33,7 @@ class Page(models.Model):
         super().save(*args, **kwargs)
     
     def get_absolute_url(self):
-        return reverse('pages:page-detail', kwargs={'slug': self.slug})
+        return reverse('pages:page_detail', kwargs={'slug': self.slug})
     
     def __str__(self):
         return self.title

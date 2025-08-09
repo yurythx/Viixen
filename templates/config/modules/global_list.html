@@ -1,0 +1,203 @@
+{% extends 'base.html' %}
+
+{% block title %}Gerenciamento Global de Módulos - {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2>
+                    <i class="fas fa-cubes text-primary"></i>
+                    Gerenciamento Global de Módulos
+                </h2>
+                <div class="badge badge-info">
+                    <i class="fas fa-shield-alt"></i> Administrador Global
+                </div>
+            </div>
+
+            <!-- Estatísticas -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card bg-primary text-white">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <div class="flex-grow-1">
+                                    <h6 class="card-title mb-0">Total de Módulos</h6>
+                                    <h3 class="mb-0">{{ modules|length }}</h3>
+                                </div>
+                                <i class="fas fa-cubes fa-2x opacity-75"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-success text-white">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <div class="flex-grow-1">
+                                    <h6 class="card-title mb-0">Módulos Core</h6>
+                                    <h3 class="mb-0">{{ core_modules|length }}</h3>
+                                </div>
+                                <i class="fas fa-lock fa-2x opacity-75"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-info text-white">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <div class="flex-grow-1">
+                                    <h6 class="card-title mb-0">Módulos Opcionais</h6>
+                                    <h3 class="mb-0">{{ optional_modules|length }}</h3>
+                                </div>
+                                <i class="fas fa-puzzle-piece fa-2x opacity-75"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-warning text-white">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <div class="flex-grow-1">
+                                    <h6 class="card-title mb-0">Total de Empresas</h6>
+                                    <h3 class="mb-0">{{ total_companies }}</h3>
+                                </div>
+                                <i class="fas fa-building fa-2x opacity-75"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Módulos Core -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-lock text-success"></i>
+                        Módulos Core (Não podem ser desabilitados)
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if core_modules %}
+                        <div class="row">
+                            {% for module in core_modules %}
+                                <div class="col-md-4 mb-3">
+                                    <div class="card border-success">
+                                        <div class="card-body">
+                                            <div class="d-flex align-items-center">
+                                                <i class="{{ module.icon }} fa-2x text-success me-3"></i>
+                                                <div class="flex-grow-1">
+                                                    <h6 class="card-title mb-1">{{ module.name }}</h6>
+                                                    <small class="text-muted">{{ module.app_label }}</small>
+                                                    {% if module.description %}
+                                                        <p class="card-text small mt-2">{{ module.description }}</p>
+                                                    {% endif %}
+                                                </div>
+                                                <div class="text-end">
+                                                    <span class="badge bg-success">
+                                                        <i class="fas fa-check"></i> Core
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i>
+                            Nenhum módulo core encontrado.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Módulos Opcionais -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-puzzle-piece text-info"></i>
+                        Módulos Opcionais (Podem ser habilitados/desabilitados)
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if optional_modules %}
+                        <div class="row">
+                            {% for module in optional_modules %}
+                                <div class="col-md-6 mb-3">
+                                    <div class="card border-{% if module.is_active %}info{% else %}secondary{% endif %}">
+                                        <div class="card-body">
+                                            <div class="d-flex align-items-center">
+                                                <i class="{{ module.icon }} fa-2x text-{% if module.is_active %}info{% else %}muted{% endif %} me-3"></i>
+                                                <div class="flex-grow-1">
+                                                    <h6 class="card-title mb-1">{{ module.name }}</h6>
+                                                    <small class="text-muted">{{ module.app_label }}</small>
+                                                    {% if module.description %}
+                                                        <p class="card-text small mt-2">{{ module.description }}</p>
+                                                    {% endif %}
+                                                </div>
+                                                <div class="text-end">
+                                                    <div class="mb-2">
+                                                        {% if module.is_active %}
+                                                            <span class="badge bg-success">
+                                                                <i class="fas fa-check"></i> Ativo
+                                                            </span>
+                                                        {% else %}
+                                                            <span class="badge bg-secondary">
+                                                                <i class="fas fa-times"></i> Inativo
+                                                            </span>
+                                                        {% endif %}
+                                                    </div>
+                                                    <form method="post" action="{% url 'config:module_global_toggle' module.id %}" class="d-inline">
+                                                        {% csrf_token %}
+                                                        {% if module.is_active %}
+                                                            <input type="hidden" name="action" value="deactivate">
+                                                            <button type="submit" class="btn btn-sm btn-outline-danger" 
+                                                                    onclick="return confirm('Desativar este módulo irá desabilitá-lo para todas as empresas. Confirma?')">
+                                                                <i class="fas fa-power-off"></i> Desativar
+                                                            </button>
+                                                        {% else %}
+                                                            <input type="hidden" name="action" value="activate">
+                                                            <button type="submit" class="btn btn-sm btn-outline-success">
+                                                                <i class="fas fa-power-off"></i> Ativar
+                                                            </button>
+                                                        {% endif %}
+                                                    </form>
+                                                    <a href="{% url 'config:module_license_detail' module.id %}" 
+                                                       class="btn btn-sm btn-outline-info mt-2">
+                                                        <i class="fas fa-certificate"></i> Licenças
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i>
+                            Nenhum módulo opcional encontrado.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Informações -->
+            <div class="alert alert-warning mt-4">
+                <h6><i class="fas fa-exclamation-triangle"></i> Informações Importantes</h6>
+                <ul class="mb-0">
+                    <li><strong>Módulos Core:</strong> São essenciais para o funcionamento do sistema e não podem ser desabilitados</li>
+                    <li><strong>Módulos Opcionais:</strong> Podem ser habilitados/desabilitados globalmente</li>
+                    <li><strong>Desativar globalmente:</strong> Remove o módulo de todas as empresas automaticamente</li>
+                    <li><strong>Ativar globalmente:</strong> Torna o módulo disponível para as empresas (mas não o ativa automaticamente)</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

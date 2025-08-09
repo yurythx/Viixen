@@ -1,0 +1,266 @@
+{% extends 'base.html' %}
+
+{% block title %}Licenças - {{ module.name }} - {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2>
+                    <i class="{{ module.icon }} text-info"></i>
+                    Licenças - {{ module.name }}
+                </h2>
+                <div class="d-flex gap-2">
+                    <a href="{% url 'config:module_licensing' %}" class="btn btn-outline-secondary btn-sm">
+                        <i class="fas fa-arrow-left"></i> Voltar
+                    </a>
+                    <div class="badge badge-warning">
+                        <i class="fas fa-shield-alt"></i> Administrador Global
+                    </div>
+                </div>
+            </div>
+
+            <!-- Informações do Módulo -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h5 class="mb-1">{{ module.name }}</h5>
+                            <p class="text-muted mb-2">{{ module.app_label }}</p>
+                            {% if module.description %}
+                                <p class="mb-0">{{ module.description }}</p>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-4 text-end">
+                            {% if module.is_active %}
+                                <span class="badge bg-success fs-6">
+                                    <i class="fas fa-check"></i> Ativo Globalmente
+                                </span>
+                            {% else %}
+                                <span class="badge bg-secondary fs-6">
+                                    <i class="fas fa-times"></i> Inativo Globalmente
+                                </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Estatísticas -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card bg-success text-white">
+                        <div class="card-body text-center">
+                            <h3 class="mb-1">{{ licensed_count }}</h3>
+                            <small>Empresas Licenciadas</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-warning text-dark">
+                        <div class="card-body text-center">
+                            <h3 class="mb-1">{{ unlicensed_count }}</h3>
+                            <small>Empresas Não Licenciadas</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-info text-white">
+                        <div class="card-body text-center">
+                            <h3 class="mb-1">{{ licensed_count|add:unlicensed_count }}</h3>
+                            <small>Total de Empresas</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-primary text-white">
+                        <div class="card-body text-center">
+                            <h3 class="mb-1">
+                                {% widthratio licensed_count licensed_count|add:unlicensed_count 100 %}%
+                            </h3>
+                            <small>Taxa de Licenciamento</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <!-- Empresas Licenciadas -->
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header bg-success text-white">
+                            <h5 class="mb-0">
+                                <i class="fas fa-check-circle"></i>
+                                Empresas Licenciadas ({{ licensed_count }})
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            {% if licensed_companies %}
+                                <form method="post" id="revoke-form">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="revoke_licenses">
+                                    
+                                    <div class="mb-3">
+                                        <button type="button" class="btn btn-sm btn-outline-danger" onclick="toggleSelectAll('licensed')">
+                                            <i class="fas fa-check-square"></i> Selecionar Todas
+                                        </button>
+                                        <button type="submit" class="btn btn-sm btn-danger ms-2" 
+                                                onclick="return confirm('Remover licenças das empresas selecionadas?')">
+                                            <i class="fas fa-times"></i> Remover Licenças
+                                        </button>
+                                    </div>
+
+                                    {% for company in licensed_companies %}
+                                        <div class="form-check d-flex justify-content-between align-items-center py-2 border-bottom">
+                                            <div class="d-flex align-items-center">
+                                                <input class="form-check-input me-3 licensed-checkbox" 
+                                                       type="checkbox" 
+                                                       name="company_ids" 
+                                                       value="{{ company.id }}" 
+                                                       id="licensed_{{ company.id }}">
+                                                <label class="form-check-label flex-grow-1" for="licensed_{{ company.id }}">
+                                                    <strong>{{ company.name }}</strong>
+                                                    <br><small class="text-muted">{{ company.cnpj }}</small>
+                                                </label>
+                                            </div>
+                                            <div>
+                                                <span class="badge bg-success">Licenciada</span>
+                                                <button type="button" 
+                                                        class="btn btn-sm btn-outline-danger ms-2 license-toggle"
+                                                        data-module-id="{{ module.id }}"
+                                                        data-company-id="{{ company.id }}"
+                                                        data-action="revoke">
+                                                    <i class="fas fa-times"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                </form>
+                            {% else %}
+                                <div class="alert alert-info">
+                                    <i class="fas fa-info-circle"></i>
+                                    Nenhuma empresa possui licença para este módulo.
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Empresas Não Licenciadas -->
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header bg-warning text-dark">
+                            <h5 class="mb-0">
+                                <i class="fas fa-exclamation-circle"></i>
+                                Empresas Não Licenciadas ({{ unlicensed_count }})
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            {% if unlicensed_companies %}
+                                <form method="post" id="license-form">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="license_companies">
+                                    
+                                    <div class="mb-3">
+                                        <button type="button" class="btn btn-sm btn-outline-success" onclick="toggleSelectAll('unlicensed')">
+                                            <i class="fas fa-check-square"></i> Selecionar Todas
+                                        </button>
+                                        <button type="submit" class="btn btn-sm btn-success ms-2">
+                                            <i class="fas fa-plus"></i> Licenciar Selecionadas
+                                        </button>
+                                    </div>
+
+                                    {% for company in unlicensed_companies %}
+                                        <div class="form-check d-flex justify-content-between align-items-center py-2 border-bottom">
+                                            <div class="d-flex align-items-center">
+                                                <input class="form-check-input me-3 unlicensed-checkbox" 
+                                                       type="checkbox" 
+                                                       name="company_ids" 
+                                                       value="{{ company.id }}" 
+                                                       id="unlicensed_{{ company.id }}">
+                                                <label class="form-check-label flex-grow-1" for="unlicensed_{{ company.id }}">
+                                                    <strong>{{ company.name }}</strong>
+                                                    <br><small class="text-muted">{{ company.cnpj }}</small>
+                                                </label>
+                                            </div>
+                                            <div>
+                                                <span class="badge bg-warning text-dark">Não Licenciada</span>
+                                                <button type="button" 
+                                                        class="btn btn-sm btn-outline-success ms-2 license-toggle"
+                                                        data-module-id="{{ module.id }}"
+                                                        data-company-id="{{ company.id }}"
+                                                        data-action="license">
+                                                    <i class="fas fa-plus"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                </form>
+                            {% else %}
+                                <div class="alert alert-success">
+                                    <i class="fas fa-check-circle"></i>
+                                    Todas as empresas já possuem licença para este módulo.
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript para funcionalidades -->
+<script>
+function toggleSelectAll(type) {
+    const checkboxes = document.querySelectorAll(`.${type}-checkbox`);
+    const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+    
+    checkboxes.forEach(checkbox => {
+        checkbox.checked = !allChecked;
+    });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Toggle individual de licenças via AJAX
+    const toggleButtons = document.querySelectorAll('.license-toggle');
+    
+    toggleButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const moduleId = this.dataset.moduleId;
+            const companyId = this.dataset.companyId;
+            const action = this.dataset.action;
+            
+            // Desabilitar botão temporariamente
+            this.disabled = true;
+            
+            // Fazer requisição AJAX
+            fetch(`/config/modules/${moduleId}/companies/${companyId}/ajax-license-toggle/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Recarregar página para atualizar listas
+                    location.reload();
+                } else {
+                    alert(data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+                alert('Erro ao alterar licença');
+            })
+            .finally(() => {
+                this.disabled = false;
+            });
+        });
+    });
+});
+</script>
+{% endblock %}

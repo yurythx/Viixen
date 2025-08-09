@@ -1,0 +1,378 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load module_tags %}
+
+{% block title %}Expiração de Licenças - {{ block.super }}{% endblock %}
+
+{% block extra_css %}
+<style>
+.license-status-expired {
+    background-color: #dc3545;
+    color: white;
+}
+.license-status-expiring {
+    background-color: #fd7e14;
+    color: white;
+}
+.license-status-active {
+    background-color: #198754;
+    color: white;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2><i class="fas fa-clock text-warning"></i> Expiração de Licenças</h2>
+            <p class="text-muted mb-0">Gerencie licenças próximas do vencimento e já expiradas</p>
+        </div>
+        <div>
+            <a href="{% url 'config:module_licensing' %}" class="btn btn-outline-primary">
+                <i class="fas fa-certificate"></i> Gerenciar Licenças
+            </a>
+        </div>
+    </div>
+
+    <!-- Estatísticas -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card border-warning">
+                <div class="card-body text-center">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <h6 class="card-title mb-0">Expirando (7 dias)</h6>
+                            <h3 class="mb-0 text-warning">{{ expiring_7_days }}</h3>
+                        </div>
+                        <i class="fas fa-exclamation-triangle fa-2x text-warning opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-warning">
+                <div class="card-body text-center">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <h6 class="card-title mb-0">Expirando (30 dias)</h6>
+                            <h3 class="mb-0 text-warning">{{ expiring_30_days }}</h3>
+                        </div>
+                        <i class="fas fa-clock fa-2x text-warning opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-danger">
+                <div class="card-body text-center">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <h6 class="card-title mb-0">Expiradas</h6>
+                            <h3 class="mb-0 text-danger">{{ expired_count }}</h3>
+                        </div>
+                        <i class="fas fa-times-circle fa-2x text-danger opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-info">
+                <div class="card-body text-center">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <h6 class="card-title mb-0">Total Monitoradas</h6>
+                            <h3 class="mb-0 text-info">{{ expiring_count }}</h3>
+                        </div>
+                        <i class="fas fa-eye fa-2x text-info opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ações em Massa -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0"><i class="fas fa-tools"></i> Ações em Massa</h5>
+        </div>
+        <div class="card-body">
+            <form method="post" action="{% url 'config:bulk_license_renewal' %}">
+                {% csrf_token %}
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label for="duration_days" class="form-label">Duração da Renovação (dias)</label>
+                            <select class="form-select" name="duration_days" id="duration_days">
+                                <option value="30">30 dias</option>
+                                <option value="90">90 dias</option>
+                                <option value="180">180 dias</option>
+                                <option value="365" selected>365 dias (1 ano)</option>
+                                <option value="730">730 dias (2 anos)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-8">
+                        <label class="form-label">Ações Disponíveis</label>
+                        <div class="d-flex gap-2">
+                            <button type="submit" name="action" value="renew_expiring" class="btn btn-warning"
+                                    onclick="return confirm('Renovar todas as licenças que expiram em 30 dias?')">
+                                <i class="fas fa-sync"></i> Renovar Licenças Expirando
+                            </button>
+                            <button type="submit" name="action" value="deactivate_expired" class="btn btn-danger"
+                                    onclick="return confirm('Desativar todos os módulos com licenças expiradas?')">
+                                <i class="fas fa-power-off"></i> Desativar Expiradas
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Licenças Expirando -->
+    {% if expiring_licenses %}
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0"><i class="fas fa-clock text-warning"></i> Licenças Expirando (próximos 30 dias)</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Empresa</th>
+                            <th>Módulo</th>
+                            <th>Status</th>
+                            <th>Expira em</th>
+                            <th>Dias Restantes</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for company_module in expiring_licenses %}
+                        <tr>
+                            <td>
+                                <strong>{{ company_module.company.name }}</strong>
+                                <br><small class="text-muted">{{ company_module.company.cnpj }}</small>
+                            </td>
+                            <td>
+                                <span class="badge bg-primary">{{ company_module.module.name }}</span>
+                            </td>
+                            <td>
+                                {% if company_module.license_status == 'expired' %}
+                                    <span class="badge license-status-expired">Expirada</span>
+                                {% elif company_module.license_status == 'expiring_soon' %}
+                                    <span class="badge license-status-expiring">Expirando</span>
+                                {% else %}
+                                    <span class="badge license-status-active">Ativa</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if company_module.license_expires_at %}
+                                    {{ company_module.license_expires_at|date:"d/m/Y H:i" }}
+                                {% else %}
+                                    <span class="text-muted">Permanente</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if company_module.days_until_expiration is not None %}
+                                    {% if company_module.days_until_expiration > 0 %}
+                                        <span class="text-warning">{{ company_module.days_until_expiration }} dias</span>
+                                    {% else %}
+                                        <span class="text-danger">Expirada</span>
+                                    {% endif %}
+                                {% else %}
+                                    <span class="text-muted">∞</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="btn-group btn-group-sm">
+                                    <button type="button" class="btn btn-outline-success renew-license"
+                                            data-module-id="{{ company_module.module.id }}"
+                                            data-company-id="{{ company_module.company.id }}"
+                                            data-company-name="{{ company_module.company.name }}"
+                                            data-module-name="{{ company_module.module.name }}">
+                                        <i class="fas fa-sync"></i> Renovar
+                                    </button>
+                                    <a href="{% url 'config:module_license_detail' company_module.module.id %}" 
+                                       class="btn btn-outline-primary">
+                                        <i class="fas fa-cog"></i> Gerenciar
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Licenças Expiradas -->
+    {% if expired_licenses %}
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0"><i class="fas fa-times-circle text-danger"></i> Licenças Expiradas</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Empresa</th>
+                            <th>Módulo</th>
+                            <th>Expirou em</th>
+                            <th>Status do Módulo</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for company_module in expired_licenses %}
+                        <tr>
+                            <td>
+                                <strong>{{ company_module.company.name }}</strong>
+                                <br><small class="text-muted">{{ company_module.company.cnpj }}</small>
+                            </td>
+                            <td>
+                                <span class="badge bg-primary">{{ company_module.module.name }}</span>
+                            </td>
+                            <td>
+                                <span class="text-danger">{{ company_module.license_expires_at|date:"d/m/Y H:i" }}</span>
+                            </td>
+                            <td>
+                                {% if company_module.is_active %}
+                                    <span class="badge bg-warning">Ativo (Desativar)</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">Desativado</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="btn-group btn-group-sm">
+                                    <button type="button" class="btn btn-outline-success renew-license"
+                                            data-module-id="{{ company_module.module.id }}"
+                                            data-company-id="{{ company_module.company.id }}"
+                                            data-company-name="{{ company_module.company.name }}"
+                                            data-module-name="{{ company_module.module.name }}">
+                                        <i class="fas fa-sync"></i> Renovar
+                                    </button>
+                                    <a href="{% url 'config:module_license_detail' company_module.module.id %}" 
+                                       class="btn btn-outline-primary">
+                                        <i class="fas fa-cog"></i> Gerenciar
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if not expiring_licenses and not expired_licenses %}
+    <div class="card">
+        <div class="card-body text-center py-5">
+            <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+            <h4>Todas as licenças estão em dia!</h4>
+            <p class="text-muted">Não há licenças expirando ou expiradas no momento.</p>
+            <a href="{% url 'config:module_licensing' %}" class="btn btn-primary">
+                <i class="fas fa-certificate"></i> Gerenciar Licenças
+            </a>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Modal de Renovação -->
+<div class="modal fade" id="renewModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Renovar Licença</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="renewForm">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <p>Renovar licença do módulo <strong id="renewModuleName"></strong> 
+                       para a empresa <strong id="renewCompanyName"></strong>?</p>
+                    
+                    <div class="mb-3">
+                        <label for="renewDuration" class="form-label">Duração da Renovação</label>
+                        <select class="form-select" id="renewDuration" name="duration_days">
+                            <option value="30">30 dias</option>
+                            <option value="90">90 dias</option>
+                            <option value="180">180 dias</option>
+                            <option value="365" selected>365 dias (1 ano)</option>
+                            <option value="730">730 dias (2 anos)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-sync"></i> Renovar Licença
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const renewButtons = document.querySelectorAll('.renew-license');
+    const renewModal = new bootstrap.Modal(document.getElementById('renewModal'));
+    const renewForm = document.getElementById('renewForm');
+    
+    renewButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const moduleId = this.dataset.moduleId;
+            const companyId = this.dataset.companyId;
+            const moduleName = this.dataset.moduleName;
+            const companyName = this.dataset.companyName;
+            
+            document.getElementById('renewModuleName').textContent = moduleName;
+            document.getElementById('renewCompanyName').textContent = companyName;
+            
+            renewForm.onsubmit = function(e) {
+                e.preventDefault();
+                
+                const formData = new FormData();
+                formData.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
+                formData.append('action', 'renew_license');
+                formData.append('module_id', moduleId);
+                formData.append('company_id', companyId);
+                formData.append('duration_days', document.getElementById('renewDuration').value);
+                
+                fetch('{% url "config:license_expiration_ajax" %}', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        renewModal.hide();
+                        location.reload();
+                    } else {
+                        alert('Erro: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro:', error);
+                    alert('Erro ao renovar licença');
+                });
+            };
+            
+            renewModal.show();
+        });
+    });
+});
+</script>
+{% endblock %}

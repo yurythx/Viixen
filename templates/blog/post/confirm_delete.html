@@ -1,0 +1,101 @@
+{% extends 'base.html' %}
+
+{% block title %}Excluir Post - {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-exclamation-triangle"></i> Confirmar Exclusão
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-danger">
+                        <i class="fas fa-warning"></i>
+                        <strong>Atenção!</strong> Esta ação não pode ser desfeita.
+                    </div>
+
+                    <h5>Tem certeza que deseja excluir este post?</h5>
+                    
+                    <div class="post-info mt-4 p-3 bg-light rounded">
+                        <div class="d-flex align-items-start">
+                            {% if object.featured_image %}
+                            <img src="{{ object.featured_image.url }}" alt="{{ object.title }}" class="me-3 rounded" style="width: 80px; height: 80px; object-fit: cover;">
+                            {% endif %}
+                            <div>
+                                <h6><strong>{{ object.title }}</strong></h6>
+                                {% if object.excerpt %}
+                                    <p class="mb-1 text-muted">{{ object.excerpt|truncatechars:100 }}</p>
+                                {% endif %}
+                                <p class="mb-1">
+                                    <strong>Status:</strong> 
+                                    {% if object.status == 'published' %}
+                                        <span class="badge bg-success">Publicado</span>
+                                    {% elif object.status == 'draft' %}
+                                        <span class="badge bg-warning">Rascunho</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">Arquivado</span>
+                                    {% endif %}
+                                </p>
+                                <p class="mb-1">
+                                    <strong>Autor:</strong> {{ object.author.get_full_name|default:object.author.username }}
+                                </p>
+                                {% if object.category %}
+                                <p class="mb-1">
+                                    <strong>Categoria:</strong> 
+                                    <span class="badge" style="background-color: {{ object.category.color }};">{{ object.category.name }}</span>
+                                </p>
+                                {% endif %}
+                                <p class="mb-1">
+                                    <strong>Visualizações:</strong> {{ object.views_count }}
+                                </p>
+                                <p class="mb-0">
+                                    <strong>Criado em:</strong> {{ object.created_at|date:"d/m/Y H:i" }}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    {% if object.status == 'published' %}
+                    <div class="alert alert-warning mt-3">
+                        <i class="fas fa-globe"></i>
+                        <strong>Impacto:</strong> Este post está publicado e pode estar sendo visualizado por visitantes. 
+                        Ao excluí-lo, o conteúdo será removido permanentemente.
+                    </div>
+                    {% endif %}
+
+                    <form method="post" class="mt-4">
+                        {% csrf_token %}
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'blog:post_detail' object.slug %}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-danger" data-confirm="true">
+                                <i class="fas fa-trash"></i> Sim, Excluir Post
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const deleteBtn = document.querySelector('[data-confirm="true"]');
+    if (deleteBtn) {
+        deleteBtn.addEventListener('click', function(e) {
+            if (!confirm('Tem certeza absoluta que deseja excluir este post? Esta ação é irreversível!')) {
+                e.preventDefault();
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,230 @@
+{% extends 'base.html' %}
+
+{% block title %}Meu Perfil - {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body text-center">
+                    <div class="profile-avatar mb-3">
+                        {% if user_obj.avatar %}
+                            <img src="{{ user_obj.avatar.url }}" alt="Avatar" class="rounded-circle" width="120" height="120">
+                        {% else %}
+                            <div class="avatar-placeholder rounded-circle mx-auto d-flex align-items-center justify-content-center" style="width: 120px; height: 120px; background-color: var(--yaru-primary); color: white; font-size: 3rem;">
+                                {{ user_obj.first_name|first|default:user_obj.username|first|upper }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <h4>{{ user_obj.get_full_name|default:user_obj.username }}</h4>
+                    <p class="text-muted">{{ user_obj.email }}</p>
+                    
+                    {% if user_obj.is_company_admin %}
+                        <span class="badge bg-warning">Administrador</span>
+                    {% endif %}
+                    
+                    {% if user_obj.is_superuser %}
+                        <span class="badge bg-danger">Superusuário</span>
+                    {% endif %}
+                    
+                    <div class="mt-3">
+                        <a href="{% url 'accounts:user_update' user_obj.pk %}" class="btn btn-primary">
+                            <i class="fas fa-edit"></i> Editar Perfil
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="fas fa-chart-bar"></i> Estatísticas</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <div class="stat-item">
+                                <h5 class="text-primary">{{ user_obj.date_joined|timesince }}</h5>
+                                <small class="text-muted">Membro há</small>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="stat-item">
+                                <h5 class="text-success">{{ user_obj.last_login|timesince|default:"Nunca" }}</h5>
+                                <small class="text-muted">Último acesso</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-user"></i> Informações Pessoais</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="info-item mb-3">
+                                <label class="form-label text-muted">Nome Completo</label>
+                                <p class="mb-0">{{ user_obj.get_full_name|default:"Não informado" }}</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="info-item mb-3">
+                                <label class="form-label text-muted">Nome de Usuário</label>
+                                <p class="mb-0">{{ user_obj.username }}</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="info-item mb-3">
+                                <label class="form-label text-muted">Email</label>
+                                <p class="mb-0">{{ user_obj.email }}</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="info-item mb-3">
+                                <label class="form-label text-muted">Telefone</label>
+                                <p class="mb-0">{{ user_obj.phone|default:"Não informado" }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            {% if user_obj.company %}
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-building"></i> Empresa</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="info-item mb-3">
+                                <label class="form-label text-muted">Nome da Empresa</label>
+                                <p class="mb-0">{{ user_obj.company.name }}</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="info-item mb-3">
+                                <label class="form-label text-muted">Cargo/Função</label>
+                                <p class="mb-0">
+                                    {% if user_obj.is_company_admin %}
+                                        Administrador da Empresa
+                                    {% else %}
+                                        Usuário
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+                        {% if user_obj.company.email %}
+                        <div class="col-md-6">
+                            <div class="info-item mb-3">
+                                <label class="form-label text-muted">Email da Empresa</label>
+                                <p class="mb-0">{{ user_obj.company.email }}</p>
+                            </div>
+                        </div>
+                        {% endif %}
+                        {% if user_obj.company.phone %}
+                        <div class="col-md-6">
+                            <div class="info-item mb-3">
+                                <label class="form-label text-muted">Telefone da Empresa</label>
+                                <p class="mb-0">{{ user_obj.company.phone }}</p>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mt-3">
+                        <a href="{% url 'config:company_detail' %}" class="btn btn-outline-primary btn-sm">
+                            <i class="fas fa-eye"></i> Ver Empresa
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-shield-alt"></i> Segurança</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="info-item mb-3">
+                                <label class="form-label text-muted">Conta Criada</label>
+                                <p class="mb-0">{{ user_obj.date_joined|date:"d/m/Y H:i" }}</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="info-item mb-3">
+                                <label class="form-label text-muted">Último Acesso</label>
+                                <p class="mb-0">{{ user_obj.last_login|date:"d/m/Y H:i"|default:"Nunca" }}</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="info-item mb-3">
+                                <label class="form-label text-muted">Status da Conta</label>
+                                <p class="mb-0">
+                                    {% if user_obj.is_active %}
+                                        <span class="badge bg-success">Ativa</span>
+                                    {% else %}
+                                        <span class="badge bg-danger">Inativa</span>
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-3">
+                        <button type="button" class="btn btn-outline-warning btn-sm" data-bs-toggle="modal" data-bs-target="#changePasswordModal">
+                            <i class="fas fa-key"></i> Alterar Senha
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para alterar senha -->
+<div class="modal fade" id="changePasswordModal" tabindex="-1" aria-labelledby="changePasswordModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="changePasswordModalLabel">Alterar Senha</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p class="text-muted">Para alterar sua senha, você será redirecionado para a página de edição do perfil.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <a href="{% url 'accounts:user_update' user_obj.pk %}" class="btn btn-primary">Continuar</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.info-item label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+}
+
+.stat-item h5 {
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+}
+
+.avatar-placeholder {
+    font-weight: 700;
+}
+</style>
+{% endblock %}

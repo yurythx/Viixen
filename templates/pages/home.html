@@ -4,20 +4,18 @@
 
 {% block content %}
 <!-- Hero Section -->
-<div class="jumbotron bg-primary text-white rounded mb-5">
-    <div class="container py-5">
-        <h1 class="display-4">Bem-vindo ao {{ company.name }}</h1>
-        <p class="lead">Sua plataforma completa de gestão empresarial.</p>
-        {% if not user.is_authenticated %}
-        <a class="btn btn-light btn-lg" href="{% url 'accounts:login' %}" role="button">
-            <i class="fas fa-sign-in-alt"></i> Fazer Login
-        </a>
-        {% else %}
-        <a class="btn btn-light btn-lg" href="{% url 'config:dashboard' %}" role="button">
-            <i class="fas fa-tachometer-alt"></i> Ir para Dashboard
-        </a>
-        {% endif %}
-    </div>
+<div class="card" style="background: linear-gradient(135deg, var(--color-primary), var(--color-secondary)); color: white; text-align: center; padding: 40px 20px; margin-bottom: 32px;">
+    <h1 style="font-size: 2.5rem; font-weight: 700; margin-bottom: 16px;">Bem-vindo ao {% if company %}{{ company.name }}{% else %}Viixen{% endif %}</h1>
+    <p style="font-size: 1.2rem; opacity: 0.9; margin-bottom: 24px;">Sua plataforma completa de gestão empresarial.</p>
+    {% if not user.is_authenticated %}
+    <a class="btn" href="{% url 'accounts:login' %}" style="background: white; color: var(--color-primary); font-weight: 500;">
+        Fazer Login
+    </a>
+    {% else %}
+    <a class="btn" href="{% url 'config:dashboard' %}" style="background: white; color: var(--color-primary); font-weight: 500;">
+        Ir para Dashboard
+    </a>
+    {% endif %}
 </div>
 
 <!-- Features -->

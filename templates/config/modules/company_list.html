@@ -1,0 +1,314 @@
+{% extends 'base.html' %}
+
+{% block title %}Gerenciamento de Módulos - {{ company.name }} - {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2>
+                    <i class="fas fa-puzzle-piece text-primary"></i>
+                    Módulos da Empresa
+                </h2>
+                <div class="d-flex gap-2">
+                    {% if is_global_admin %}
+                        <div class="badge badge-warning">
+                            <i class="fas fa-shield-alt"></i> Administrador Global
+                        </div>
+                    {% endif %}
+                    {% if company %}
+                        <div class="badge badge-info">
+                            <i class="fas fa-building"></i> {{ company.name }}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            {% if company %}
+                <!-- Estatísticas -->
+                <div class="row mb-4">
+                    <div class="col-md-3">
+                        <div class="card bg-success text-white">
+                            <div class="card-body">
+                                <div class="d-flex align-items-center">
+                                    <div class="flex-grow-1">
+                                        <h6 class="card-title mb-0">Módulos Core</h6>
+                                        <h3 class="mb-0">{{ core_modules|length }}</h3>
+                                        <small>Sempre ativos</small>
+                                    </div>
+                                    <i class="fas fa-lock fa-2x opacity-75"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card bg-info text-white">
+                            <div class="card-body">
+                                <div class="d-flex align-items-center">
+                                    <div class="flex-grow-1">
+                                        <h6 class="card-title mb-0">Módulos Disponíveis</h6>
+                                        <h3 class="mb-0">{{ optional_modules|length }}</h3>
+                                        <small>Podem ser ativados</small>
+                                    </div>
+                                    <i class="fas fa-puzzle-piece fa-2x opacity-75"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card bg-primary text-white">
+                            <div class="card-body">
+                                <div class="d-flex align-items-center">
+                                    <div class="flex-grow-1">
+                                        <h6 class="card-title mb-0">Módulos Ativos</h6>
+                                        <h3 class="mb-0">{{ active_module_ids|length }}</h3>
+                                        <small>Em uso</small>
+                                    </div>
+                                    <i class="fas fa-check-circle fa-2x opacity-75"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card bg-warning text-white">
+                            <div class="card-body">
+                                <div class="d-flex align-items-center">
+                                    <div class="flex-grow-1">
+                                        <h6 class="card-title mb-0">Total de Módulos</h6>
+                                        <h3 class="mb-0">{{ core_modules|length|add:optional_modules|length }}</h3>
+                                        <small>No sistema</small>
+                                    </div>
+                                    <i class="fas fa-cubes fa-2x opacity-75"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Módulos Core -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-lock text-success"></i>
+                            Módulos Core (Sempre Ativos)
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        {% if core_modules %}
+                            <div class="row">
+                                {% for module in core_modules %}
+                                    <div class="col-md-4 mb-3">
+                                        <div class="card border-success">
+                                            <div class="card-body">
+                                                <div class="d-flex align-items-center">
+                                                    <i class="{{ module.icon }} fa-2x text-success me-3"></i>
+                                                    <div class="flex-grow-1">
+                                                        <h6 class="card-title mb-1">{{ module.name }}</h6>
+                                                        <small class="text-muted">{{ module.app_label }}</small>
+                                                        {% if module.description %}
+                                                            <p class="card-text small mt-2">{{ module.description }}</p>
+                                                        {% endif %}
+                                                    </div>
+                                                    <div class="text-end">
+                                                        <span class="badge bg-success">
+                                                            <i class="fas fa-check"></i> Ativo
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle"></i>
+                                Nenhum módulo core encontrado.
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Módulos Opcionais -->
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-puzzle-piece text-info"></i>
+                            Módulos Opcionais (Podem ser ativados/desativados)
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        {% if optional_modules %}
+                            <div class="row">
+                                {% for module in optional_modules %}
+                                    <div class="col-md-6 mb-3">
+                                        <div class="card border-{% if module.id in active_module_ids %}info{% else %}secondary{% endif %}">
+                                            <div class="card-body">
+                                                <div class="d-flex align-items-center">
+                                                    <i class="{{ module.icon }} fa-2x text-{% if module.id in active_module_ids %}info{% else %}muted{% endif %} me-3"></i>
+                                                        <div class="flex-grow-1">
+                                                            <h6 class="card-title mb-1">{{ module.name }}</h6>
+                                                            <small class="text-muted">{{ module.app_label }}</small>
+                                                            {% if module.description %}
+                                                                <p class="card-text small mt-2">{{ module.description }}</p>
+                                                            {% endif %}
+                                                        </div>
+                                                        <div class="text-end">
+                                                            <div class="mb-2">
+                                                                {% if module.id in active_module_ids %}
+                                                                    <span class="badge bg-success">
+                                                                        <i class="fas fa-check"></i> Ativo
+                                                                    </span>
+                                                                {% else %}
+                                                                    <span class="badge bg-secondary">
+                                                                        <i class="fas fa-times"></i> Inativo
+                                                                    </span>
+                                                                {% endif %}
+                                                            </div>
+                                                            
+                                                            <!-- Toggle Switch -->
+                                                            <div class="form-check form-switch">
+                                                                <input class="form-check-input module-toggle" 
+                                                                       type="checkbox" 
+                                                                       id="module_{{ module.id }}"
+                                                                       data-module-id="{{ module.id }}"
+                                                                       data-company-id="{{ company.id }}"
+                                                                       {% if module.id in active_module_ids %}checked{% endif %}>
+                                                                <label class="form-check-label" for="module_{{ module.id }}">
+                                                                    {% if module.id in active_module_ids %}Ativo{% else %}Inativo{% endif %}
+                                                                </label>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle"></i>
+                                Nenhum módulo opcional disponível no momento.
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Informações -->
+                <div class="alert alert-info mt-4">
+                    <h6><i class="fas fa-info-circle"></i> Informações sobre Módulos e Licenças</h6>
+                    <ul class="mb-0">
+                        <li><strong>Módulos Core:</strong> São essenciais e estão sempre ativos para todas as empresas</li>
+                        <li><strong>Módulos Opcionais:</strong> Requerem licença e podem ser ativados/desativados</li>
+                        <li><strong>Licenciamento:</strong> Apenas módulos licenciados para sua empresa aparecem aqui</li>
+                        <li><strong>Toggle:</strong> Use o interruptor para ativar/desativar módulos licenciados rapidamente</li>
+                        {% if is_global_admin %}
+                            <li><strong>Administrador Global:</strong> Você pode gerenciar módulos e licenças de qualquer empresa</li>
+                            <li><strong>Licenças:</strong> Acesse <a href="{% url 'config:module_licensing' %}">Gerenciamento de Licenças</a> para controlar quais empresas têm acesso a cada módulo</li>
+                        {% else %}
+                            <li><strong>Administrador da Empresa:</strong> Você só pode ativar/desativar módulos já licenciados para sua empresa</li>
+                            <li><strong>Solicitar Licenças:</strong> Entre em contato com o administrador do sistema para solicitar acesso a novos módulos</li>
+                        {% endif %}
+                    </ul>
+                </div>
+
+            {% else %}
+                <div class="alert alert-warning">
+                    <h5><i class="fas fa-exclamation-triangle"></i> Empresa não encontrada</h5>
+                    <p class="mb-0">Não foi possível encontrar informações da empresa para gerenciar os módulos.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript para Toggle AJAX -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const toggles = document.querySelectorAll('.module-toggle');
+    
+    toggles.forEach(toggle => {
+        toggle.addEventListener('change', function() {
+            const moduleId = this.dataset.moduleId;
+            const companyId = this.dataset.companyId;
+            const isActive = this.checked;
+            
+            // Desabilitar o toggle temporariamente
+            this.disabled = true;
+            
+            // Fazer requisição AJAX
+            fetch(`/config/company/modules/${moduleId}/ajax-toggle/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                },
+                body: `company_id=${companyId}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Atualizar label
+                    const label = this.nextElementSibling;
+                    label.textContent = data.is_active ? 'Ativo' : 'Inativo';
+                    
+                    // Atualizar badge
+                    const card = this.closest('.card');
+                    const badge = card.querySelector('.badge');
+                    if (data.is_active) {
+                        badge.className = 'badge bg-success';
+                        badge.innerHTML = '<i class="fas fa-check"></i> Ativo';
+                        card.classList.remove('border-secondary');
+                        card.classList.add('border-info');
+                    } else {
+                        badge.className = 'badge bg-secondary';
+                        badge.innerHTML = '<i class="fas fa-times"></i> Inativo';
+                        card.classList.remove('border-info');
+                        card.classList.add('border-secondary');
+                    }
+                    
+                    // Mostrar toast de sucesso
+                    showToast('success', data.message);
+                } else {
+                    // Reverter o toggle
+                    this.checked = !isActive;
+                    showToast('error', data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+                this.checked = !isActive;
+                showToast('error', 'Erro ao alterar status do módulo');
+            })
+            .finally(() => {
+                this.disabled = false;
+            });
+        });
+    });
+});
+
+function showToast(type, message) {
+    // Implementar toast notification
+    const toast = document.createElement('div');
+    toast.className = `alert alert-${type === 'success' ? 'success' : 'danger'} position-fixed`;
+    toast.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+    toast.innerHTML = `
+        <i class="fas fa-${type === 'success' ? 'check' : 'exclamation-triangle'}"></i>
+        ${message}
+        <button type="button" class="btn-close" onclick="this.parentElement.remove()"></button>
+    `;
+    document.body.appendChild(toast);
+    
+    // Remover automaticamente após 3 segundos
+    setTimeout(() => {
+        if (toast.parentElement) {
+            toast.remove();
+        }
+    }, 3000);
+}
+</script>
+
+<!-- CSRF Token para AJAX -->
+{% csrf_token %}
+{% endblock %}

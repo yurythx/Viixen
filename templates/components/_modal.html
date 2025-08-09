@@ -1,0 +1,22 @@
+<!-- Modal Reutilizável com Estilo Yaru -->
+<div class="modal fade" id="{{ modal_id|default:'defaultModal' }}" tabindex="-1" aria-labelledby="{{ modal_id|default:'defaultModal' }}Label" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered {{ modal_size|default:'' }}">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-primary text-white border-0">
+                <h5 class="modal-title" id="{{ modal_id|default:'defaultModal' }}Label">
+                    {% if modal_icon %}<i class="{{ modal_icon }}"></i> {% endif %}
+                    {{ modal_title|default:'Modal' }}
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+            <div class="modal-body">
+                {{ modal_content|safe }}
+            </div>
+            {% if modal_footer %}
+            <div class="modal-footer border-0 bg-light">
+                {{ modal_footer|safe }}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>

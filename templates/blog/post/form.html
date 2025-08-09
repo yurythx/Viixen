@@ -1,0 +1,201 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}
+{% if object %}Editar Post{% else %}Novo Post{% endif %} - {{ block.super }}
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>
+            <i class="fas fa-edit"></i>
+            {% if object %}Editar Post{% else %}Novo Post{% endif %}
+        </h2>
+        <a href="{% url 'blog:post_list' %}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Voltar
+        </a>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-file-alt"></i> Informações do Post</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <div class="row">
+                            <div class="col-md-12 mb-3">
+                                <label for="{{ form.title.id_for_label }}" class="form-label">Título</label>
+                                {{ form.title }}
+                                {% if form.title.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.title.errors.0 }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.category.id_for_label }}" class="form-label">Categoria</label>
+                                {{ form.category }}
+                                {% if form.category.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.category.errors.0 }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.status.id_for_label }}" class="form-label">Status</label>
+                                {{ form.status }}
+                                {% if form.status.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.status.errors.0 }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-12 mb-3">
+                                <label for="{{ form.excerpt.id_for_label }}" class="form-label">Resumo</label>
+                                {{ form.excerpt }}
+                                <small class="form-text text-muted">Breve descrição do post (máx. 300 caracteres)</small>
+                                {% if form.excerpt.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.excerpt.errors.0 }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-12 mb-3">
+                                <label for="{{ form.content.id_for_label }}" class="form-label">Conteúdo</label>
+                                {{ form.content }}
+                                {% if form.content.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.content.errors.0 }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.featured_image.id_for_label }}" class="form-label">Imagem Destacada</label>
+                                {{ form.featured_image }}
+                                {% if form.featured_image.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.featured_image.errors.0 }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.tags.id_for_label }}" class="form-label">Tags</label>
+                                {{ form.tags }}
+                                <small class="form-text text-muted">Mantenha Ctrl pressionado para selecionar múltiplas tags</small>
+                                {% if form.tags.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.tags.errors.0 }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-12 mb-3">
+                                <div class="form-check">
+                                    {{ form.is_featured }}
+                                    <label class="form-check-label" for="{{ form.is_featured.id_for_label }}">
+                                        Post em destaque
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'blog:post_list' %}" class="btn btn-secondary">
+                                <i class="fas fa-times"></i> Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i>
+                                {% if object %}Atualizar Post{% else %}Criar Post{% endif %}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="fas fa-info-circle"></i> SEO e Metadados</h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label for="{{ form.meta_description.id_for_label }}" class="form-label">Meta Descrição</label>
+                        {{ form.meta_description }}
+                        <small class="form-text text-muted">Descrição para motores de busca (máx. 160 caracteres)</small>
+                        {% if form.meta_description.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.meta_description.errors.0 }}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="{{ form.meta_keywords.id_for_label }}" class="form-label">Palavras-chave</label>
+                        {{ form.meta_keywords }}
+                        <small class="form-text text-muted">Palavras-chave separadas por vírgula</small>
+                        {% if form.meta_keywords.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.meta_keywords.errors.0 }}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    {% if object %}
+                    <div class="mt-4">
+                        <h6>Estatísticas</h6>
+                        <ul class="list-unstyled">
+                            <li><strong>Visualizações:</strong> {{ object.views_count }}</li>
+                            <li><strong>Curtidas:</strong> {{ object.likes_count }}</li>
+                            <li><strong>Criado:</strong> {{ object.created_at|date:"d/m/Y H:i" }}</li>
+                            <li><strong>Atualizado:</strong> {{ object.updated_at|date:"d/m/Y H:i" }}</li>
+                        </ul>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.form-control, .form-select {
+    background-color: var(--color-input-bg);
+    border: 1px solid var(--color-input-border);
+    color: var(--color-text);
+}
+
+.form-control:focus, .form-select:focus {
+    background-color: var(--color-input-bg);
+    border-color: var(--color-primary);
+    color: var(--color-text);
+    box-shadow: 0 0 0 0.2rem rgba(233, 84, 32, 0.25);
+}
+
+textarea.form-control {
+    min-height: 200px;
+    resize: vertical;
+}
+</style>
+{% endblock %}

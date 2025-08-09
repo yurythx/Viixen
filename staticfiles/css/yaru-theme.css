@@ -1,0 +1,631 @@
+/* Fonte Ubuntu */
+@import url('https://fonts.googleapis.com/css2?family=Ubuntu:wght@300;400;500;700&display=swap');
+
+/* Variáveis Tema Claro - Ubuntu/Yaru Oficial */
+:root {
+  /* Cores primárias Ubuntu */
+  --ubuntu-orange: #E95420;
+  --ubuntu-orange-light: #FF7139;
+  --ubuntu-orange-dark: #C7431A;
+  
+  /* Cores neutras Ubuntu */
+  --ubuntu-warm-grey: #AEA79F;
+  --ubuntu-cool-grey: #333333;
+  --ubuntu-light-grey: #F7F7F7;
+  --ubuntu-mid-grey: #CDCDCD;
+  
+  /* Cores de estado Ubuntu */
+  --ubuntu-green: #0E8420;
+  --ubuntu-red: #C7162B;
+  --ubuntu-yellow: #F99B11;
+  --ubuntu-blue: #19B6EE;
+  
+  /* Aplicação das cores - Tema Claro */
+  --color-bg: var(--ubuntu-light-grey);
+  --color-text: var(--ubuntu-cool-grey);
+  --color-primary: var(--ubuntu-orange);
+  --color-secondary: var(--ubuntu-warm-grey);
+  --color-card: #FFFFFF;
+  --color-input-bg: #FFFFFF;
+  --color-input-border: var(--ubuntu-mid-grey);
+  --color-navbar-bg: var(--ubuntu-orange);
+  --color-navbar-text: #FFFFFF;
+  --color-sidebar-bg: #FFFFFF;
+  --color-border: var(--ubuntu-mid-grey);
+  --color-shadow: rgba(0, 0, 0, 0.1);
+  --color-navbar: var(--ubuntu-orange);
+  --btn-hover-primary: var(--ubuntu-orange-dark);
+}
+
+/* Variáveis Tema Escuro - Ubuntu/Yaru Dark */
+[data-theme="dark"] {
+  /* Cores escuras Ubuntu */
+  --ubuntu-dark-bg: #2C2C2C;
+  --ubuntu-dark-surface: #3C3C3C;
+  --ubuntu-dark-text: #FFFFFF;
+  --ubuntu-dark-text-secondary: #CCCCCC;
+  --ubuntu-dark-border: #555555;
+  
+  /* Aplicação das cores - Tema Escuro */
+  --color-bg: var(--ubuntu-dark-bg);
+  --color-text: var(--ubuntu-dark-text);
+  --color-primary: var(--ubuntu-orange-light);
+  --color-secondary: var(--ubuntu-warm-grey);
+  --color-card: var(--ubuntu-dark-surface);
+  --color-input-bg: var(--ubuntu-dark-surface);
+  --color-input-border: var(--ubuntu-dark-border);
+  --color-navbar-bg: var(--ubuntu-dark-surface);
+  --color-navbar-text: var(--ubuntu-dark-text);
+  --color-sidebar-bg: var(--ubuntu-dark-surface);
+  --color-border: var(--ubuntu-dark-border);
+  --color-shadow: rgba(0, 0, 0, 0.3);
+  --color-navbar: var(--ubuntu-dark-surface);
+  --btn-hover-primary: var(--ubuntu-orange);
+  
+  /* Sombras Ubuntu */
+  --shadow-light: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+  --shadow-medium: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);
+  --shadow-heavy: 0 10px 20px rgba(0,0,0,0.19), 0 6px 6px rgba(0,0,0,0.23);
+}
+
+/* Estilos duplicados removidos - usando [data-theme="dark"] acima */
+
+/* Estilo Global - Ubuntu/Yaru */
+body {
+  font-family: 'Ubuntu', sans-serif;
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  margin: 0;
+  padding: 0;
+  transition: background-color 0.3s ease, color 0.3s ease;
+  font-size: 16px;
+  line-height: 1.5; /* Line-height padrão Ubuntu */
+}
+
+/* Tipografia Ubuntu */
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Ubuntu', sans-serif;
+  font-weight: 500;
+  line-height: 1.2;
+  margin-bottom: 0.5em;
+  color: var(--color-text);
+}
+
+h1 { font-size: 2.5rem; }
+h2 { font-size: 2rem; }
+h3 { font-size: 1.75rem; }
+h4 { font-size: 1.5rem; }
+h5 { font-size: 1.25rem; }
+h6 { font-size: 1rem; }
+
+/* Espaçamentos Ubuntu (baseado em múltiplos de 4px) */
+.ubuntu-spacing-xs { margin: 4px; padding: 4px; }
+.ubuntu-spacing-sm { margin: 8px; padding: 8px; }
+.ubuntu-spacing-md { margin: 16px; padding: 16px; }
+.ubuntu-spacing-lg { margin: 24px; padding: 24px; }
+.ubuntu-spacing-xl { margin: 32px; padding: 32px; }
+
+/* Navbar - Estilo Ubuntu/Yaru */
+.navbar {
+  background-color: var(--color-navbar-bg);
+  padding: 12px 16px; /* Padding Ubuntu padrão */
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: var(--color-navbar-text);
+  transition: background-color 0.3s ease, color 0.3s ease;
+  box-shadow: var(--shadow-light);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.navbar .navbar-brand,
+.navbar .nav-link,
+.navbar .dropdown-item {
+  color: var(--color-navbar-text);
+  transition: color 0.3s ease;
+}
+
+.navbar .btn-outline-light {
+  border-color: var(--color-navbar-text);
+  color: var(--color-navbar-text);
+}
+
+.navbar .btn-outline-light:hover {
+  background-color: var(--color-navbar-text);
+  color: var(--color-navbar-bg);
+}
+
+/* Ubuntu navbar brand */
+.navbar-brand {
+  font-weight: 500;
+  font-size: 1.25rem;
+  text-decoration: none;
+  color: white !important;
+}
+
+.navbar-brand:hover {
+  color: rgba(255,255,255,0.9) !important;
+}
+
+.navbar .nav-links {
+  display: flex;
+  gap: 16px;
+}
+
+.navbar a {
+  color: white;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.navbar a:hover {
+  text-decoration: underline;
+}
+
+/* Botões - Estilo Ubuntu/Yaru */
+.btn {
+  background-color: var(--color-primary);
+  color: white;
+  padding: 10px 16px; /* Padding Ubuntu padrão */
+  border: none;
+  border-radius: 4px; /* Ubuntu usa cantos menos arredondados */
+  cursor: pointer;
+  font-weight: 400; /* Ubuntu usa peso normal, não medium */
+  font-size: 14px;
+  line-height: 1.4;
+  transition: all 0.2s ease; /* Transição mais rápida como Ubuntu */
+  user-select: none;
+  display: inline-block;
+  text-align: center;
+  box-shadow: var(--shadow-light);
+  text-decoration: none;
+}
+
+.btn:hover {
+  background-color: var(--btn-hover-primary);
+  box-shadow: var(--shadow-medium);
+  transform: translateY(-1px);
+}
+
+.btn:active {
+  transform: translateY(0);
+  box-shadow: var(--shadow-light);
+}
+
+/* Variantes de botões Ubuntu */
+.btn-ubuntu-success {
+  background-color: var(--ubuntu-green);
+}
+
+.btn-ubuntu-success:hover {
+  background-color: #0A6B1A;
+}
+
+.btn-ubuntu-warning {
+  background-color: var(--ubuntu-yellow);
+  color: var(--ubuntu-cool-grey);
+}
+
+.btn-ubuntu-warning:hover {
+  background-color: #E8890A;
+}
+
+.btn-ubuntu-danger {
+  background-color: var(--ubuntu-red);
+}
+
+.btn-ubuntu-danger:hover {
+  background-color: #A01325;
+}
+
+.btn:hover {
+  background-color: var(--btn-hover-primary);
+  transform: translateY(-2px);
+}
+
+.btn:active {
+  transform: translateY(0);
+}
+
+.btn-secondary {
+  background-color: var(--color-secondary);
+}
+
+.btn-secondary:hover {
+  background-color: #5E2750;
+}
+
+.btn-outline {
+  background: transparent;
+  border: 2px solid var(--color-primary);
+  color: var(--color-primary);
+}
+
+.btn-outline:hover {
+  background: var(--color-primary);
+  color: white;
+}
+
+.btn-link {
+  background: transparent;
+  color: var(--color-secondary);
+  border: none;
+  padding: 0.4rem;
+  font-weight: 400;
+}
+
+.btn-link:hover {
+  text-decoration: underline;
+}
+
+/* Cards - Estilo Ubuntu/Yaru */
+.card {
+  background-color: var(--color-card);
+  padding: 16px;
+  border-radius: 8px; /* Ubuntu usa cantos menos arredondados */
+  margin: 12px 0;
+  box-shadow: var(--shadow-light);
+  transition: all 0.3s ease;
+  border: 1px solid rgba(0,0,0,0.08);
+}
+
+.card:hover {
+  box-shadow: var(--shadow-medium);
+  transform: translateY(-1px);
+}
+
+/* Variantes de cards Ubuntu */
+.card-ubuntu-accent {
+  border-left: 4px solid var(--ubuntu-orange);
+}
+
+.card-ubuntu-success {
+  border-left: 4px solid var(--ubuntu-green);
+}
+
+.card-ubuntu-warning {
+  border-left: 4px solid var(--ubuntu-yellow);
+}
+
+.card-ubuntu-danger {
+  border-left: 4px solid var(--ubuntu-red);
+}
+
+/* Inputs - Estilo Ubuntu/Yaru */
+input, select, textarea {
+  background-color: var(--color-input-bg);
+  border: 1px solid var(--color-input-border);
+  padding: 10px 12px; /* Padding Ubuntu padrão */
+  border-radius: 4px; /* Cantos menos arredondados */
+  width: 100%;
+  transition: all 0.2s ease;
+  font-family: 'Ubuntu', sans-serif;
+  font-size: 14px;
+  line-height: 1.4;
+  color: var(--color-text);
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);
+}
+
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: var(--ubuntu-orange);
+  box-shadow: 0 0 0 2px rgba(233, 84, 32, 0.2);
+}
+
+input:invalid, select:invalid, textarea:invalid {
+  border-color: var(--ubuntu-red);
+  box-shadow: 0 0 0 2px rgba(199, 22, 43, 0.2);
+}
+
+/* Checkbox e Radio Ubuntu */
+input[type="checkbox"], input[type="radio"] {
+  width: auto;
+  margin-right: 8px;
+  accent-color: var(--ubuntu-orange);
+}
+
+/* Loading spinner estilo Ubuntu */
+.ubuntu-loader {
+  border: 4px solid rgba(255,255,255,0.3);
+  border-top: 4px solid var(--color-primary);
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+  margin: 20px auto;
+}
+@keyframes spin {
+  100% { transform: rotate(360deg); }
+}
+
+/* Cards - Estilo Ubuntu/Yaru com suporte a tema */
+.card {
+  background-color: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  box-shadow: var(--shadow-light);
+  transition: all 0.3s ease;
+  color: var(--color-text);
+}
+
+.card-header {
+  background-color: var(--color-card);
+  border-bottom: 1px solid var(--color-border);
+  color: var(--color-text);
+}
+
+.card-body {
+  background-color: var(--color-card);
+  color: var(--color-text);
+}
+
+.card-footer {
+  background-color: var(--color-card);
+  border-top: 1px solid var(--color-border);
+  color: var(--color-text);
+}
+
+/* Formulários - Estilo Ubuntu/Yaru com suporte a tema */
+.form-control {
+  background-color: var(--color-input-bg);
+  border: 1px solid var(--color-input-border);
+  color: var(--color-text);
+  transition: all 0.3s ease;
+}
+
+.form-control:focus {
+  background-color: var(--color-input-bg);
+  border-color: var(--color-primary);
+  color: var(--color-text);
+  box-shadow: 0 0 0 0.2rem rgba(233, 84, 32, 0.25);
+}
+
+.form-label {
+  color: var(--color-text);
+}
+
+/* Tabelas - Estilo Ubuntu/Yaru com suporte a tema */
+.table {
+  color: var(--color-text);
+}
+
+.table th {
+  background-color: var(--color-card);
+  border-color: var(--color-border);
+  color: var(--color-text);
+}
+
+.table td {
+  border-color: var(--color-border);
+  color: var(--color-text);
+}
+
+.table-hover tbody tr:hover {
+  background-color: var(--color-border);
+}
+
+/* Modais - Estilo Ubuntu/Yaru com suporte a tema */
+.modal-content {
+  background-color: var(--color-card);
+  border: 1px solid var(--color-border);
+  color: var(--color-text);
+}
+
+.modal-header {
+  border-bottom: 1px solid var(--color-border);
+}
+
+.modal-footer {
+  border-top: 1px solid var(--color-border);
+}
+
+/* Dropdowns - Estilo Ubuntu/Yaru com suporte a tema */
+.dropdown-menu {
+  background-color: var(--color-card);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-medium);
+}
+
+.dropdown-item {
+  color: var(--color-text);
+}
+
+.dropdown-item:hover {
+  background-color: var(--color-border);
+  color: var(--color-text);
+}
+
+/* Alertas - Estilo Ubuntu/Yaru com suporte a tema */
+.alert {
+  border: 1px solid var(--color-border);
+  color: var(--color-text);
+}
+
+/* ===== ANIMAÇÕES E TRANSIÇÕES ===== */
+/* Transições suaves para todos os elementos interativos */
+.btn, .card, .modal, .dropdown-menu, .alert, .toast {
+    transition: all 0.3s ease;
+}
+
+/* Animação de hover para cards */
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px var(--color-shadow) !important;
+}
+
+/* Animação de shake para campos com erro */
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+}
+
+.shake-animation {
+    animation: shake 0.5s ease-in-out;
+}
+
+/* Animação de fade-in para modais */
+.modal.fade .modal-dialog {
+    transform: scale(0.8);
+    transition: transform 0.3s ease-out;
+}
+
+.modal.show .modal-dialog {
+    transform: scale(1);
+}
+
+/* Animação de slide para toasts */
+.toast {
+    transform: translateX(100%);
+    transition: transform 0.3s ease-out;
+}
+
+.toast.show {
+    transform: translateX(0);
+}
+
+/* Loading overlay */
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+
+.loading-overlay.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* ===== RESPONSIVIDADE ===== */
+/* Navbar responsiva */
+@media (max-width: 991.98px) {
+    .navbar-nav {
+        text-align: center;
+        padding: 1rem 0;
+    }
+    
+    .navbar-nav .nav-link {
+        padding: 0.75rem 1rem;
+        border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    
+    .navbar-nav .nav-link:last-child {
+        border-bottom: none;
+    }
+}
+
+/* Cards responsivos */
+@media (max-width: 768px) {
+    .card {
+        margin-bottom: 1rem;
+    }
+    
+    .card-body {
+        padding: 1rem;
+    }
+    
+    .btn {
+        width: 100%;
+        margin-bottom: 0.5rem;
+    }
+    
+    .btn:last-child {
+        margin-bottom: 0;
+    }
+}
+
+/* Dashboard responsivo */
+@media (max-width: 576px) {
+    .dashboard-stats .col-md-3 {
+        margin-bottom: 1rem;
+    }
+    
+    .dashboard-stats .card h4 {
+        font-size: 1.5rem;
+    }
+}
+
+/* ===== ACESSIBILIDADE ===== */
+/* Melhor contraste para links */
+a {
+    color: var(--bs-primary);
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+a:hover, a:focus {
+    color: var(--bs-primary);
+    text-decoration: underline;
+}
+
+/* Focus visível para navegação por teclado */
+.btn:focus, .form-control:focus, .nav-link:focus {
+    box-shadow: 0 0 0 0.25rem rgba(var(--bs-primary-rgb), 0.25);
+    outline: none;
+}
+
+/* Skip link para acessibilidade */
+.skip-link {
+    position: absolute;
+    top: -40px;
+    left: 6px;
+    background: var(--bs-primary);
+    color: white;
+    padding: 8px;
+    text-decoration: none;
+    z-index: 1000;
+    border-radius: 0 0 4px 4px;
+    transition: top 0.3s ease;
+}
+
+.skip-link:focus {
+    top: 0;
+    color: white;
+}
+
+/* Indicadores de status melhorados */
+.badge {
+    font-size: 0.75em;
+    padding: 0.35em 0.65em;
+    border-radius: 0.375rem;
+}
+
+/* Melhor contraste para badges */
+.badge.bg-secondary {
+    background-color: #6c757d !important;
+    color: white;
+}
+
+/* Animação para botões de ação */
+.btn-action {
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-action::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    background: rgba(255,255,255,0.3);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: width 0.3s ease, height 0.3s ease;
+}
+
+.btn-action:hover::before {
+    width: 300px;
+    height: 300px;
+}

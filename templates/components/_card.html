@@ -1,0 +1,43 @@
+<!-- Card Customizado Reutilizável -->
+<div class="card {{ card_class|default:'' }} {{ card_border|default:'' }} h-100">
+    {% if card_header %}
+    <div class="card-header {{ card_header_class|default:'' }}">
+        {% if card_icon %}<i class="{{ card_icon }}"></i> {% endif %}
+        {{ card_header }}
+        {% if card_actions %}
+        <div class="float-end">
+            {{ card_actions|safe }}
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+    
+    {% if card_image %}
+    <img src="{{ card_image }}" class="card-img-top" alt="{{ card_title|default:'Imagem' }}">
+    {% endif %}
+    
+    <div class="card-body {{ card_body_class|default:'' }}">
+        {% if card_title %}
+        <h5 class="card-title">
+            {% if card_title_icon %}<i class="{{ card_title_icon }}"></i> {% endif %}
+            {{ card_title }}
+        </h5>
+        {% endif %}
+        
+        {% if card_subtitle %}
+        <h6 class="card-subtitle mb-2 text-muted">{{ card_subtitle }}</h6>
+        {% endif %}
+        
+        {% if card_text %}
+        <p class="card-text">{{ card_text|safe }}</p>
+        {% endif %}
+        
+        {{ card_content|safe }}
+    </div>
+    
+    {% if card_footer %}
+    <div class="card-footer {{ card_footer_class|default:'text-muted' }}">
+        {{ card_footer|safe }}
+    </div>
+    {% endif %}
+</div>

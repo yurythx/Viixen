@@ -1,39 +1,73 @@
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-    <div class="container">
-        <a class="navbar-brand" href="{% url 'pages:home' %}">Viixen</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
+    <div class="container-fluid">
+        <a class="navbar-brand fw-bold" href="{% url 'pages:home' %}">
+            <i class="fas fa-cube"></i> Viixen
+        </a>
+        
+        <!-- Botão do menu hambúrguer para mobile -->
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
+        
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav me-auto">
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'pages:home' %}">Home</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'blog:post_list' %}">Blog</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'pages:about' %}">Sobre</a>
-                </li>
-            </ul>
-            <ul class="navbar-nav">
                 {% if user.is_authenticated %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'config:dashboard' %}">
+                            <i class="fas fa-tachometer-alt"></i> Dashboard
+                        </a>
+                    </li>
+                    {% if request.is_global_admin %}
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
-                            <i class="fas fa-user"></i> {{ user.username }}
+                        <a class="nav-link dropdown-toggle" href="#" id="adminDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-crown"></i> Admin Global
                         </a>
                         <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="{% url 'accounts:profile' %}">Perfil</a></li>
-                            {% if user.is_staff %}
-                                <li><a class="dropdown-item" href="{% url 'config:dashboard' %}">Admin</a></li>
+                            <li><a class="dropdown-item" href="{% url 'config:company_list' %}"><i class="fas fa-building"></i> Empresas</a></li>
+                            <li><a class="dropdown-item" href="{% url 'accounts:user_list' %}"><i class="fas fa-users"></i> Usuários</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="/admin/"><i class="fas fa-cog"></i> Django Admin</a></li>
+                        </ul>
+                    </li>
+                    {% endif %}
+                {% endif %}
+            </ul>
+            
+            <ul class="navbar-nav">
+                <!-- Theme Toggle -->
+                <li class="nav-item">
+                    <button id="theme-toggle" class="btn btn-outline-light" type="button" title="Alternar tema">
+                        <i class="fas fa-moon"></i>
+                    </button>
+                </li>
+                
+                {% if user.is_authenticated %}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-user"></i> {{ user.get_full_name|default:user.username }}
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="{% url 'accounts:profile' %}"><i class="fas fa-user-edit"></i> Perfil</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{% url 'config:company_module_list' %}"><i class="fas fa-puzzle-piece"></i> Módulos da Empresa</a></li>
+                            {% if is_global_admin %}
+                                <li><a class="dropdown-item" href="{% url 'config:module_global_list' %}"><i class="fas fa-cubes"></i> Gerenciar Módulos (Global)</a></li>
+                                <a class="dropdown-item" href="{% url 'config:module_licensing' %}">
+                                    <i class="fas fa-certificate"></i> Gerenciar Licenças
+                                </a>
+                                <a class="dropdown-item" href="{% url 'config:license_expiration' %}">
+                                    <i class="fas fa-clock"></i> Expiração de Licenças
+                                </a> 
                             {% endif %}
                             <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="{% url 'accounts:logout' %}">Sair</a></li>
+                            <li><a class="dropdown-item" href="{% url 'accounts:logout' %}"><i class="fas fa-sign-out-alt"></i> Sair</a></li>
                         </ul>
                     </li>
                 {% else %}
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'accounts:login' %}">Login</a>
+                        <a class="nav-link" href="{% url 'accounts:login' %}">
+                            <i class="fas fa-sign-in-alt"></i> Entrar
+                        </a>
                     </li>
                 {% endif %}
             </ul>

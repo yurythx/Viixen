@@ -1,0 +1,6 @@
+@echo off
+echo Ativando ambiente virtual...
+call venv\Scripts\activate.bat
+echo Executando servidor Django...
+python manage.py runserver
+pause

@@ -1,0 +1,248 @@
+{% extends 'base.html' %}
+
+{% block title %}#{{ tag.name }} - {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div class="d-flex align-items-center">
+            <i class="fas fa-hashtag text-primary me-2 fs-3"></i>
+            <h2>{{ tag.name }}</h2>
+        </div>
+        <div class="btn-group">
+            <a href="{% url 'blog:tag_list' %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Voltar
+            </a>
+            <a href="{% url 'blog:tag_update' tag.pk %}" class="btn btn-primary">
+                <i class="fas fa-edit"></i> Editar
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-info-circle"></i> Informações da Tag</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Detalhes</h6>
+                            <ul class="list-unstyled">
+                                <li><strong>Nome:</strong> {{ tag.name }}</li>
+                                <li><strong>Slug:</strong> <code>{{ tag.slug }}</code></li>
+                                <li><strong>Total de Posts:</strong> {{ tag.posts.count }}</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Estatísticas</h6>
+                            <ul class="list-unstyled">
+                                <li><strong>Posts Publicados:</strong> {{ tag.posts.count }}</li>
+                                <li><strong>Posts em Rascunho:</strong> {{ tag.posts.count }}</li>
+                                <li><strong>Posts Arquivados:</strong> {{ tag.posts.count }}</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Posts com esta tag -->
+            {% if tag.posts.exists %}
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-file-alt"></i> Posts com esta Tag</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for post in tag.posts.all %}
+                        <div class="col-md-6 mb-4">
+                            <div class="card h-100">
+                                {% if post.featured_image %}
+                                <img src="{{ post.featured_image.url }}" class="card-img-top" alt="{{ post.title }}" style="height: 200px; object-fit: cover;">
+                                {% endif %}
+                                <div class="card-body">
+                                    <h6 class="card-title">
+                                        <a href="{{ post.get_absolute_url }}" class="text-decoration-none">
+                                            {{ post.title }}
+                                        </a>
+                                    </h6>
+                                    {% if post.excerpt %}
+                                        <p class="card-text text-muted">{{ post.excerpt|truncatechars:100 }}</p>
+                                    {% endif %}
+                                    
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <small class="text-muted">
+                                            {% if post.status == 'published' %}
+                                                <span class="badge bg-success">Publicado</span>
+                                            {% elif post.status == 'draft' %}
+                                                <span class="badge bg-warning">Rascunho</span>
+                                            {% else %}
+                                                <span class="badge bg-secondary">Arquivado</span>
+                                            {% endif %}
+                                        </small>
+                                        <small class="text-muted">{{ post.created_at|date:"d/m/Y" }}</small>
+                                    </div>
+                                    
+                                    {% if post.category %}
+                                    <div class="mb-2">
+                                        <span class="badge" style="background-color: {{ post.category.color }};">
+                                            {{ post.category.name }}
+                                        </span>
+                                    </div>
+                                    {% endif %}
+                                    
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <small class="text-muted">
+                                            <i class="fas fa-user"></i> {{ post.author.get_full_name|default:post.author.username }}
+                                        </small>
+                                        <small class="text-muted">
+                                            <i class="fas fa-eye"></i> {{ post.views_count }}
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="fas fa-cogs"></i> Ações</h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'blog:tag_update' tag.pk %}" class="btn btn-warning">
+                            <i class="fas fa-edit"></i> Editar Tag
+                        </a>
+                        <a href="{% url 'blog:post_create' %}?tags={{ tag.pk }}" class="btn btn-success">
+                            <i class="fas fa-plus"></i> Novo Post com esta Tag
+                        </a>
+                        <hr>
+                        <a href="{% url 'blog:tag_delete' tag.pk %}" class="btn btn-outline-danger" data-confirm="Tem certeza que deseja excluir esta tag?">
+                            <i class="fas fa-trash"></i> Excluir Tag
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            {% if tag.posts.exists %}
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="fas fa-chart-bar"></i> Estatísticas Detalhadas</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-4">
+                            <div class="stat-item">
+                                <div class="stat-number text-primary">{{ tag.posts.count }}</div>
+                                <div class="stat-label small text-muted">Publicados</div>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="stat-item">
+                                <div class="stat-number text-warning">{{ tag.posts.count }}</div>
+                                <div class="stat-label small text-muted">Rascunhos</div>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="stat-item">
+                                <div class="stat-number text-secondary">{{ tag.posts.count }}</div>
+                                <div class="stat-label small text-muted">Arquivados</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    
+                    <div class="text-center">
+                        <div class="stat-item">
+                            <div class="stat-number text-info">{{ tag.posts.aggregate.total_views=Sum('views_count')|default:0 }}</div>
+                            <div class="stat-label small text-muted">Total de Visualizações</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tags relacionadas -->
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="fas fa-tags"></i> Tags Relacionadas</h6>
+                </div>
+                <div class="card-body">
+                    {% with related_tags=tag.get_related_tags %}
+                        {% if related_tags %}
+                            <div class="tag-cloud">
+                                {% for related_tag in related_tags|slice:":10" %}
+                                    <a href="{% url 'blog:tag_detail' related_tag.slug %}" class="tag-item">
+                                        #{{ related_tag.name }}
+                                    </a>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <p class="text-muted small">Nenhuma tag relacionada encontrada.</p>
+                        {% endif %}
+                    {% endwith %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.stat-item {
+    padding: 0.5rem 0;
+}
+
+.stat-number {
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+.stat-label {
+    margin-top: 0.25rem;
+}
+
+.tag-cloud {
+    line-height: 2;
+}
+
+.tag-item {
+    display: inline-block;
+    margin: 0.25rem 0.5rem;
+    padding: 0.25rem 0.5rem;
+    background-color: var(--color-primary-light);
+    color: var(--color-primary);
+    text-decoration: none;
+    border-radius: 0.375rem;
+    transition: all 0.3s ease;
+    font-weight: 500;
+    font-size: 0.875rem;
+}
+
+.tag-item:hover {
+    background-color: var(--color-primary);
+    color: white;
+    transform: translateY(-2px);
+    text-decoration: none;
+}
+
+[data-theme="dark"] .tag-item {
+    background-color: var(--color-primary-dark);
+    color: var(--color-primary-light);
+}
+
+[data-theme="dark"] .tag-item:hover {
+    background-color: var(--color-primary);
+    color: white;
+}
+</style>
+{% endblock %}

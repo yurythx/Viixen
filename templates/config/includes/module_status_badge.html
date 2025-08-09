@@ -1,0 +1,19 @@
+{% if is_core %}
+    <span class="badge bg-success" title="Módulo core - sempre ativo">
+        <i class="fas fa-lock"></i> Core
+    </span>
+{% elif is_active %}
+    {% if is_active_for_company %}
+        <span class="badge bg-primary" title="Módulo ativo para sua empresa">
+            <i class="fas fa-check"></i> Ativo
+        </span>
+    {% else %}
+        <span class="badge bg-warning text-dark" title="Módulo disponível mas não ativo para sua empresa">
+            <i class="fas fa-pause"></i> Disponível
+        </span>
+    {% endif %}
+{% else %}
+    <span class="badge bg-secondary" title="Módulo inativo globalmente">
+        <i class="fas fa-times"></i> Inativo
+    </span>
+{% endif %}

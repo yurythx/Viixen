@@ -1,0 +1,92 @@
+{% if show_alerts %}
+<div class="alert-container mb-4">
+    {% if expired_count > 0 %}
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <div class="d-flex align-items-center">
+            <i class="fas fa-times-circle fa-2x me-3"></i>
+            <div class="flex-grow-1">
+                <h6 class="alert-heading mb-1">
+                    <strong>{{ expired_count }} Licença{{ expired_count|pluralize }} Expirada{{ expired_count|pluralize }}</strong>
+                </h6>
+                <p class="mb-2">
+                    {% if expired_count == 1 %}
+                        Uma licença de módulo expirou e precisa ser renovada.
+                    {% else %}
+                        {{ expired_count }} licenças de módulos expiraram e precisam ser renovadas.
+                    {% endif %}
+                </p>
+                {% if expired_licenses %}
+                <small class="text-muted">
+                    <strong>Módulos afetados:</strong>
+                    {% for company_module in expired_licenses %}
+                        {{ company_module.company.name }} - {{ company_module.module.name }}{% if not forloop.last %}, {% endif %}
+                    {% endfor %}
+                    {% if expired_count > 5 %}... e mais {{ expired_count|add:"-5" }}{% endif %}
+                </small>
+                {% endif %}
+            </div>
+            <div class="ms-3">
+                <a href="{% url 'config:license_expiration' %}" class="btn btn-outline-light btn-sm">
+                    <i class="fas fa-cog"></i> Gerenciar
+                </a>
+            </div>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    {% endif %}
+
+    {% if expiring_count > 0 %}
+    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+        <div class="d-flex align-items-center">
+            <i class="fas fa-exclamation-triangle fa-2x me-3"></i>
+            <div class="flex-grow-1">
+                <h6 class="alert-heading mb-1">
+                    <strong>{{ expiring_count }} Licença{{ expiring_count|pluralize }} Expirando</strong>
+                </h6>
+                <p class="mb-2">
+                    {% if expiring_count == 1 %}
+                        Uma licença de módulo expira nos próximos 7 dias.
+                    {% else %}
+                        {{ expiring_count }} licenças de módulos expiram nos próximos 7 dias.
+                    {% endif %}
+                </p>
+                {% if expiring_licenses %}
+                <small class="text-muted">
+                    <strong>Próximas expirações:</strong>
+                    {% for company_module in expiring_licenses %}
+                        {{ company_module.company.name }} - {{ company_module.module.name }} 
+                        ({{ company_module.days_until_expiration }} dia{{ company_module.days_until_expiration|pluralize }}){% if not forloop.last %}, {% endif %}
+                    {% endfor %}
+                    {% if expiring_count > 5 %}... e mais {{ expiring_count|add:"-5" }}{% endif %}
+                </small>
+                {% endif %}
+            </div>
+            <div class="ms-3">
+                <a href="{% url 'config:license_expiration' %}" class="btn btn-outline-dark btn-sm">
+                    <i class="fas fa-clock"></i> Renovar
+                </a>
+            </div>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+.alert-container .alert {
+    border-left: 4px solid;
+}
+
+.alert-danger {
+    border-left-color: #dc3545;
+}
+
+.alert-warning {
+    border-left-color: #ffc107;
+}
+
+.alert .fas {
+    opacity: 0.8;
+}
+</style>
+{% endif %}

@@ -1,0 +1,136 @@
+{% extends 'base.html' %}
+
+{% block title %}Excluir Página - {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-exclamation-triangle"></i> Confirmar Exclusão
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-danger">
+                        <i class="fas fa-warning"></i>
+                        <strong>Atenção!</strong> Esta ação não pode ser desfeita.
+                    </div>
+
+                    <h5>Tem certeza que deseja excluir esta página?</h5>
+                    
+                    <div class="page-info mt-4 p-3 bg-light rounded">
+                        <div class="d-flex align-items-start">
+                            {% if object.featured_image %}
+                            <img src="{{ object.featured_image.url }}" alt="{{ object.title }}" class="me-3 rounded" style="width: 80px; height: 80px; object-fit: cover;">
+                            {% endif %}
+                            <div>
+                                <h6><strong>{{ object.title }}</strong></h6>
+                                {% if object.excerpt %}
+                                    <p class="mb-1 text-muted">{{ object.excerpt|truncatechars:100 }}</p>
+                                {% endif %}
+                                <p class="mb-1">
+                                    <strong>Status:</strong> 
+                                    {% if object.is_published %}
+                                        <span class="badge bg-success">Publicada</span>
+                                    {% else %}
+                                        <span class="badge bg-warning">Rascunho</span>
+                                    {% endif %}
+                                </p>
+                                <p class="mb-1">
+                                    <strong>Autor:</strong> {{ object.author.get_full_name|default:object.author.username }}
+                                </p>
+                                <p class="mb-1">
+                                    <strong>Slug:</strong> <code>{{ object.slug }}</code>
+                                </p>
+                                <p class="mb-0">
+                                    <strong>Criada em:</strong> {{ object.created_at|date:"d/m/Y H:i" }}
+                                </p>
+                                {% if object.updated_at != object.created_at %}
+                                <p class="mb-0">
+                                    <strong>Última atualização:</strong> {{ object.updated_at|date:"d/m/Y H:i" }}
+                                </p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    {% if object.is_published %}
+                    <div class="alert alert-warning mt-3">
+                        <i class="fas fa-globe"></i>
+                        <strong>Impacto:</strong> Esta página está publicada e pode estar sendo visualizada por visitantes. 
+                        Ao excluí-la, o conteúdo será removido permanentemente e não estará mais acessível.
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info mt-3">
+                        <i class="fas fa-info-circle"></i>
+                        Esta página está em rascunho e não é visível para visitantes, mas será excluída permanentemente.
+                    </div>
+                    {% endif %}
+
+                    <div class="card mt-3">
+                        <div class="card-header">
+                            <h6 class="mb-0">Informações adicionais:</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <ul class="list-unstyled">
+                                        <li><strong>URL da página:</strong> <code>/{{ object.slug }}/</code></li>
+                                        <li><strong>Empresa:</strong> {{ object.company.name }}</li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-6">
+                                    <ul class="list-unstyled">
+                                        {% if object.meta_description %}
+                                        <li><strong>Meta descrição:</strong> {{ object.meta_description|truncatechars:50 }}</li>
+                                        {% endif %}
+                                        <li><strong>Tamanho do conteúdo:</strong> {{ object.content|length }} caracteres</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <form method="post" class="mt-4">
+                        {% csrf_token %}
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'pages:page_detail' object.slug %}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-danger" data-confirm="true">
+                                <i class="fas fa-trash"></i> Sim, Excluir Página
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const deleteBtn = document.querySelector('[data-confirm="true"]');
+    if (deleteBtn) {
+        deleteBtn.addEventListener('click', function(e) {
+            const isPublished = {{ object.is_published|yesno:"true,false" }};
+            let message = 'Tem certeza absoluta que deseja excluir esta página?';
+            
+            if (isPublished) {
+                message += '\n\nEsta página está PUBLICADA e será removida permanentemente do site.';
+            }
+            
+            message += '\n\nEsta ação é irreversível!';
+            
+            if (!confirm(message)) {
+                e.preventDefault();
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

@@ -7,9 +7,8 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('accounts/', include('modules.accounts.urls')),
     path('config/', include('modules.config.urls')),
-    path('pages/', include('modules.pages.urls')),
     path('blog/', include('modules.blog.urls')),
-    path('', include('modules.pages.urls', namespace='home')),  # Usar namespace diferente
+    path('', include('modules.pages.urls')),
 ]
 
 if settings.DEBUG:
