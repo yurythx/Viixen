@@ -1,0 +1,174 @@
+/**
+ * Correções de cores para garantir consistência e harmonia
+ * Este arquivo contém ajustes específicos para elementos que precisam de correção de cores
+ */
+
+/* Correções para elementos específicos */
+
+/* Correção para cards */
+.card {
+  background-color: var(--color-card);
+  border-color: var(--color-border);
+}
+
+/* Correção para inputs */
+.form-control, .form-select {
+  background-color: var(--color-input-bg);
+  border-color: var(--color-input-border);
+  color: var(--color-text);
+}
+
+.form-control:focus, .form-select:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 0.25rem rgba(var(--color-primary), 0.25);
+}
+
+/* Correção para badges */
+.badge.bg-primary {
+  background-color: var(--color-primary) !important;
+}
+
+.badge.bg-secondary {
+  background-color: var(--color-secondary) !important;
+}
+
+.badge.bg-success {
+  background-color: var(--success) !important;
+}
+
+.badge.bg-danger {
+  background-color: var(--danger) !important;
+}
+
+.badge.bg-warning {
+  background-color: var(--warning) !important;
+  color: var(--neutral-800) !important;
+}
+
+.badge.bg-info {
+  background-color: var(--info) !important;
+}
+
+/* Correção para alertas */
+.alert-primary {
+  background-color: rgba(var(--color-primary), 0.1);
+  border-color: rgba(var(--color-primary), 0.2);
+  color: var(--color-primary);
+}
+
+.alert-secondary {
+  background-color: rgba(var(--color-secondary), 0.1);
+  border-color: rgba(var(--color-secondary), 0.2);
+  color: var(--color-secondary);
+}
+
+.alert-success {
+  background-color: rgba(var(--success), 0.1);
+  border-color: rgba(var(--success), 0.2);
+  color: var(--success);
+}
+
+.alert-danger {
+  background-color: rgba(var(--danger), 0.1);
+  border-color: rgba(var(--danger), 0.2);
+  color: var(--danger);
+}
+
+.alert-warning {
+  background-color: rgba(var(--warning), 0.1);
+  border-color: rgba(var(--warning), 0.2);
+  color: var(--neutral-800);
+}
+
+.alert-info {
+  background-color: rgba(var(--info), 0.1);
+  border-color: rgba(var(--info), 0.2);
+  color: var(--info);
+}
+
+/* Correção para links */
+a {
+  color: var(--color-primary);
+}
+
+a:hover {
+  color: var(--btn-hover-primary);
+}
+
+/* Correção para dropdown */
+.dropdown-menu {
+  background-color: var(--color-card);
+  border-color: var(--color-border);
+}
+
+.dropdown-item {
+  color: var(--color-text);
+}
+
+.dropdown-item:hover {
+  background-color: rgba(var(--color-primary), 0.1);
+  color: var(--color-primary);
+}
+
+/* Correção para tabelas */
+.table {
+  color: var(--color-text);
+}
+
+.table-striped tbody tr:nth-of-type(odd) {
+  background-color: rgba(0, 0, 0, 0.02);
+}
+
+[data-theme="dark"] .table-striped tbody tr:nth-of-type(odd) {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+/* Correção para paginação */
+.page-link {
+  color: var(--color-primary);
+  background-color: var(--color-card);
+  border-color: var(--color-border);
+}
+
+.page-link:hover {
+  color: var(--btn-hover-primary);
+  background-color: var(--color-border);
+}
+
+.page-item.active .page-link {
+  background-color: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+/* Correção para modais */
+.modal-content {
+  background-color: var(--color-card);
+  border-color: var(--color-border);
+}
+
+.modal-header, .modal-footer {
+  border-color: var(--color-border);
+}
+
+/* Correção para notificações */
+.ubuntu-notification {
+  background-color: var(--color-card);
+  color: var(--color-text);
+  border-left: 4px solid var(--color-primary);
+}
+
+.ubuntu-notification.success {
+  border-left-color: var(--success);
+}
+
+.ubuntu-notification.error {
+  border-left-color: var(--danger);
+}
+
+.ubuntu-notification.warning {
+  border-left-color: var(--warning);
+}
+
+.ubuntu-notification.info {
+  border-left-color: var(--info);
+}

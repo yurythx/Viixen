@@ -12,11 +12,13 @@
     </div>
 
     <script>
-        const toggleBtn = document.getElementById('toggleTheme');
-        toggleBtn.addEventListener('click', () => {
-          document.body.classList.toggle('dark-theme');
-          localStorage.setItem('theme', document.body.classList.contains('dark-theme') ? 'dark' : 'light');
-        });
+        const toggleBtn = document.getElementById('theme-toggle');
+        if (toggleBtn) {
+          toggleBtn.addEventListener('click', () => {
+            document.body.classList.toggle('dark-theme');
+            localStorage.setItem('theme', document.body.classList.contains('dark-theme') ? 'dark' : 'light');
+          });
+        }
       
         // Aplicar tema salvo ou detectar tema do sistema
         const savedTheme = localStorage.getItem('theme');

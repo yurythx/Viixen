@@ -10,7 +10,7 @@
             <p style="opacity: 0.7;">Entre na sua conta</p>
         </div>
         <div>
-            <form method="post">
+            <form method="post" id="loginForm">
                 {% csrf_token %}
                 {% for field in form %}
                     <div class="mb-3">
@@ -23,26 +23,29 @@
                                 {% endfor %}
                             </div>
                         {% endif %}
-                        </div>
-                    {% endfor %}
-                    <button type="submit" class="btn btn-primary w-100">
-                        <i class="fas fa-sign-in-alt"></i> Entrar
-                    </button>
-                </form>
-                
-                {% if form.non_field_errors %}
-                    <div class="alert alert-danger mt-3">
-                        {% for error in form.non_field_errors %}
-                            {{ error }}
-                        {% endfor %}
                     </div>
-                {% endif %}
+                {% endfor %}
+                <button type="submit" class="btn btn-primary w-100" id="loginButton">
+                    <i class="fas fa-sign-in-alt"></i> <span id="loginButtonText">Entrar</span>
+                    <span id="loginSpinner" class="spinner-border spinner-border-sm ms-2 d-none" role="status" aria-hidden="true"></span>
+                </button>
+            </form>
+            
+            {% if form.non_field_errors %}
+                <div class="alert alert-danger mt-3">
+                    {% for error in form.non_field_errors %}
+                        {{ error }}
+                    {% endfor %}
+                </div>
+            {% endif %}
+            
+            <hr class="my-4">
+            <div class="text-center">
+                <p class="mb-0">Não tem uma conta? <a href="#">Entre em contato</a></p>
             </div>
         </div>
     </div>
 </div>
+
+<!-- O script de login foi movido para login-handler.js -->
 {% endblock %}
-<hr>
-<div class="text-center">
-    <p class="mb-0">Não tem uma conta? <a href="#">Entre em contato</a></p>
-</div>

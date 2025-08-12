@@ -1,20 +1,27 @@
 from django.views.generic import DetailView
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.shortcuts import get_object_or_404
-from ...domain.post import BlogPost
-from ...services.post_service import PostService
+from django.db.models import F
 
-class PostDetailView(LoginRequiredMixin, DetailView):
+from core.mixins import CompanyFilterMixin
+from ...domain.post import BlogPost
+
+
+class PostDetailView(LoginRequiredMixin, CompanyFilterMixin, DetailView):
+    """
+    View for displaying a single blog post.
+    Uses slug for URL pattern and increments the view count on each view.
+    """
     model = BlogPost
     template_name = 'blog/post/detail.html'
+    context_object_name = 'post'
     slug_field = 'slug'
     slug_url_kwarg = 'slug'
-    context_object_name = 'post'
     
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.service = PostService()
-    
+    def get_queryset(self):
+        """
+        Get the queryset, ensuring we only show posts for the current company.
+        """
+        return super().get_queryset().select_related('author', 'category')
     def get_object(self, queryset=None):
         post = get_object_or_404(
             BlogPost,

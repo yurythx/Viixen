@@ -4,12 +4,15 @@ from .views.user_management import (
     UserListView, UserDetailView, UserCreateView, 
     UserUpdateView, UserDeleteView, UserProfileView
 )
+from .views.auth_views import ajax_login, get_csrf_token
 
 app_name = 'accounts'
 
 urlpatterns = [
     # Autenticação
     path('login/', auth_views.LoginView.as_view(template_name='accounts/login.html'), name='login'),
+    path('ajax-login/', ajax_login, name='ajax_login'),
+    path('get-csrf-token/', get_csrf_token, name='get_csrf_token'),
     path('logout/', auth_views.LogoutView.as_view(), name='logout'),
     
     # Gerenciamento de usuários

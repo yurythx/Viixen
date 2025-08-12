@@ -1,0 +1,171 @@
+/* Estilos para o sistema de notificações estilo Ubuntu */
+
+.ubuntu-notification-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  width: 320px;
+  max-width: 90vw;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ubuntu-notification {
+  background-color: var(--ubuntu-dark-surface);
+  color: var(--ubuntu-dark-text);
+  border-radius: 4px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+  width: 100%;
+  opacity: 0;
+  transform: translateX(50px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  display: flex;
+  flex-direction: column;
+}
+
+[data-theme="light"] .ubuntu-notification {
+  background-color: #333333;
+  color: #FFFFFF;
+}
+
+.ubuntu-notification.show {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.ubuntu-notification-header {
+  display: flex;
+  align-items: center;
+  padding: 10px 15px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.ubuntu-notification-app-icon {
+  width: 24px;
+  height: 24px;
+  margin-right: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ubuntu-orange);
+}
+
+.ubuntu-notification-title {
+  flex-grow: 1;
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.ubuntu-notification-close {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+  padding: 0;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  transition: background-color 0.2s;
+}
+
+.ubuntu-notification-close:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.ubuntu-notification-body {
+  padding: 15px;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.ubuntu-notification-actions {
+  display: flex;
+  padding: 0 15px 15px;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.ubuntu-notification-action {
+  background-color: rgba(255, 255, 255, 0.1);
+  border: none;
+  color: var(--ubuntu-orange);
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.ubuntu-notification-action:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.ubuntu-notification-action.primary {
+  background-color: var(--ubuntu-orange);
+  color: white;
+}
+
+.ubuntu-notification-action.primary:hover {
+  background-color: var(--ubuntu-orange-dark);
+}
+
+/* Tipos de notificação */
+.ubuntu-notification.success .ubuntu-notification-app-icon {
+  color: var(--ubuntu-green);
+}
+
+.ubuntu-notification.error .ubuntu-notification-app-icon {
+  color: var(--ubuntu-red);
+}
+
+.ubuntu-notification.warning .ubuntu-notification-app-icon {
+  color: var(--ubuntu-yellow);
+}
+
+.ubuntu-notification.info .ubuntu-notification-app-icon {
+  color: var(--ubuntu-blue);
+}
+
+/* Animação de progresso */
+.ubuntu-notification-progress {
+  height: 3px;
+  background-color: rgba(255, 255, 255, 0.2);
+  position: relative;
+}
+
+.ubuntu-notification-progress-bar {
+  height: 100%;
+  background-color: var(--ubuntu-orange);
+  width: 100%;
+  transform-origin: left center;
+  animation: progress-shrink 5s linear forwards;
+}
+
+.ubuntu-notification.success .ubuntu-notification-progress-bar {
+  background-color: var(--ubuntu-green);
+}
+
+.ubuntu-notification.error .ubuntu-notification-progress-bar {
+  background-color: var(--ubuntu-red);
+}
+
+.ubuntu-notification.warning .ubuntu-notification-progress-bar {
+  background-color: var(--ubuntu-yellow);
+}
+
+.ubuntu-notification.info .ubuntu-notification-progress-bar {
+  background-color: var(--ubuntu-blue);
+}
+
+@keyframes progress-shrink {
+  from { transform: scaleX(1); }
+  to { transform: scaleX(0); }
+}

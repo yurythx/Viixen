@@ -2,6 +2,32 @@
 
 {% block title %}Home - {{ block.super }}{% endblock %}
 
+{% block extra_js %}
+<script>
+  // Demonstração do sistema de notificações Ubuntu
+  document.addEventListener('DOMContentLoaded', function() {
+    // Mostrar uma notificação de boas-vindas após 1 segundo
+    setTimeout(() => {
+      showUbuntuNotification({
+        title: 'Bem-vindo ao Viixen',
+        message: 'Sistema atualizado com sucesso! Agora temos notificações estilo Ubuntu.',
+        type: 'info',
+        actions: [
+          {
+            id: 'dashboard',
+            text: 'Dashboard',
+            primary: true,
+            onClick: function() {
+              window.location.href = '{% url "config:dashboard" %}';
+            }
+          }
+        ]
+      });
+    }, 1000);
+  });
+</script>
+{% endblock %}
+
 {% block content %}
 <!-- Hero Section -->
 <div class="card" style="background: linear-gradient(135deg, var(--color-primary), var(--color-secondary)); color: white; text-align: center; padding: 40px 20px; margin-bottom: 32px;">

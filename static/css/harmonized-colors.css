@@ -1,0 +1,226 @@
+/* Harmonized Color Palette for Viixen */
+
+/* Variáveis Tema Claro - Harmonizado */
+:root {
+  /* Cores primárias */
+  --primary-color: #E95420; /* Ubuntu Orange */
+  --primary-light: #FF7139;
+  --primary-dark: #C7431A;
+  
+  /* Cores secundárias - Harmonizadas */
+  --secondary-color: #772953; /* Ubuntu Aubergine - mais consistente com a identidade Ubuntu */
+  --secondary-light: #924D77;
+  --secondary-dark: #5E2043;
+  
+  /* Cores neutras */
+  --neutral-100: #FFFFFF;
+  --neutral-200: #F7F7F7;
+  --neutral-300: #EFEFEF;
+  --neutral-400: #CDCDCD;
+  --neutral-500: #AEA79F; /* Ubuntu Warm Grey */
+  --neutral-600: #777777;
+  --neutral-700: #555555;
+  --neutral-800: #333333; /* Ubuntu Cool Grey */
+  --neutral-900: #111111;
+  
+  /* Cores de estado - Harmonizadas */
+  --success: #0E8420; /* Ubuntu Green */
+  --success-light: #2AC643;
+  --success-dark: #0A6B1A;
+  
+  --danger: #C7162B; /* Ubuntu Red */
+  --danger-light: #E41E3B;
+  --danger-dark: #A01325;
+  
+  --warning: #F99B11; /* Ubuntu Yellow */
+  --warning-light: #FFAE3B;
+  --warning-dark: #E8890A;
+  
+  --info: #19B6EE; /* Ubuntu Blue */
+  --info-light: #3DCBFF;
+  --info-dark: #0E8FC0;
+  
+  /* Aplicação das cores - Tema Claro */
+  --color-bg: var(--neutral-200);
+  --color-text: var(--neutral-800);
+  --color-text-light: var(--neutral-600);
+  --color-primary: var(--primary-color);
+  --color-secondary: var(--secondary-color);
+  --color-card: var(--neutral-100);
+  --color-input-bg: var(--neutral-100);
+  --color-input-border: var(--neutral-400);
+  --color-navbar-bg: var(--primary-color);
+  --color-navbar-text: var(--neutral-100);
+  --color-sidebar-bg: var(--neutral-100);
+  --color-border: var(--neutral-400);
+  --color-shadow: rgba(0, 0, 0, 0.1);
+  --btn-hover-primary: var(--primary-dark);
+  --btn-hover-secondary: var(--secondary-dark);
+}
+
+/* Variáveis Tema Escuro - Harmonizado */
+[data-theme="dark"] {
+  /* Cores escuras */
+  --dark-bg: #2C2C2C;
+  --dark-surface: #3C3C3C;
+  --dark-elevated: #4C4C4C;
+  
+  /* Aplicação das cores - Tema Escuro */
+  --color-bg: var(--dark-bg);
+  --color-text: var(--neutral-100);
+  --color-text-light: var(--neutral-300);
+  --color-primary: var(--primary-light);
+  --color-secondary: var(--secondary-light);
+  --color-card: var(--dark-surface);
+  --color-input-bg: var(--dark-surface);
+  --color-input-border: var(--neutral-700);
+  --color-navbar-bg: var(--dark-surface);
+  --color-navbar-text: var(--neutral-100);
+  --color-sidebar-bg: var(--dark-surface);
+  --color-border: var(--neutral-700);
+  --color-shadow: rgba(0, 0, 0, 0.3);
+  --btn-hover-primary: var(--primary-color);
+  --btn-hover-secondary: var(--secondary-color);
+}
+
+/* Botões harmonizados */
+.btn-primary {
+  background-color: var(--color-primary);
+  color: white;
+  border: none;
+}
+
+.btn-primary:hover {
+  background-color: var(--btn-hover-primary);
+}
+
+.btn-secondary {
+  background-color: var(--color-secondary);
+  color: white;
+  border: none;
+}
+
+.btn-secondary:hover {
+  background-color: var(--btn-hover-secondary);
+}
+
+.btn-success {
+  background-color: var(--success);
+  color: white;
+  border: none;
+}
+
+.btn-success:hover {
+  background-color: var(--success-dark);
+}
+
+.btn-danger {
+  background-color: var(--danger);
+  color: white;
+  border: none;
+}
+
+.btn-danger:hover {
+  background-color: var(--danger-dark);
+}
+
+.btn-warning {
+  background-color: var(--warning);
+  color: var(--neutral-800);
+  border: none;
+}
+
+.btn-warning:hover {
+  background-color: var(--warning-dark);
+}
+
+.btn-info {
+  background-color: var(--info);
+  color: white;
+  border: none;
+}
+
+.btn-info:hover {
+  background-color: var(--info-dark);
+}
+
+/* Navbar harmonizada */
+.navbar {
+  background-color: var(--color-navbar-bg);
+  color: var(--color-navbar-text);
+}
+
+/* Menu Mobile Fullscreen */
+@media (max-width: 991.98px) {
+  .navbar-collapse {
+    position: fixed;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100vh;
+    background-color: var(--color-navbar-bg);
+    z-index: 1000;
+    transition: left 0.3s ease;
+    padding: 1rem;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .navbar-collapse.show {
+    left: 0;
+  }
+  
+  .navbar-nav {
+    flex-direction: column;
+    width: 100%;
+    margin-top: 3rem;
+  }
+  
+  .navbar-nav .nav-item {
+    margin: 0.5rem 0;
+  }
+  
+  .navbar-nav .nav-link {
+    font-size: 1.2rem;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+  }
+  
+  .navbar-toggler {
+    z-index: 1001;
+    position: relative;
+  }
+  
+  .navbar-collapse.show .navbar-toggler-close {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    color: var(--color-navbar-text);
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+  }
+  
+  /* Ajustes para dropdown no menu mobile */
+  .navbar-nav .dropdown-menu {
+    background-color: rgba(0,0,0,0.2);
+    border: none;
+    margin-top: 0;
+    padding: 0;
+    position: static !important;
+    transform: none !important;
+    width: 100%;
+  }
+  
+  .navbar-nav .dropdown-item {
+    color: var(--color-navbar-text);
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+  }
+  
+  .navbar-nav .dropdown-item:hover {
+    background-color: rgba(255,255,255,0.1);
+  }
+}

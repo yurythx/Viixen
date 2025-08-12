@@ -1,9 +1,8 @@
 from django.views.generic import TemplateView
-from django.contrib.auth.mixins import LoginRequiredMixin
 from ...blog.domain.post import BlogPost
 from ...blog.services.post_service import PostService
 
-class HomeView(LoginRequiredMixin, TemplateView):
+class HomeView(TemplateView):
     template_name = 'pages/home.html'
     
     def get_context_data(self, **kwargs):

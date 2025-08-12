@@ -11,21 +11,21 @@ urlpatterns = [
     # Posts
     path('', PostListView.as_view(), name='post_list'),
     path('post/create/', PostCreateView.as_view(), name='post_create'),
-    path('post/<int:pk>/edit/', PostUpdateView.as_view(), name='post_update'),
-    path('post/<int:pk>/delete/', PostDeleteView.as_view(), name='post_delete'),
-    path('<slug:slug>/', PostDetailView.as_view(), name='post_detail'),
+    path('post/<slug:slug>/edit/', PostUpdateView.as_view(), name='post_update'),
+    path('post/<slug:slug>/delete/', PostDeleteView.as_view(), name='post_delete'),
+    path('post/<slug:slug>/', PostDetailView.as_view(), name='post_detail'),
     
     # Categories
     path('categories/', CategoryListView.as_view(), name='category_list'),
     path('categories/create/', CategoryCreateView.as_view(), name='category_create'),
-    path('category/<slug:slug>/', CategoryDetailView.as_view(), name='category_detail'),
-    path('category/<int:pk>/edit/', CategoryUpdateView.as_view(), name='category_update'),
-    path('category/<int:pk>/delete/', CategoryDeleteView.as_view(), name='category_delete'),
+    path('categories/<slug:slug>/', CategoryDetailView.as_view(), name='category_detail'),
+    path('categories/<slug:slug>/edit/', CategoryUpdateView.as_view(), name='category_update'),
+    path('categories/<slug:slug>/delete/', CategoryDeleteView.as_view(), name='category_delete'),
     
     # Tags
     path('tags/', TagListView.as_view(), name='tag_list'),
     path('tags/create/', TagCreateView.as_view(), name='tag_create'),
-    path('tag/<slug:slug>/', TagDetailView.as_view(), name='tag_detail'),
-    path('tag/<int:pk>/edit/', TagUpdateView.as_view(), name='tag_update'),
-    path('tag/<int:pk>/delete/', TagDeleteView.as_view(), name='tag_delete'),
+    path('tags/<slug:slug>/', TagDetailView.as_view(), name='tag_detail'),
+    path('tags/<slug:slug>/edit/', TagUpdateView.as_view(), name='tag_update'),
+    path('tags/<slug:slug>/delete/', TagDeleteView.as_view(), name='tag_delete'),
 ]
